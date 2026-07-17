@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Iniciar sesión — Banco Latinoamericano</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="phone">
+  <div class="topbar">
+    <a href="index.html" class="muted">‹ Volver</a>
+    <div class="brand"><div class="coin" data-icon="globe"></div><div class="name">Banco <b>Latinoamericano</b></div></div>
+    <span style="width:48px"></span>
+  </div>
+
+  <div class="pad">
+    <h1 class="h1 serif">Hola de nuevo</h1>
+    <p class="muted" style="margin:8px 0 22px">Ingresa para ver tu saldo y operar.</p>
+
+    <div id="err" class="error"></div>
+
+    <form id="form">
+      <div class="field">
+        <label>Documento de identidad</label>
+        <input id="docNumber" placeholder="Número de tu documento" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input id="password" type="password" placeholder="Tu contraseña" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn-primary" id="submit" type="submit">Iniciar sesión</button>
+    </form>
+
+    <p class="center" style="margin-top:14px;font-size:14px">
+      <a id="forgotLink" style="color:var(--orange-d);font-weight:700;cursor:pointer">¿Olvidaste tu contraseña?</a>
+    </p>
+
+    <!-- Restablecer contraseña -->
+    <div id="resetBox" style="display:none;margin-top:8px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:16px">
+      <h4 style="color:var(--navy);margin-bottom:6px">Recuperar acceso</h4>
+      <p class="muted" style="font-size:13px;margin-bottom:12px">Ingresa tu documento. Enviaremos una solicitud al equipo del banco para restablecer tu contraseña.</p>
+      <div id="resetMsg"></div>
+      <div class="field"><input id="resetDoc" placeholder="Número de documento"></div>
+      <button class="btn btn-primary btn-sm" style="width:100%" id="resetBtn">Enviar solicitud</button>
+    </div>
+
+    <p class="center muted" style="margin-top:20px;font-size:14px">
+      ¿No tienes cuenta? <a href="register.html" style="color:var(--orange-d);font-weight:700">Créala aquí</a>
+    </p>
+  </div>
+</div>
+<script src="js/common.js"></script>
+<script src="js/login.html.js"></script>
+</body>
+</html>

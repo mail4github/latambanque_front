@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Crear cuenta — Banco Latinoamericano</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="phone">
+  <div class="topbar">
+    <a href="index.html" class="muted">‹ Volver</a>
+    <div class="brand"><div class="coin" data-icon="globe"></div><div class="name">Banco <b>Latinoamericano</b></div></div>
+    <span style="width:48px"></span>
+  </div>
+
+  <div class="pad">
+    <h1 class="h1 serif">Crea tu cuenta</h1>
+    <p class="muted" style="margin:8px 0 22px">Toma menos de un minuto. Al terminar tendrás tu cuenta en BTC lista.</p>
+
+    <div id="err" class="error"></div>
+
+    <form id="form">
+      <div class="field">
+        <label>Nombre</label>
+        <input id="nombre" placeholder="Tu nombre" required>
+      </div>
+      <div class="field">
+        <label>Apellidos</label>
+        <input id="apellidos" placeholder="Tus apellidos" required>
+      </div>
+      <div class="field">
+        <label>Tipo de documento de identidad</label>
+        <select id="docType" required>
+          <option value="CURP">CURP (México)</option>
+          <option value="INE">INE (México)</option>
+          <option value="DNI">DNI (Perú / Argentina / España)</option>
+          <option value="CEDULA">Cédula (Colombia / Chile / otros)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Número de documento</label>
+        <input id="docNumber" placeholder="Número de tu documento" required>
+      </div>
+      <div class="field">
+        <label>Correo electrónico (opcional)</label>
+        <input id="email" type="email" placeholder="tucorreo@ejemplo.com">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input id="password" type="password" placeholder="Mínimo 6 caracteres" required>
+        <div class="hint">Debe tener al menos 6 caracteres e incluir letras y números.</div>
+      </div>
+      <button class="btn btn-primary" id="submit" type="submit">Crear cuenta</button>
+    </form>
+
+    <p class="center muted" style="margin-top:18px;font-size:14px">
+      ¿Ya tienes cuenta? <a href="login.html" style="color:var(--orange-d);font-weight:700">Inicia sesión</a>
+    </p>
+    <p class="footer-note">Al crear tu cuenta aceptas los Términos y la Política de Privacidad de Banco Latinoamericano.</p>
+  </div>
+</div>
+<script src="js/common.js"></script>
+<script src="js/register.html.js"></script>
+</body>
+</html>

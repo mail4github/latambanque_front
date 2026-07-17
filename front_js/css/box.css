@@ -1,0 +1,193 @@
+.modal-content{
+    /*
+    background: linear-gradient(90deg, #2E0327 0%, #6D1153 54.17%, #2E0327 100%);
+    box-shadow: 0px 0px 15px #FFD762;
+    border-radius: 10px;
+    */
+    top: 10vh;
+    box-shadow: rgb(0, 72, 255) 0px 0px 12.1px;
+    backdrop-filter: blur(7.5px);
+    background: radial-gradient(100% 100% at 50% 0%, rgba(59, 31, 167, 0.6) 0%, rgba(23, 12, 65, 0.6) 44.82%);
+    border-width: 1px!important;
+    border-style: solid!important;
+    border-color: rgb(0, 208, 255)!important;
+    border-image: initial;
+    border-radius: 8px;
+    color: white;
+}
+
+.modal-content ol,
+.modal-content ul {
+    padding-inline-start: 15px;
+}
+
+.modal-content li {
+    text-align: left;
+}
+
+.modal-content .close::before,
+.modal-content .close::after {
+    background-color: white;
+}
+
+.modal-content .btn {
+    display: block;
+    margin: auto;
+    padding: 0 20px;
+    width: fit-content;
+    min-width: 12em;
+    height: 40px;
+    background: #170C41 !important;
+    border: 3px solid #00D0FF !important;
+    box-shadow: 0px 0px 9px 3px #0E2E96, inset 0px 0px 9px 7px #0E2E96 !important;
+    border-radius: 20px !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    line-height: 15px !important;
+    text-align: center !important;
+    text-transform: uppercase !important;
+    color: #FFFFFF !important;
+}
+
+.modal-content .btn:hover, 
+.modal-content .btn:focus {
+    box-shadow: none !important;
+    text-shadow: 0 0 10px #ffff00;
+}
+
+.modal-content .btn-success {
+    color: #fff !important;
+}
+
+.modal-content .iti__country-list {
+    background: hsl(252, 69%, 26%) !important;
+}
+
+.modal-content .iti__country.iti__highlight {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.close {
+    padding: 11px!important;
+    position: relative;
+    top: 7px;
+    left: -7px;
+    font-size: 0; 
+    color: #F8D05F; 
+    background-color: transparent; 
+    background-image: linear-gradient(to bottom, #810017, #F01E83);
+    border: 2px solid #F01E83 !important;
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
+}
+
+.close:focus,
+.close:hover {
+    border: 2px solid #F01E83 !important;
+   /*border: none !important;
+   text-shadow: none !important;*/
+}
+.close::before,
+.close::after {
+    content: ''; /* Псевдоэлементы для креста */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px; /* Длина линий */
+    height: 1.5px; /* Толщина линий */
+    background-color: #fff; /* Цвет линий */
+    transform-origin: center;
+}
+
+.close::before {
+    transform: translate(-50%, -50%) rotate(45deg); /* Первая линия креста */
+}
+
+.close::after {
+    transform: translate(-50%, -50%) rotate(-45deg); /* Вторая линия креста */
+}
+
+.modal-dialog .close {
+    opacity: 1;
+    z-index: 1;
+}
+
+.modal-footer,
+.modal-header {
+    border: none;
+}
+
+.modal-title {
+    font-weight: 500;
+    line-height: 28px;
+    text-align: center;
+    color: #FFFFFF;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    width: 100%;
+}
+
+.modal-icon-battle::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    width: 86px;
+    height: 105px;
+    background-color: transparent;
+    background-image: url(../image/b_icon.svg);
+    background-repeat: no-repeat;
+    background-size: 60%;
+    background-position-x: 0px;
+    margin: 0 -30px;
+}
+
+.modal-icon-error::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    background-color: transparent;
+    background-image: url(../image/error.png);
+    background-repeat: no-repeat;
+    background-size: 60%;
+    background-position-x: 0px;
+    margin: 0 -20px;
+}
+
+.modal-icon-info::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    background-color: transparent;
+    background-image: url(../image/icons-partners/question.svg);
+    background-repeat: no-repeat;
+    background-size: 60%;
+    background-position-x: 0px;
+    margin: 0 -15px;
+}
+
+.alert-success {
+    color: white;
+    background-color: transparent;
+}
+.alert-danger {
+    color: white;
+    background-color: #470f0f;
+}
+.alert {
+    border: none;
+    border-radius: 0.25rem;
+    text-align: center;
+    padding: 0.75rem 0px;
+}
+
+#message_body .publish_to_telegram_btn {
+    display: none !important;
+}
