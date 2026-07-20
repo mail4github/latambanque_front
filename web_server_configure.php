@@ -11,9 +11,11 @@ $step = readline("Step:");
 if (empty($step)) {
     // creating apache files
     $apache_file_name = "/etc/apache2/sites-available/$server_domain";
-    if (!file_exists($apache_file_name)) {
-        echo "Creating apache file: $apache_file_name\r\n";
-        file_put_contents($apache_file_name, "
+    if ( file_exists($apache_file_name)) {
+        unlink($apache_file_name);
+    }
+    echo "Creating apache file: $apache_file_name\r\n";
+    file_put_contents($apache_file_name, "
 <VirtualHost *:80>
     ServerName $server_domain
     ServerAlias www.$server_domain
@@ -21,11 +23,7 @@ if (empty($step)) {
     DirectoryIndex index.html
     IndexIgnore *
 </VirtualHost>
-        ");
-    }
-    else {
-        echo "\033[93mApache file: $apache_file_name already exists. Creation skipped.\033[0m\r\n";
-    }
+    ");
 }
 
 if (empty($step) || $step <= 1) { // creating HTTPS files
@@ -33,40 +31,42 @@ if (empty($step) || $step <= 1) { // creating HTTPS files
     $need_https = intval(readline("Need HTTPS:"));
     if ($need_https) {
         $apache_file_name = "/etc/apache2/sites-available/".$server_domain."_443";
-        if (!file_exists($apache_file_name)) {
-            echo "Creating apache file: $apache_file_name\r\n";
-            $all_files_found = true;
-            
-            $chainfile = glob(dirname(__FILE__).'/*.ca-bundle');
-            $filename_not_found = '';
+        if ( file_exists($apache_file_name)) {
+            unlink($apache_file_name);
+        }
+        echo "Creating apache file: $apache_file_name\r\n";
+        $all_files_found = true;
+        
+        $chainfile = glob(dirname(__FILE__).'/*.ca-bundle');
+        $filename_not_found = '';
+        if ($chainfile && is_array($chainfile) && count($chainfile) > 0)
+            $chainfile = $chainfile[0];
+        else {
+            $chainfile = glob(dirname(__FILE__).'/*.ca*');
             if ($chainfile && is_array($chainfile) && count($chainfile) > 0)
                 $chainfile = $chainfile[0];
             else {
-                $chainfile = glob(dirname(__FILE__).'/*.ca*');
-                if ($chainfile && is_array($chainfile) && count($chainfile) > 0)
-                    $chainfile = $chainfile[0];
-                else {
-                    $all_files_found = false;
-                    $filename_not_found = 'SSLCertificateChainFile';
-                }
+                $all_files_found = false;
+                $filename_not_found = 'SSLCertificateChainFile';
             }
-            
-            $keyfile = glob(dirname(__FILE__).'/*.key');
-            $filename_not_found = '';
+        }
+        
+        $keyfile = glob(dirname(__FILE__).'/*.key');
+        $filename_not_found = '';
+        if ($keyfile && is_array($keyfile) && count($keyfile) > 0)
+            $keyfile = $keyfile[0];
+        else {
+            $keyfile = glob(dirname(__FILE__).'/*_key.*');
             if ($keyfile && is_array($keyfile) && count($keyfile) > 0)
                 $keyfile = $keyfile[0];
             else {
-                $keyfile = glob(dirname(__FILE__).'/*_key.*');
-                if ($keyfile && is_array($keyfile) && count($keyfile) > 0)
-                    $keyfile = $keyfile[0];
-                else {
-                    $all_files_found = false;
-                    $filename_not_found = 'SSLCertificateKeyFile';
-                }
+                $all_files_found = false;
+                $filename_not_found = 'SSLCertificateKeyFile';
             }
+        }
 
-            if ($all_files_found) {
-                file_put_contents($apache_file_name, "
+        if ($all_files_found) {
+            file_put_contents($apache_file_name, "
 <VirtualHost *:443>
 ServerName $server_domain
 ServerAlias www.$server_domain
@@ -78,14 +78,10 @@ SSLCertificateFile ".glob(dirname(__FILE__).'/*.crt')[0]."
 SSLCertificateKeyFile $keyfile
 SSLCertificateChainFile $chainfile
 </VirtualHost>
-                ");
-            }
-            else {
-                echo "\033[91m Error: file: $filename_not_found not found \033[0m\r\n";
-            }
+            ");
         }
         else {
-            echo "\033[93mApache file: $apache_file_name already exists. Creation skipped.\033[0m\r\n";
+            echo "\033[91m Error: file: $filename_not_found not found \033[0m\r\n";
         }
     }
 }
