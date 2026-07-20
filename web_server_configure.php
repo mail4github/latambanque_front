@@ -30,9 +30,9 @@ $api_url = readline('Enter server domain (like srv.com):');
 $server_domain = $api_url;
 
 echo "Enter step:
-1 - create apache files
-2 - configure apache
-3 - create HTTPS files
+0 - create apache files
+1 - configure apache
+2 - create HTTPS files
 ";
 $step = readline("Step:");
 
