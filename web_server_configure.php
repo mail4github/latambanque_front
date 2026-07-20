@@ -1,10 +1,38 @@
 <?php
+function delete_text_between_tags(&$inputStr, $delimeterLeft = '', $delimeterRight = '', $debug = false, $replace_with = '') 
+{ 
+	if ( empty($delimeterLeft) )
+		$posLeft = 0;
+	else
+		$posLeft = stripos($inputStr, $delimeterLeft); 
+    if ( $posLeft === false ) { 
+        if ( $debug )
+            echo "Warning: left delimiter '{$delimeterLeft}' not found"; 
+        return false; 
+    } 
+	if ( empty($delimeterRight) )
+		$posRight = strlen($inputStr);
+	else {
+		$posRight = stripos($inputStr, $delimeterRight, $posLeft); 
+		if ( $posRight === false ) { 
+			if ( $debug )
+				echo "Warning: right delimiter '{$delimeterRight}' not found"; 
+			return false; 
+		}
+	}
+	$posRight = $posRight + strlen($delimeterRight); 
+	$inputStr = substr_replace($inputStr, $replace_with, $posLeft, $posRight - $posLeft);
+	return true;
+} 
+
+
 $api_url = readline('Enter server domain (like srv.com):');
 $server_domain = $api_url;
 
 echo "Enter step:
 1 - create apache files
-2 - create HTTPS files
+2 - configure apache
+3 - create HTTPS files
 ";
 $step = readline("Step:");
 
@@ -25,8 +53,35 @@ if (empty($step)) {
 </VirtualHost>
     ");
 }
+if (empty($step) || $step <= 1) { // configure apache
+    $config_file = '/etc/apache2/apache2.conf';
+    $cnf = file_get_contents($config_file);
+    if (is_integer(strpos($cnf, '# '.$server_domain))) {
+        delete_text_between_tags($cnf, '# '.$server_domain, '# << '.$server_domain);
+    }
+    file_put_contents($config_file, $cnf."
 
-if (empty($step) || $step <= 1) { // creating HTTPS files
+<IfModule mpm_prefork_module>
+        StartServers     100
+        MinSpareServers  20
+        MaxSpareServers  10
+        MaxClients       500
+        ServerLimit      500
+        MaxRequestsPerChild   100
+        MaxMemFree       10
+</IfModule>
+LimitRequestFieldSize   1638000
+Include sites-available/*
+<Directory /var/www/>
+       AllowOverride All
+</Directory>
+Listen 443
+LoadModule ssl_module /usr/lib/apache2/modules/mod_ssl.so
+
+    ");
+}
+
+if (empty($step) || $step <= 2) { // creating HTTPS files
     echo "Enter:\r\n0 - server doesn't have HTTPS files\r\n1 - server has HTTPS files\r\n";
     $need_https = intval(readline("Need HTTPS:"));
     if ($need_https) {
