@@ -62,13 +62,13 @@ if (empty($step) || $step <= 1) { // configure apache
     file_put_contents($config_file, $cnf."
 
 <IfModule mpm_prefork_module>
-        StartServers     100
-        MinSpareServers  20
-        MaxSpareServers  10
-        MaxClients       500
-        ServerLimit      500
-        MaxRequestsPerChild   100
-        MaxMemFree       10
+    StartServers     100
+    MinSpareServers  20
+    MaxSpareServers  10
+    MaxClients       500
+    ServerLimit      500
+    MaxRequestsPerChild   100
+    MaxMemFree       10
 </IfModule>
 LimitRequestFieldSize   1638000
 Include sites-available/*
@@ -124,15 +124,15 @@ if (empty($step) || $step <= 2) { // creating HTTPS files
         if ($all_files_found) {
             file_put_contents($apache_file_name, "
 <VirtualHost *:443>
-ServerName $server_domain
-ServerAlias www.$server_domain
-DocumentRoot ".dirname(__FILE__)."/front_js/
-DirectoryIndex index.html
-IndexIgnore *
-SSLEngine on
-SSLCertificateFile ".glob(dirname(__FILE__).'/*.crt')[0]."
-SSLCertificateKeyFile $keyfile
-SSLCertificateChainFile $chainfile
+    ServerName $server_domain
+    ServerAlias www.$server_domain
+    DocumentRoot ".dirname(__FILE__)."/front_js/
+    DirectoryIndex index.html
+    IndexIgnore *
+    SSLEngine on
+    SSLCertificateFile ".glob(dirname(__FILE__).'/*.crt')[0]."
+    SSLCertificateKeyFile $keyfile
+    SSLCertificateChainFile $chainfile
 </VirtualHost>
             ");
         }
