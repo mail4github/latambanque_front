@@ -56,11 +56,11 @@ if (empty($step)) {
 if (empty($step) || $step <= 1) { // configure apache
     $config_file = '/etc/apache2/apache2.conf';
     $cnf = file_get_contents($config_file);
-    if (is_integer(strpos($cnf, '# '.$server_domain))) {
-        delete_text_between_tags($cnf, '# '.$server_domain, '# << '.$server_domain);
+    if (is_integer(strpos($cnf, '# >> '.$server_domain))) {
+        delete_text_between_tags($cnf, '# >> '.$server_domain, '# << '.$server_domain);
     }
     file_put_contents($config_file, $cnf."
-
+# >> $server_domain
 <IfModule mpm_prefork_module>
     StartServers     100
     MinSpareServers  20
@@ -77,7 +77,7 @@ Include sites-available/*
 </Directory>
 Listen 443
 LoadModule ssl_module /usr/lib/apache2/modules/mod_ssl.so
-
+# << $server_domain
     ");
     echo "Changed apache file: $config_file\r\n";
 }
