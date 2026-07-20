@@ -22,9 +22,9 @@ RewriteRule ^registration(\/|$) /register.html [L]
 #Referrals:
 RewriteRule ^r/([^/]+)(\/|$) /index.html?a_aid=$1 [L]
 
-RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1) [NC]
-RewriteCond %{HTTPS} off
-RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+#RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1) [NC]
+#RewriteCond %{HTTPS} off
+#RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
