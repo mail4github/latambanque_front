@@ -79,6 +79,7 @@ Listen 443
 LoadModule ssl_module /usr/lib/apache2/modules/mod_ssl.so
 
     ");
+    echo "Changed apache file: $config_file\r\n";
 }
 
 if (empty($step) || $step <= 2) { // creating HTTPS files
