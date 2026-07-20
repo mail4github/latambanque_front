@@ -18,7 +18,7 @@ if (empty($step)) {
     ServerName $server_domain
     ServerAlias www.$server_domain
     DocumentRoot ".dirname(__FILE__)."/front_js/
-    DirectoryIndex index.php
+    DirectoryIndex index.html
     IndexIgnore *
 </VirtualHost>
         ");
@@ -71,7 +71,7 @@ if (empty($step) || $step <= 1) { // creating HTTPS files
 ServerName $server_domain
 ServerAlias www.$server_domain
 DocumentRoot ".dirname(__FILE__)."/front_js/
-DirectoryIndex index.php
+DirectoryIndex index.html
 IndexIgnore *
 SSLEngine on
 SSLCertificateFile ".glob(dirname(__FILE__).'/*.crt')[0]."
