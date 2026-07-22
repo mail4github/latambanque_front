@@ -785,22 +785,6 @@ function validate_bootstrap_obj(obj_name)
 	}
 }
 
-function check_login(ajax__result)
-{
-	if ( ajax__result.indexOf("<need_to_login>") >= 0 ) {
-		if (typeof do_login === "function")
-			do_login();
-		else {
-			setInterval( function() { 
-				location.assign("/login.php");
-			}, 1000)
-		}
-		return false;
-	}
-	else 
-		return true;
-}
-
 function leading_zero(num, len) 
 {
 	return (Array(len).join("0") + num).slice(-len);

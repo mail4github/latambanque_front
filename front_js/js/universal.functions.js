@@ -2,8 +2,8 @@ var session_token = "";
 var make_api_request_max_number_of_attempts = 10;
 var just_logged_in = false;
 var userid = get_cookie("user_id");
-var password_session = get_cookie("password_session");
-var is_loggedin = userid.length > 0 && password_session.length > 0;
+var password_session = localStorage.getItem('cb_token');
+var is_loggedin = userid.length > 0 && typeof localStorage.getItem('cb_token') !== "undefined";
 var refresh_balance_last_time_refreshed = 0;
 var refresh_balance_timer = 0;
 var currency_balances = [];
@@ -14,10 +14,10 @@ var account_verified = false;
 
 function user_is_loggedin()
 {
-	let res = userid.length > 0 && password_session.length > 0;
+	let res = userid.length > 0 && typeof localStorage.getItem('cb_token') !== "undefined";
 	if (!res) {
 		set_cookie("user_id", "");
-		set_cookie("password_session", "");
+		localStorage.removeItem('cb_token');
 	}
 	return res;
 }
@@ -48,8 +48,8 @@ function make_api_request(
 		if (get_cookie("userid").length > 0) {
 			data.userid = get_cookie("userid");
 		}
-		if (get_cookie("password_session").length > 0) {
-			data.token = get_cookie("password_session");
+		if (typeof localStorage.getItem('cb_token') !== "undefined" && localStorage.getItem('cb_token').length > 0) {
+			data.token = localStorage.getItem('cb_token');
 		}
 		else
 		if (get_cookie("password").length > 0) {
@@ -77,7 +77,7 @@ function make_api_request(
 		})
 		.done(function( ajax__result ) {
 			try {
-				var arr_ajax__result = JSON.parse(ajax__result);
+				let arr_ajax__result = JSON.parse(ajax__result);
 				if ( arr_ajax__result["success"] ) {
 					let new_data = data;
 					new_data["token"] = md5( arr_ajax__result["values"] + Math.floor(Date.now() / 1000 / 60) );
@@ -405,72 +405,6 @@ function decode_amount(text)
 	return "";
 }
 
-function get_list_of_alerts()
-{
-	if ( !user_is_loggedin() )
-		return false;
-	make_api_request("get_list_of_alerts", {}, 
-		function( arr_ajax__result ){
-			var alerts = "";
-			var pop_up_message = "";
-			if ( arr_ajax__result["values"]["alerts_arr"].length > 0 ) {
-				for (var i = 0; i < arr_ajax__result["values"]["alerts_arr"].length; i++) {
-					pop_up_message = "";
-
-					switch (arr_ajax__result["values"]["alerts_arr"][i]["alertid"]) {
-						case "security_question": 
-							if (typeof this_is_mobi_version != "undefined" && this_is_mobi_version) {
-								alerts = alerts + `<p onclick="change_url('set_sec_question.html');">` + arr_ajax__result["values"]["alerts_arr"][i]["message"] + `<button class="btn btn-default btn-xs" style="margin-left:1em;" onclick="change_url('set_sec_question.html');">Set up...</button></p>`;
-							}
-							else {
-								alerts = alerts + "<p>" + arr_ajax__result["values"]["alerts_arr"][i]["message"] + `<br><button class="currency_btn" onclick="change_url('acc_sec_question.php');">Proceed...</button></p>`;
-							}
-						break;
-						case "payout_needs_confirmation": 
-							var s = "<p>" + arr_ajax__result["values"]["alerts_arr"][i]["message"] + `<br><button class="currency_btn" onclick="change_url('exchange.html');">Confirm...</button></p>`;
-							if ( Number(arr_ajax__result["values"]["alerts_arr"][i]["show_as_popup"]) )
-								pop_up_message = s;
-							alerts = alerts + s;
-						break;
-						default:
-						alerts = alerts + arr_ajax__result["values"]["alerts_arr"][i]["message"];
-					}
-				}
-				if (alerts.length > 0) {
-					$("#alerts_table").html(alerts);
-					if (typeof this_is_mobi_version != "undefined" && this_is_mobi_version) {
-						$("#widget_box_ALERTS").show();
-					}
-					else {
-						if ( $(window).width() <= 992 ) {
-							show_top_alert("", "alert-warning", string_to_hex(alerts));
-							$("#widget_box_ALERTS").hide();
-						}
-						else {
-							$("#widget_box_ALERTS").show();
-							$("#list_of_alerts").html(alerts);
-							$("#list_of_alerts_box").show();
-							if ( pop_up_message.length > 0 && window.location.href.indexOf("home") >= 0 ) {
-								show_message_box_box("Alert", pop_up_message, "danger");
-							}
-						}
-					}
-				}
-				else
-					$("#widget_box_ALERTS").hide();
-			}
-			else
-				$("#widget_box_ALERTS").hide();
-			save_value_otside("there_is_alert", alerts.length > 0 ? "1" : "0");
-		}, 
-		null, 
-		null,
-		function( ajax__result ){
-			get_list_of_alerts_timer = setTimeout( get_list_of_alerts, 120000 );
-		}
-	);
-}
-
 function perform_logout(url_to_go)
 {
 	if ( typeof Android != 'undefined' ) {
@@ -478,7 +412,8 @@ function perform_logout(url_to_go)
 	}
 	else {
 		save_value_otside("user_id", "");
-		save_value_otside("password_session", "");
+		//save_value_otside("password_session", "");
+		localStorage.removeItem('cb_token');
 		save_value_otside("acc_nickname", "");
         save_value_otside("rank", "");
     	save_value_otside("avatar_number", "");
@@ -489,7 +424,6 @@ function perform_logout(url_to_go)
     	save_value_otside("acc_phone", "");
     	save_value_otside("crypto_currencies", "");
     	save_value_otside("total_in_usd", "");
-
 	}
 	
 	userid = "";
@@ -499,7 +433,6 @@ function perform_logout(url_to_go)
 		url_to_go = "index.html";
 	change_url(url_to_go);
 }
-
 
 if ( typeof BASE_CURRENCY == 'undefined' ) var BASE_CURRENCY = "USD";
 if ( typeof DOLLAR_SIGN == 'undefined' ) var DOLLAR_SIGN = "$";
@@ -658,7 +591,8 @@ function do_login()
 	password_session = "";
 
 	set_cookie("user_id", "");
-	set_cookie("password_session", "");
+	//set_cookie("password_session", "");
+	localStorage.removeItem('cb_token'); 
 	set_cookie("acc_nickname", "");
 	set_cookie("rank", "");
 	set_cookie("avatar_number", "");
@@ -669,32 +603,7 @@ function do_login()
 	set_cookie("acc_phone", "");
 	set_cookie("crypto_currencies", "");
 	set_cookie("total_in_usd", "");
-
-	$("#acc_nickname").html( "" );
-	$("#user_avatar").attr("src", `/image/avatar.png`);
-	$("#user_id").html( "" );
-	alter_css_class(".hidden_when_not_loggedin", "display: none !important;");
-	alter_css_class(".hidden_when_loggedin", "display: block !important");
-
-	show_message_box_box(
-		"", 
-		translate("You need to login to continue"),
-		'no_icon',
-		'', // hex_message
-		'', // close_func
-		'', // close_script_to_run
-		false, // hide_buttons
-		translate('login') + "...", // button_caption
-		false, // hide_bottom_paddings
-		false, // hide_top_paddings,
-		'', // class_to_use,
-		'do_login_confirmed()' // script_to_run_on_ok
-	);
-}
-
-function do_login_confirmed()
-{
-	window.location.replace("/login");
+	location.href = '/login.html';
 }
 
 function load_javascript_code(url)
@@ -909,28 +818,6 @@ function format_unix_timestamp(unixTime, pattern) {
 	return res;
 }
 
-function get_unix_time_next_battle()
-{
-    let now = new Date();
-
-    // Check if it's Friday
-    if (now.getUTCDay() === 5) { // 0 is Sunday, 1 is Monday, ..., 5 is Friday
-        // Move to Monday
-        now.setUTCDate(now.getUTCDate() + 3); // Add 3 days to go from Friday to Monday
-    } else {
-        // Move to tomorrow
-        now.setUTCDate(now.getUTCDate() + 1);
-    }
-    
-    // Set the time to 14:30 UTC
-    now.setUTCHours(14, 30, 0, 0);
-
-    let btl_exchange_starts_at = Math.floor(now.getTime() / 1000);
-    let close_time = Math.round(btl_exchange_starts_at + 60 * 60 * 6.5);
-
-    return [btl_exchange_starts_at, close_time];
-}
-
 function get_count_down(events_time, return_as_array)
 {
 	let d = new Date();
@@ -985,25 +872,6 @@ function scroll_to_top_of_an_item(item_id)
             scroll_to_top_of_an_item(item_id);
         }, 100);
 	}
-}
-
-function format_unix_time_for_btl_room(unixTime) {
-    const date = new Date(unixTime * 1000);
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const month = months[date.getMonth()];
-    const day = date.getDate();
-    const daySuffix = (day) => {
-        if (day % 10 === 1 && day !== 11) return "st";
-        if (day % 10 === 2 && day !== 12) return "nd";
-        if (day % 10 === 3 && day !== 13) return "rd";
-        return "th";
-    }
-    const hours = date.getHours();
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12; // Convert to 12-hour format
-
-    return `${month} ${day}${daySuffix(day)} ${formattedHours}:${minutes}${ampm}`;
 }
 
 function copy_to_clipboard(text_to_copy, success_message, item_id, close_function)
@@ -1204,9 +1072,12 @@ function init_google_translate()
 			data.userid = get_cookie("userid");
 		}
 
-		if (get_cookie("password_session").length > 0) {
-			data.token = get_cookie("password_session");
+		if (typeof localStorage.getItem('cb_token') !== "undefined" && localStorage.getItem('cb_token').length > 0) {
+			data.token = localStorage.getItem('cb_token');
 		}
+		//if (get_cookie("password_session").length > 0) {
+		//	data.token = get_cookie("password_session");
+		//}
 		else
 		if (get_cookie("password").length > 0) {
 			data.token = get_cookie("password");

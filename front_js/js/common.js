@@ -1,20 +1,77 @@
 // Utilidades compartidas del frontend
 const API = {
-  token(){ return localStorage.getItem('cb_token'); },
-  adminToken(){ return localStorage.getItem('cb_admin_token'); },
-  async call(method, url, body, token){
-    const headers = { 'Content-Type':'application/json' };
-    const t = token || this.token();
-    if (t) headers['Authorization'] = 'Bearer ' + t;
-    const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
-    let data = {};
-    try { data = await res.json(); } catch(e){}
-    if (!res.ok) throw new Error(data.error || ('Error ' + res.status));
-    return data;
-  },
-  get(u,t){ return this.call('GET', u, null, t); },
-  post(u,b,t){ return this.call('POST', u, b, t); },
-  del(u,t){ return this.call('DELETE', u, null, t); },
+	token(){ 
+		return localStorage.getItem('cb_token'); 
+	},
+	adminToken(){ 
+		return localStorage.getItem('cb_admin_token'); 
+	},
+	async call(method, url, body, token){
+		//const headers = {};
+		let session_token = token || this.token();
+
+		let request_data = body ? body : {};
+		
+		if ( !session_token ) {
+			const res = await fetch(
+				SITE_DOMAIN + "api/api_token_seed", 
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/x-www-form-urlencoded",
+					},
+					body: undefined,
+				}
+			);
+			try { 
+				let session_token_data = await res.json();
+				session_token = md5( session_token_data.values + Math.floor(Date.now() / 1000 / 60) );
+			} 
+			catch(e){
+				console.error(e);
+			}
+		}
+		if ( session_token ) {
+			request_data.userid = get_cookie("user_id");
+			request_data.token = session_token;
+			const res = await fetch(SITE_DOMAIN + url, 
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/x-www-form-urlencoded",
+					},
+					body: new URLSearchParams(request_data),
+				}
+			);
+			let res_ok = res.ok;
+			let data = {};
+			try { 
+				data = await res.json(); 
+				if ( ! data.success && data.error_code == 2 ) {
+					res_ok = false;
+				}
+			} 
+			catch(e){
+				console.error(e);
+			}
+			if ( !res_ok ) {
+				throw new Error(data.error || ('Error autoriz ' + res.status));
+			}
+			return data;
+		}
+		else {
+			throw new Error('Error: no token');
+		}
+	},
+	get(u,t){ 
+		return this.call('GET', u, null, t); 
+	},
+	post(u,b,t){ 
+		return this.call('POST', u, b, t); 
+	},
+	del(u,t){ 
+		return this.call('DELETE', u, null, t); 
+	},
 };
 
 /* ===== Iconografía de línea, minimalista y de un solo tono ===== */
@@ -170,8 +227,19 @@ function timeAgo(iso){
 function fmtDate(iso){
   return new Date(iso).toLocaleDateString('es-MX', { day:'2-digit', month:'long', year:'numeric' });
 }
-function requireAuth(){ if(!API.token()){ location.href='login.html'; } }
-function logout(){ API.post('/api/logout').catch(()=>{}).finally(()=>{ localStorage.removeItem('cb_token'); location.href='index.html'; }); }
+function requireAuth()
+{ 
+  if(!API.token()){ 
+    location.href='login.html'; 
+  } 
+}
+function logout()
+{
+  //API.post('/api/logout').catch(()=>{}).finally(()=>{ 
+    localStorage.removeItem('cb_token'); 
+    location.href='index.html'; 
+  //}); 
+}
 
 // Aplica emojis Apple e íconos de línea automáticamente al cargar cada página
 document.addEventListener('DOMContentLoaded', ()=>{ applyAppleEmoji(); paintIcons(); });

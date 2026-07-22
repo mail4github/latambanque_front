@@ -1,0 +1,250 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Inicio — Banco Latinoamericano</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="phone">
+  <div class="app-header">
+	<div style="display:flex;align-items:center;justify-content:space-between">
+	  <div class="brand"><div class="coin" data-icon="globe"></div><div class="name" style="color:#fff">Banco <b style="color:var(--gold)">Latinoamericano</b></div></div>
+	  <button class="support-top" onclick="openChat()">💬 Soporte<span id="supportBadge" class="sup-badge" style="display:none"></span></button>
+	</div>
+	<p id="hello" style="margin-top:14px;opacity:.9;font-size:15px;font-weight:600"></p>
+  </div>
+
+  <!-- ============ VISTA: INICIO ============ -->
+  <section class="view active" id="view-home">
+	<div class="balance-card">
+	  <div class="balance-label">Saldo total disponible</div>
+	  <div class="balance-big" id="totalBalance">$0.00</div>
+	  <div class="balance-sub">Equivalente en USD · <span class="live-dot"></span><span id="liveTxt">tasas reales</span></div>
+
+	  <div class="quick">
+		<div class="q" onclick="openCreate()"><div class="ic" data-icon="plus"></div><span>Nueva cuenta</span></div>
+		<div class="q" onclick="openReceive()"><div class="ic" data-icon="receive"></div><span>Recibir</span></div>
+		<div class="q" onclick="openSend()"><div class="ic" data-icon="send"></div><span>Enviar</span></div>
+		<div class="q" onclick="showView('activity')"><div class="ic" data-icon="activity"></div><span>Actividad</span></div>
+	  </div>
+	</div>
+
+	<div class="section-title">
+	  <h3>Tus cuentas</h3>
+	  <a style="color:var(--orange-d);font-weight:700;cursor:pointer;font-size:14px" onclick="openCreate()">+ Abrir cuenta</a>
+	</div>
+	<div id="accounts"></div>
+	<div class="footer-note">Banco Latinoamericano · Institución internacional desde 1990 · Registrado ante FinCEN como Money Services Business (MSB) · Cumplimiento de la Bank Secrecy Act y políticas AML/KYC en toda Latinoamérica · Tasas de cambio reales del día.</div>
+	<p id="geoline" style="text-align:center;font-size:12px;color:var(--gray);padding:0 20px 18px;min-height:14px"></p>
+  </section>
+
+  <!-- ============ VISTA: ACTIVIDAD ============ -->
+  <section class="view" id="view-activity">
+	<div class="section-title" style="padding-bottom:0"><h3>Actividad</h3></div>
+	<div class="segmented">
+	  <button id="tab-mov" class="active" onclick="showTab('mov')">Movimientos</button>
+	  <button id="tab-not" onclick="showTab('not')">Notificaciones <span id="notCount"></span></button>
+	</div>
+	<div id="pane-mov"><div id="wdList"></div><div id="txList"></div></div>
+	<div id="pane-not" style="display:none"><div id="notList"></div></div>
+  </section>
+
+  <!-- ============ VISTA: PERFIL ============ -->
+  <section class="view" id="view-profile">
+	<div class="profile-head">
+	  <div class="avatar" id="avatar">BL</div>
+	  <div class="profile-name" id="pName">—</div>
+	  <div class="profile-sub" id="pSub">Cliente Banco Latinoamericano</div>
+	</div>
+
+	<div class="section-label">Datos personales</div>
+	<div class="info-card" id="personalCard"></div>
+
+	<div class="section-label">Tu cuenta principal (BTC)</div>
+	<div class="info-card" id="btcCard"></div>
+
+	<div class="section-label">Todas tus cuentas</div>
+	<div class="info-card" id="allAccountsCard"></div>
+
+	<div class="section-label">Verificación de identidad</div>
+	<div class="info-card" style="padding:14px">
+	  <p class="muted" style="font-size:12px;margin-bottom:12px;line-height:1.4">
+		Sube fotos claras y legibles. Tus documentos se usan únicamente para verificar tu identidad (KYC).
+	  </p>
+	  <div class="doc-grid" id="docGrid"></div>
+	</div>
+
+	<div class="section-label">Ayuda</div>
+	<div class="info-card" style="overflow:hidden">
+	  <div class="info-row" style="cursor:pointer" onclick="openChat()">
+		<div class="flex" style="gap:10px"><span style="font-size:20px">💬</span>
+		  <div><div class="v" style="text-align:left">Chat con soporte</div>
+		  <div class="k" style="font-size:12px">Habla con un asesor en vivo</div></div></div>
+		<span style="color:var(--gray)">›</span>
+	  </div>
+	</div>
+
+	<div style="padding:6px 16px 24px">
+	  <button class="btn btn-outline" style="border-color:var(--red);color:var(--red)" onclick="logout()">Cerrar sesión</button>
+	</div>
+  </section>
+
+  <!-- ============ VISTA: COTIZACIONES ============ -->
+  <section class="view" id="view-market">
+	<div class="section-title"><h3>Cotizaciones</h3></div>
+	<div style="padding:0 16px">
+	  <div class="field" style="margin-bottom:6px">
+		<label>Selecciona un activo</label>
+		<select id="mkAsset" onchange="loadMarket()"></select>
+	  </div>
+	</div>
+	<div id="mkBody"></div>
+	<div style="padding:0 16px">
+	  <div class="range-tabs" id="mkRange">
+		<button data-d="1" onclick="setRange(1)">24H</button>
+		<button data-d="7" class="active" onclick="setRange(7)">7D</button>
+		<button data-d="30" onclick="setRange(30)">30D</button>
+		<button data-d="90" onclick="setRange(90)">90D</button>
+	  </div>
+	  <div class="footer-note">Cotizaciones de referencia en tiempo real · Cripto: CoinGecko · Divisas: BCE / Frankfurter · Solo informativo.</div>
+	</div>
+  </section>
+
+  <!-- ============ NAV INFERIOR ============ -->
+  <div class="bottomnav">
+	<a id="nav-home" class="active" onclick="showView('home')"><span class="ic" data-icon="home"></span>Inicio</a>
+	<a id="nav-activity" onclick="showView('activity')"><span class="ic" data-icon="list"></span>Actividad</a>
+	<a id="nav-market" onclick="showView('market')"><span class="ic" data-icon="market"></span>Mercado</a>
+	<a id="nav-profile" onclick="showView('profile')"><span class="ic" data-icon="profile"></span>Perfil</a>
+  </div>
+</div>
+
+<!-- Modal crear cuenta -->
+<div class="modal-bg" id="createModal">
+  <div class="modal">
+	<h3>Abrir nueva cuenta</h3>
+	<p class="muted" style="font-size:13px;margin-bottom:14px">Elige un criptoactivo o una moneda nacional. Empieza con saldo en cero.</p>
+	<div id="err2" class="error"></div>
+	<div style="font-weight:700;color:var(--navy);margin:6px 0 8px">Criptoactivos</div>
+	<div class="grid-coins" id="cryptoOpts"></div>
+	<div style="font-weight:700;color:var(--navy);margin:18px 0 8px">Monedas nacionales</div>
+	<div class="grid-coins" id="fiatOpts"></div>
+	<div style="height:16px"></div>
+	<button class="btn btn-outline" onclick="closeCreate()">Cerrar</button>
+  </div>
+</div>
+
+<!-- Modal recibir -->
+<div class="modal-bg" id="receiveModal">
+  <div class="modal">
+	<h3 style="display:flex;align-items:center;gap:8px"><span data-icon="receive" data-icon-size="20"></span>Recibir fondos</h3>
+	<p class="muted" style="font-size:13px;margin-bottom:14px">Comparte el número de tu cuenta para recibir un depósito.</p>
+	<div id="receiveList"></div>
+	<div style="height:10px"></div>
+	<button class="btn btn-outline" onclick="closeModal('receiveModal')">Cerrar</button>
+  </div>
+</div>
+
+<!-- Modal enviar / solicitud de retiro -->
+<div class="modal-bg" id="sendModal">
+  <div class="modal">
+	<h3 style="display:flex;align-items:center;gap:8px"><span data-icon="send" data-icon-size="20"></span>Solicitud de retiro</h3>
+	<div class="steps-dots"><i id="d1" class="on"></i><i id="d2"></i><i id="d3"></i><i id="d4"></i></div>
+	<div id="errSend" class="error"></div>
+
+	<!-- Paso 1: origen + monto -->
+	<div class="wd-step active" id="wd1">
+	  <div class="field"><label>Cuenta de origen</label><select id="wdAccount"></select></div>
+	  <div class="field"><label>Monto a retirar</label><input id="wdAmount" type="number" step="any" placeholder="0.00">
+		<div class="hint" id="wdBalHint"></div></div>
+	  <div class="field"><label>Concepto (opcional)</label><input id="wdConcept" placeholder="Motivo del retiro"></div>
+	  <button class="btn btn-primary" onclick="wdNext(1)">Continuar</button>
+	</div>
+
+	<!-- Paso 2: destino (banco por país o billetera digital) -->
+	<div class="wd-step" id="wd2">
+	  <div class="segmented" style="margin:0 0 14px">
+		<button id="mode-country" class="active" onclick="setWdMode('country')">Banco por país</button>
+		<button id="mode-wallet" onclick="setWdMode('wallet')">Billetera digital</button>
+	  </div>
+	  <div id="wdCountryWrap">
+		<div class="field"><label>País destino</label><select id="wdCountry" onchange="renderBanks()"></select></div>
+		<label style="font-size:13px;font-weight:600;color:var(--gray)">Banco receptor</label>
+		<div class="bank-list" id="bankList"></div>
+	  </div>
+	  <div id="wdWalletWrap" style="display:none">
+		<label style="font-size:13px;font-weight:600;color:var(--gray)">Selecciona la billetera</label>
+		<div class="bank-list" id="walletList"></div>
+	  </div>
+	  <div style="height:14px"></div>
+	  <div class="row">
+		<button class="btn btn-outline" onclick="wdGo(1)">Atrás</button>
+		<button class="btn btn-primary" onclick="wdNext(2)">Continuar</button>
+	  </div>
+	</div>
+
+	<!-- Paso 3: datos del beneficiario -->
+	<div class="wd-step" id="wd3">
+	  <div class="field"><label>Nombre completo del titular</label><input id="wdBenName" placeholder="Nombre del beneficiario"></div>
+	  <div class="field"><label id="wdIdLabel">Documento</label><input id="wdBenId" placeholder=""></div>
+	  <div class="field"><label id="wdAccLabel">Número de cuenta</label><input id="wdAccNum" placeholder=""><div class="hint" id="wdAccHint"></div></div>
+	  <div class="field" id="wdExtraWrap" style="display:none"><label id="wdExtraLabel"></label><input id="wdExtra" placeholder=""></div>
+	  <div class="row">
+		<button class="btn btn-outline" onclick="wdGo(2)">Atrás</button>
+		<button class="btn btn-primary" onclick="wdNext(3)">Revisar</button>
+	  </div>
+	</div>
+
+	<!-- Paso 4: revisión -->
+	<div class="wd-step" id="wd4">
+	  <div class="wd-summary" id="wdSummary"></div>
+	  <p class="hint" style="margin-bottom:12px">Al confirmar se generará una solicitud de retiro que será revisada por el área de cumplimiento de Banco Latinoamericano. El tiempo de verificación generalmente es de <b>3 a 5 minutos</b>.</p>
+	  <div class="row">
+		<button class="btn btn-outline" onclick="wdGo(3)">Atrás</button>
+		<button class="btn btn-primary" id="wdSubmit" onclick="submitWithdrawal()">Confirmar retiro</button>
+	  </div>
+	</div>
+
+	<div style="height:12px"></div>
+	<button class="btn btn-ghost" onclick="closeModal('sendModal')">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal chat de soporte -->
+<div class="modal-bg" id="chatModal">
+  <div class="modal chat-modal">
+	<div class="chat-head">
+	  <div class="flex" style="gap:10px">
+		<div class="chat-avatar" data-icon="globe"></div>
+		<div><h3 style="margin:0;font-size:16px">Soporte · Banco Latinoamericano</h3>
+		<span class="muted" style="font-size:12px">En línea · respondemos en minutos</span></div>
+	  </div>
+	  <button class="chat-x" onclick="closeChat()">✕</button>
+	</div>
+	<div class="chat-body" id="chatBody"></div>
+	<div class="chat-input">
+	  <input id="chatText" placeholder="Escribe tu mensaje…" autocomplete="off">
+	  <button class="btn btn-primary btn-sm" id="chatSend" onclick="sendChat()">Enviar</button>
+	</div>
+  </div>
+</div>
+
+<script src="/js/debug.js"></script>
+<script src="/locale/locale.js"></script>
+<script src="/js/jquery-3.5.1.min.js"></script>
+<script src="/js/bootstrap-4.5.3/js/bootstrap.min.js"></script>
+<script src="/js/pycommon.js"></script>
+<script src="/tmp/server_constants.js"></script>
+<script src="/js/universal.functions.js"></script>
+<script src="/js/universal.constants.js"></script>
+<script src="/js/QRCode.js"></script>
+
+<script src="js/common.js"></script>
+<script src="js/countries.js"></script>
+<script src="/js/app.html.js"></script>
+
+</body>
+</html>

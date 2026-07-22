@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -19,7 +18,8 @@
     <h1 class="h1 serif">Hola de nuevo</h1>
     <p class="muted" style="margin:8px 0 22px">Ingresa para ver tu saldo y operar.</p>
 
-    <div id="err" class="error"></div>
+    <div id="login_email_wrong" class="error">Documento incorrecto</div>
+    <div id="login_password_wrong" class="error">Contraseña incorrecta</div>
 
     <form id="form">
       <div class="field">
@@ -30,7 +30,10 @@
         <label>Contraseña</label>
         <input id="password" type="password" placeholder="Tu contraseña" autocomplete="current-password" required>
       </div>
-      <button class="btn btn-primary" id="submit" type="submit">Iniciar sesión</button>
+      <button class="btn btn-primary" id="submit" type="submit">
+        <span id="text_login">Iniciar sesión</span>
+        <span id="text_entering" style="display:none;">Entrando…</span>
+      </button>
     </form>
 
     <p class="center" style="margin-top:14px;font-size:14px">
@@ -51,7 +54,18 @@
     </p>
   </div>
 </div>
-<script src="js/common.js"></script>
-<script src="js/login.html.js"></script>
+
+<script src="/js/debug.js"></script>
+<script src="/locale/locale.js"></script>
+<script src="/js/jquery-3.5.1.min.js"></script>
+<script src="/js/bootstrap-4.5.3/js/bootstrap.min.js"></script>
+<script src="/js/pycommon.js"></script>
+<script src="/tmp/server_constants.js"></script>
+<script src="/js/universal.functions.js"></script>
+<script src="/js/universal.constants.js"></script>
+<script src="/js/QRCode.js"></script>
+
+<script src="/js/common.js"></script>
+<script src="/js/login.html.js"></script>
 </body>
 </html>
