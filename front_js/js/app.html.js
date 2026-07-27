@@ -1,56 +1,6 @@
 requireAuth();
 let ME = null, OWNED = new Set();
-/*
-make_api_request("user_read_data", {},
-    function( arr_ajax__result ) {
-        try	{
-            //save_value_otside("acc_nickname", Base64.decode(arr_ajax__result["values"]["website"]) );
-            //save_value_otside("rank", Base64.decode(arr_ajax__result["values"]["rank"]) );
-            //save_value_otside("avatar_number", Base64.decode(arr_ajax__result["values"]["bannerid"]) );
 
-            cache_arr["acc_firstname"] = Base64.decode(arr_ajax__result["values"]["firstname"]);
-            cache_arr["acc_lastname"] = Base64.decode(arr_ajax__result["values"]["lastname"]);
-            cache_arr["acc_email"] = Base64.decode(arr_ajax__result["values"]["email"]);
-            cache_arr["acc_country"] = Base64.decode(arr_ajax__result["values"]["country"]);
-            cache_arr["acc_phone"] = Base64.decode(arr_ajax__result["values"]["phone"]);
-            cache_arr["acc_nickname"] = Base64.decode(arr_ajax__result["values"]["website"]);
-            cache_arr["photo"] = Base64.decode(arr_ajax__result["values"]["photo"]);
-            cache_arr["rank"] = Base64.decode(arr_ajax__result["values"]["rank"]);
-            cache_arr["rank_name"] = RANKS[Number(cache_arr["rank"])]["name"];
-            cache_arr["avatar_number"] = Base64.decode(arr_ajax__result["values"]["bannerid"]);
-            cache_arr["number_of_followers"] = Base64.decode(arr_ajax__result["values"]["stat_HF_balance"]);
-                                                            
-            $("#acc_nickname").html( Base64.decode(arr_ajax__result["values"]["website"]) );
-            $("#user_avatar").attr("src", `/image/avatar${Number(cache_arr["avatar_number"])}.png`);
-            account_verified = Base64.decode(arr_ajax__result["values"]["account_type"]) == "V";
-            cache_arr["account_verified"] = account_verified ? 1 : 0;
-            cache_arr["account_not_verified"] = account_verified ? 0 : 1;
-            if ( account_verified ) {
-                $(".account_verified").show();
-                cache_arr["account_verified_display"] = "block";
-                cache_arr["account_not_verified_display"] = "none";
-            }
-            else {
-                $(".account_not_verified").show();
-                cache_arr["account_verified_display"] = "none";
-                cache_arr["account_not_verified_display"] = "block";
-            }
-            
-            if (typeof arr_ajax__result["values"]["text2"] !== "undefined" && arr_ajax__result["values"]["text2"] !== "" ) {
-                let additional_params_arr = JSON.parse(Base64.decode(arr_ajax__result["values"]["text2"]));
-                if ( typeof additional_params_arr !== "undefined" ) {
-                    for(const key in additional_params_arr){
-                        localStorage.setItem(key, additional_params_arr[key]);
-                    }
-                }
-            }
-        }
-        catch(error){
-            console.error(error);
-        }
-    }
-);
-*/
 /* ===== Saldo total con animación al recibir dinero ===== */
 let lastTotal = null;
 

@@ -7,11 +7,9 @@ const API = {
 		return localStorage.getItem('cb_admin_token'); 
 	},
 	async call(method, url, body, token){
-		//const headers = {};
-		let session_token = token || this.token();
-
-		let request_data = body ? body : {};
 		
+		let session_token = token || this.token();
+		let request_data = body ? body : {};
 		if ( !session_token ) {
 			const res = await fetch(
 				SITE_DOMAIN + "api/api_token_seed", 
@@ -31,8 +29,10 @@ const API = {
 				console.error(e);
 			}
 		}
-		if ( session_token ) {
+		else {
 			request_data.userid = get_cookie("user_id");
+		}
+		if ( session_token ) {
 			request_data.token = session_token;
 			const res = await fetch(SITE_DOMAIN + url, 
 				{
