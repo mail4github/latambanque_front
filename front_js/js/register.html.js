@@ -26,14 +26,29 @@ document.getElementById('form').addEventListener('submit', async (e)=>{
             parentid: "",
             user_domain: get_domain_name(SITE_DOMAIN),
             send_email: "0",
-            nickname: Base64.encode(document.getElementById('email').value.trim()),
-            phone: "",
-            avatar_number: document.getElementById('docType').value,
+			do_login: "yes"
+            //nickname: Base64.encode(document.getElementById('email').value.trim()),
+            //phone: "",
+            //avatar_number: document.getElementById('docType').value,
 		});
 		if (data.values.length == 0) {
-			//localStorage.setItem('cb_token', data.token);
-			//location.href = 'app.html';
-			location.href = 'login.html';
+
+			const pairs = data.message.split('&');
+			// Map each pair to an array of [key, value]
+			const res_arr = {};
+			pairs.map(pair => {
+				const [key, value] = pair.split('=');
+				res_arr[decodeURIComponent(key)] = decodeURIComponent(value);
+			});
+						
+			if ( typeof res_arr.hash !== "undefined" && res_arr.hash.length) {
+				localStorage.setItem('cb_token', res_arr.hash);
+				set_cookie("user_id", res_arr.userid);
+				location.href = 'app.html';
+			}
+			else {			
+				location.href = 'login.html';
+			}
 		}
 		else {
 			throw new Error(data["values"]);
