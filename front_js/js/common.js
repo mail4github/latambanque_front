@@ -138,6 +138,7 @@ function emojiToFragment(text){
 }
 
 function applyAppleEmoji(root){
+  /*
   let testRx;
   try { testRx = /\p{RGI_Emoji}/v; } catch(e){ return; } // navegador sin soporte: no hacemos nada
   const base = root || document.body;
@@ -154,7 +155,7 @@ function applyAppleEmoji(root){
   for (const n of nodes){
     const frag = emojiToFragment(n.nodeValue);
     n.parentNode.replaceChild(frag, n);
-  }
+  }*/
 }
 
 /* ===== Iconos de monedas ===== */
