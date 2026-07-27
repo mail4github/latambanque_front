@@ -121,7 +121,7 @@ function appleEmojiUrl(e){ return APPLE_EMOJI_BASE + emojiCodepoints(e) + '.png'
 
 function emojiToFragment(text){
   const frag = document.createDocumentFragment();
-  let last = 0, m;
+  /*let last = 0, m;
   const rx = /\p{RGI_Emoji}/gv;
   while ((m = rx.exec(text))){
     if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
@@ -133,7 +133,7 @@ function emojiToFragment(text){
     frag.appendChild(img);
     last = m.index + m[0].length;
   }
-  if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+  if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));*/
   return frag;
 }
 

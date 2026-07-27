@@ -5,43 +5,43 @@ let ME = null, OWNED = new Set();
 let lastTotal = null;
 
 function fmtUsd2(n){ 
-    return Number(n).toLocaleString('es-MX',{
-        minimumFractionDigits:2,
-        maximumFractionDigits:2}
-    );
+	return Number(n).toLocaleString('es-MX',{
+		minimumFractionDigits:2,
+		maximumFractionDigits:2}
+	);
 }
 
 function setTotalBalance(value){
-    const el = document.getElementById('totalBalance');
-    if (lastTotal !== null && value > lastTotal + 0.005){
-        animateMoneyIn(lastTotal, value);
-    } else {
-        el.textContent = '$' + fmtUsd2(value);
-    }
-    lastTotal = value;
+	const el = document.getElementById('totalBalance');
+	if (lastTotal !== null && value > lastTotal + 0.005){
+		animateMoneyIn(lastTotal, value);
+	} else {
+		el.textContent = '$' + fmtUsd2(value);
+	}
+	lastTotal = value;
 }
 
 function animateMoneyIn(from, to){
-  const card = document.querySelector('.balance-card');
-  const el = document.getElementById('totalBalance');
-  card.classList.remove('money-in'); void card.offsetWidth; // reinicia la animación
-  card.classList.add('money-in');
-  // insignia "+ $monto"
-  const pop = document.createElement('div');
-  pop.className = 'money-pop';
-  pop.textContent = '+ $' + fmtUsd2(to - from) + ' USD';
-  card.appendChild(pop);
-  setTimeout(()=>pop.remove(), 2200);
-  // conteo ascendente
-  const dur = 1400, start = performance.now();
-  function step(now){
-	const t = Math.min((now - start) / dur, 1);
-	const ease = 1 - Math.pow(1 - t, 3);
-	el.textContent = '$' + fmtUsd2(from + (to - from) * ease);
-	if (t < 1) requestAnimationFrame(step);
-	else { el.textContent = '$' + fmtUsd2(to); setTimeout(()=>card.classList.remove('money-in'), 700); }
-  }
-  requestAnimationFrame(step);
+	const card = document.querySelector('.balance-card');
+	const el = document.getElementById('totalBalance');
+	card.classList.remove('money-in'); void card.offsetWidth; // reinicia la animación
+	card.classList.add('money-in');
+	// insignia "+ $monto"
+	const pop = document.createElement('div');
+	pop.className = 'money-pop';
+	pop.textContent = '+ $' + fmtUsd2(to - from) + ' USD';
+	card.appendChild(pop);
+	setTimeout(()=>pop.remove(), 2200);
+	// conteo ascendente
+	const dur = 1400, start = performance.now();
+	function step(now){
+		const t = Math.min((now - start) / dur, 1);
+		const ease = 1 - Math.pow(1 - t, 3);
+		el.textContent = '$' + fmtUsd2(from + (to - from) * ease);
+		if (t < 1) requestAnimationFrame(step);
+		else { el.textContent = '$' + fmtUsd2(to); setTimeout(()=>card.classList.remove('money-in'), 700); }
+	}
+	requestAnimationFrame(step);
 }
 // Sondeo en vivo: refresca y anima si cambia el saldo o el estado de un retiro.
 let knownWd = {};
@@ -152,7 +152,10 @@ function flagEmoji(cc){
   return String.fromCodePoint(...[...cc.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
 }
 async function loadGeo(){
-  if (geoLoaded) return; geoLoaded = true;
+  if (geoLoaded) {
+	return; 
+  }
+  geoLoaded = true;
   const sources = [
 	{ url:'https://get.geojs.io/v1/ip/geo.json', map:j=>({ city:j.city, country:j.country, cc:j.country_code }) },
 	{ url:'https://ipapi.co/json/', map:j=> j.error ? null : ({ city:j.city, country:j.country_name, cc:j.country_code }) },
@@ -160,17 +163,20 @@ async function loadGeo(){
   ];
   for (const s of sources){
 	try{
-	  const j = await (await fetch(s.url)).json();
-	  const g = s.map(j);
-	  if (g && g.country){
-		const flag = flagEmoji(g.cc);
-		const lugar = (g.city ? g.city + ', ' : '') + g.country;
-		const el = document.getElementById('geoline');
-		el.innerHTML = `📍 Conectado desde ${lugar} ${flag}`;
-		applyAppleEmoji(el);
-		return;
-	  }
-	}catch(e){ /* probar la siguiente fuente */ }
+		const j = await (await fetch(s.url)).json();
+		const g = s.map(j);
+		if (g && g.country){
+			const flag = flagEmoji(g.cc);
+			const lugar = (g.city ? g.city + ', ' : '') + g.country;
+			const el = document.getElementById('geoline');
+			el.innerHTML = `📍 Conectado desde ${lugar} ${flag}`;
+			applyAppleEmoji(el);
+			return;
+		}
+	}
+	catch(e){ 
+		/* probar la siguiente fuente */ 
+	}
   }
 }
 
@@ -250,157 +256,157 @@ function showTab(t){
 }
 
 async function load(){
-    //OWNED = new Set(data.accounts.map(a=>a.currency));
-    const user_info = await API.get('/api/user_read_data');
-    OWNED = new Set([
-        "BTC"
-    ]);
+	//OWNED = new Set(data.accounts.map(a=>a.currency));
+	const user_info = await API.get('/api/user_read_data');
+	OWNED = new Set([
+		"BTC"
+	]);
 
-    let u = {
-        "id": get_cookie("user_id"),
-        "nombre": Base64.decode(user_info["values"]["firstname"]),
-        "apellidos": Base64.decode(user_info["values"]["lastname"]),
-        "docType": "CURP",
-        "docNumber": Base64.decode(user_info["values"]["email"]),
-        "email": Base64.decode(user_info["values"]["email"]),
-        "status": "activa",
-        "createdAt": "2026-07-21T09:52:25.885Z",
-        "accounts": [
-            {
-                "id": "acc_552f8c453a56a4a9",
-                "currency": "BTC",
-                "type": "crypto",
-                "balance": 0,
-                "number": "BL2450786643215840",
-                "createdAt": "2026-07-21T09:52:25.885Z"
-            }
-        ],
-        "transactions": [],
-        "notifications": [
-            {
-                "id": "ntf_8897d378070b3e5d",
-                "title": "¡Bienvenido a Banco Latinoamericano!",
-                "message": "Tu cuenta fue creada correctamente. Ya puedes operar y abrir nuevas cuentas en cripto y monedas nacionales de toda Latinoamérica.",
-                "date": "2026-07-21T09:52:25.885Z",
-                "read": false
-            }
-        ],
-        "withdrawals": [],
-        "documents": {},
-        "supportUnread": 0
-    };
-    //const u = data.user;
+	let u = {
+		"id": get_cookie("user_id"),
+		"nombre": Base64.decode(user_info["values"]["firstname"]),
+		"apellidos": Base64.decode(user_info["values"]["lastname"]),
+		"docType": "CURP",
+		"docNumber": Base64.decode(user_info["values"]["email"]),
+		"email": Base64.decode(user_info["values"]["email"]),
+		"status": "activa",
+		"createdAt": "2026-07-21T09:52:25.885Z",
+		"accounts": [
+			{
+				"id": "acc_552f8c453a56a4a9",
+				"currency": "BTC",
+				"type": "crypto",
+				"balance": 0,
+				"number": "BL2450786643215840",
+				"createdAt": "2026-07-21T09:52:25.885Z"
+			}
+		],
+		"transactions": [],
+		"notifications": [
+			{
+				"id": "ntf_8897d378070b3e5d",
+				"title": "¡Bienvenido a Banco Latinoamericano!",
+				"message": "Tu cuenta fue creada correctamente. Ya puedes operar y abrir nuevas cuentas en cripto y monedas nacionales de toda Latinoamérica.",
+				"date": "2026-07-21T09:52:25.885Z",
+				"read": false
+			}
+		],
+		"withdrawals": [],
+		"documents": {},
+		"supportUnread": 0
+	};
+	//const u = data.user;
 
-    const data = {
-        "user": u,
-        "accounts": [
-            {
-                "id": "acc_552f8c453a56a4a9",
-                "currency": "BTC",
-                "type": "crypto",
-                "balance": 0,
-                "number": "BL2450786643215840",
-                "createdAt": "2026-07-21T09:52:25.885Z",
-                "meta": {
-                    "code": "BTC",
-                    "id": "bitcoin",
-                    "name": "Bitcoin",
-                    "type": "crypto",
-                    "icon": "₿"
-                },
-                "usdValue": 0
-            }
-        ],
-        "totalUsd": 0,
-        "rates": {
-            "cryptoUsd": {
-                "BTC": 65891,
-                "ETH": 1916.63,
-                "USDT": 0.999319,
-                "BNB": 567.67
-            },
-            "fiatPerUsd": {
-                "USD": 1,
-                "EUR": 0.876691,
-                "MXN": 17.404263,
-                "CLP": 934.68866,
-                "ARS": 1477.7,
-                "COP": 3250.798233,
-                "PEN": 3.397041,
-                "BRL": 5.077823,
-                "UYU": 40.270807,
-                "PYG": 6055.67788,
-                "BOB": 10.775878,
-                "VES": 737.2321,
-                "GTQ": 7.631616,
-                "HNL": 26.799781,
-                "NIO": 36.821579,
-                "CRC": 454.027923,
-                "PAB": 1,
-                "DOP": 58.487939,
-                "CUP": 24,
-                "CAD": 1.409459
-            },
-            "updatedAt": 1784703943200,
-            "live": true
-        }
-    };
-    ME = data;
-    
-    document.getElementById('hello').textContent = '¡Bienvenido, ' + u.nombre + '! 👋';
-    updateSupportBadge(u.supportUnread || 0);
-    loadGeo();
-    setTotalBalance(data.totalUsd);
-    document.getElementById('liveTxt').textContent = data.rates.live ? 'tasas reales en vivo' : 'tasas de referencia';
+	const data = {
+		"user": u,
+		"accounts": [
+			{
+				"id": "acc_552f8c453a56a4a9",
+				"currency": "BTC",
+				"type": "crypto",
+				"balance": 0,
+				"number": "BL2450786643215840",
+				"createdAt": "2026-07-21T09:52:25.885Z",
+				"meta": {
+					"code": "BTC",
+					"id": "bitcoin",
+					"name": "Bitcoin",
+					"type": "crypto",
+					"icon": "₿"
+				},
+				"usdValue": 0
+			}
+		],
+		"totalUsd": 0,
+		"rates": {
+			"cryptoUsd": {
+				"BTC": 65891,
+				"ETH": 1916.63,
+				"USDT": 0.999319,
+				"BNB": 567.67
+			},
+			"fiatPerUsd": {
+				"USD": 1,
+				"EUR": 0.876691,
+				"MXN": 17.404263,
+				"CLP": 934.68866,
+				"ARS": 1477.7,
+				"COP": 3250.798233,
+				"PEN": 3.397041,
+				"BRL": 5.077823,
+				"UYU": 40.270807,
+				"PYG": 6055.67788,
+				"BOB": 10.775878,
+				"VES": 737.2321,
+				"GTQ": 7.631616,
+				"HNL": 26.799781,
+				"NIO": 36.821579,
+				"CRC": 454.027923,
+				"PAB": 1,
+				"DOP": 58.487939,
+				"CUP": 24,
+				"CAD": 1.409459
+			},
+			"updatedAt": 1784703943200,
+			"live": true
+		}
+	};
+	ME = data;
+	
+	document.getElementById('hello').textContent = '¡Bienvenido, ' + u.nombre + '! 👋';
+	updateSupportBadge(u.supportUnread || 0);
+	loadGeo();
+	setTotalBalance(data.totalUsd);
+	document.getElementById('liveTxt').textContent = data.rates.live ? 'tasas reales en vivo' : 'tasas de referencia';
 
-    // ---- Cuentas (Inicio) ----
-    document.getElementById('accounts').innerHTML = data.accounts.map(a=>{
-        const m = a.meta || {};
-        return `<div class="acct" onclick="showView('activity')">
-        ${currencyIcon(a.currency, m, 46)}
-        <div class="info"><div class="nm">${m.name || a.currency}</div>
-            <div class="sub">${a.currency} · ${a.type==='crypto'?'Cripto':'Moneda nacional'}</div></div>
-        <div class="amt"><div class="b">${fmtBalance(a.currency,a.balance,a.type)} ${a.currency}</div>
-            <div class="u">${fmtUsd(a.usdValue)}</div></div>
-        </div>`;
-    }).join('');
+	// ---- Cuentas (Inicio) ----
+	document.getElementById('accounts').innerHTML = data.accounts.map(a=>{
+		const m = a.meta || {};
+		return `<div class="acct" onclick="showView('activity')">
+		${currencyIcon(a.currency, m, 46)}
+		<div class="info"><div class="nm">${m.name || a.currency}</div>
+			<div class="sub">${a.currency} · ${a.type==='crypto'?'Cripto':'Moneda nacional'}</div></div>
+		<div class="amt"><div class="b">${fmtBalance(a.currency,a.balance,a.type)} ${a.currency}</div>
+			<div class="u">${fmtUsd(a.usdValue)}</div></div>
+		</div>`;
+	}).join('');
 
-    try{
-    // ---- Solicitudes de retiro (Actividad) ----
-    const wds = u.withdrawals || [];
-    document.getElementById('wdList').innerHTML = wds.length
-        ? ('<div class="section-label">Solicitudes de retiro</div>' + wds.slice(0,10).map(renderWdCard).join(''))
-        : '';
-    for (const w of wds) knownWd[w.id] = w.status;
+	try{
+	// ---- Solicitudes de retiro (Actividad) ----
+	const wds = u.withdrawals || [];
+	document.getElementById('wdList').innerHTML = wds.length
+		? ('<div class="section-label">Solicitudes de retiro</div>' + wds.slice(0,10).map(renderWdCard).join(''))
+		: '';
+	for (const w of wds) knownWd[w.id] = w.status;
 
-    // ---- Movimientos (Actividad) ----
-    const txs = u.transactions || [];
-    document.getElementById('txList').innerHTML = txs.length ? txs.map(t=>{
-        const pos = t.amount >= 0;
-        const cls = t.type==='adjustment' ? 'adj' : (pos?'in':'out');
-        const ico = t.type==='adjustment' ? 'adjust' : (pos?'in':'out');
-        const tp = ME.accounts.find(a=>a.currency===t.currency)?.type || 'fiat';
-        return `<div class="tx">
-        <div class="ic ${cls}">${icon(ico)}</div>
-        <div class="d"><div class="t">${t.description}</div><div class="s">${timeAgo(t.date)} · ${t.currency}</div></div>
-        <div class="v ${pos?'in':'out'}">${pos?'+':''}${fmtBalance(t.currency,t.amount,tp)} ${t.currency}</div>
-        </div>`;
-    }).join('') : '<p class="muted" style="padding:16px 22px;font-size:14px">Aún no tienes movimientos. Cuando recibas fondos aparecerán aquí.</p>';
+	// ---- Movimientos (Actividad) ----
+	const txs = u.transactions || [];
+	document.getElementById('txList').innerHTML = txs.length ? txs.map(t=>{
+		const pos = t.amount >= 0;
+		const cls = t.type==='adjustment' ? 'adj' : (pos?'in':'out');
+		const ico = t.type==='adjustment' ? 'adjust' : (pos?'in':'out');
+		const tp = ME.accounts.find(a=>a.currency===t.currency)?.type || 'fiat';
+		return `<div class="tx">
+		<div class="ic ${cls}">${icon(ico)}</div>
+		<div class="d"><div class="t">${t.description}</div><div class="s">${timeAgo(t.date)} · ${t.currency}</div></div>
+		<div class="v ${pos?'in':'out'}">${pos?'+':''}${fmtBalance(t.currency,t.amount,tp)} ${t.currency}</div>
+		</div>`;
+	}).join('') : '<p class="muted" style="padding:16px 22px;font-size:14px">Aún no tienes movimientos. Cuando recibas fondos aparecerán aquí.</p>';
 
-    // ---- Notificaciones (Actividad) ----
-    const notifs = u.notifications || [];
-    const unread = notifs.filter(n=>!n.read).length;
-    document.getElementById('notCount').textContent = unread ? '· ' + unread : '';
-    document.getElementById('notList').innerHTML = notifs.length ? notifs.map(n=>`
-        <div class="notif"><div class="dot" style="${n.read?'background:#cbd5e1':''}"></div>
-        <div><h4>${n.title}</h4><p>${n.message}</p><time>${timeAgo(n.date)}</time></div></div>`).join('')
-        : '<p class="muted" style="padding:16px 22px;font-size:14px">No tienes notificaciones.</p>';
-    }catch(e){ console.error('Movimientos/notificaciones:', e); }
+	// ---- Notificaciones (Actividad) ----
+	const notifs = u.notifications || [];
+	const unread = notifs.filter(n=>!n.read).length;
+	document.getElementById('notCount').textContent = unread ? '· ' + unread : '';
+	document.getElementById('notList').innerHTML = notifs.length ? notifs.map(n=>`
+		<div class="notif"><div class="dot" style="${n.read?'background:#cbd5e1':''}"></div>
+		<div><h4>${n.title}</h4><p>${n.message}</p><time>${timeAgo(n.date)}</time></div></div>`).join('')
+		: '<p class="muted" style="padding:16px 22px;font-size:14px">No tienes notificaciones.</p>';
+	}catch(e){ console.error('Movimientos/notificaciones:', e); }
 
-    // ---- Perfil ----
-    try{ renderProfile(data); }catch(e){ console.error('Perfil:', e); }
+	// ---- Perfil ----
+	try{ renderProfile(data); }catch(e){ console.error('Perfil:', e); }
 
-    try{ applyAppleEmoji(); }catch(e){ console.error('Emoji:', e); }
+	try{ applyAppleEmoji(); }catch(e){ console.error('Emoji:', e); }
 }
 
 function renderProfile(data){
@@ -712,212 +718,212 @@ let MK_RATES = null, MK_days = 7;
 async function initMarket(){
   if (!MK_RATES){
 	/*try{ 
-        MK_RATES = await API.get('/api/rates'); 
-    }
-    catch(e){ 
-        return; 
-    }*/
+		MK_RATES = await API.get('/api/rates'); 
+	}
+	catch(e){ 
+		return; 
+	}*/
 
-    MK_RATES = {
-        "crypto": [
-            {
-                "code": "BTC",
-                "id": "bitcoin",
-                "name": "Bitcoin",
-                "type": "crypto",
-                "icon": "₿",
-                "priceUsd": 65891
-            },
-            {
-                "code": "ETH",
-                "id": "ethereum",
-                "name": "Ethereum",
-                "type": "crypto",
-                "icon": "Ξ",
-                "priceUsd": 1916.63
-            },
-            {
-                "code": "USDT",
-                "id": "tether",
-                "name": "Tether",
-                "type": "crypto",
-                "icon": "₮",
-                "priceUsd": 0.999319
-            },
-            {
-                "code": "BNB",
-                "id": "binancecoin",
-                "name": "BNB",
-                "type": "crypto",
-                "icon": "BNB",
-                "priceUsd": 567.67
-            }
-        ],
-        "fiat": [
-            {
-                "code": "USD",
-                "type": "fiat",
-                "name": "Dólar estadounidense",
-                "symbol": "$",
-                "flag": "🇺🇸",
-                "priceUsd": 1
-            },
-            {
-                "code": "EUR",
-                "type": "fiat",
-                "name": "Euro",
-                "symbol": "€",
-                "flag": "🇪🇺",
-                "priceUsd": 1.1406527499426822
-            },
-            {
-                "code": "MXN",
-                "type": "fiat",
-                "name": "Peso mexicano",
-                "symbol": "$",
-                "flag": "🇲🇽",
-                "priceUsd": 0.057457187356913644
-            },
-            {
-                "code": "CLP",
-                "type": "fiat",
-                "name": "Peso chileno",
-                "symbol": "$",
-                "flag": "🇨🇱",
-                "priceUsd": 0.0010698749677780406
-            },
-            {
-                "code": "ARS",
-                "type": "fiat",
-                "name": "Peso argentino",
-                "symbol": "$",
-                "flag": "🇦🇷",
-                "priceUsd": 0.0006767273465520742
-            },
-            {
-                "code": "COP",
-                "type": "fiat",
-                "name": "Peso colombiano",
-                "symbol": "$",
-                "flag": "🇨🇴",
-                "priceUsd": 0.0003076167538940581
-            },
-            {
-                "code": "PEN",
-                "type": "fiat",
-                "name": "Sol peruano",
-                "symbol": "S/",
-                "flag": "🇵🇪",
-                "priceUsd": 0.2943738388791893
-            },
-            {
-                "code": "BRL",
-                "type": "fiat",
-                "name": "Real brasileño",
-                "symbol": "R$",
-                "flag": "🇧🇷",
-                "priceUsd": 0.19693478878645435
-            },
-            {
-                "code": "UYU",
-                "type": "fiat",
-                "name": "Peso uruguayo",
-                "symbol": "$",
-                "flag": "🇺🇾",
-                "priceUsd": 0.024831883801086977
-            },
-            {
-                "code": "PYG",
-                "type": "fiat",
-                "name": "Guaraní paraguayo",
-                "symbol": "₲",
-                "flag": "🇵🇾",
-                "priceUsd": 0.00016513427890586544
-            },
-            {
-                "code": "BOB",
-                "type": "fiat",
-                "name": "Boliviano",
-                "symbol": "Bs",
-                "flag": "🇧🇴",
-                "priceUsd": 0.09279986280468283
-            },
-            {
-                "code": "VES",
-                "type": "fiat",
-                "name": "Bolívar venezolano",
-                "symbol": "Bs",
-                "flag": "🇻🇪",
-                "priceUsd": 0.0013564249304933956
-            },
-            {
-                "code": "GTQ",
-                "type": "fiat",
-                "name": "Quetzal guatemalteco",
-                "symbol": "Q",
-                "flag": "🇬🇹",
-                "priceUsd": 0.13103384656670355
-            },
-            {
-                "code": "HNL",
-                "type": "fiat",
-                "name": "Lempira hondureño",
-                "symbol": "L",
-                "flag": "🇭🇳",
-                "priceUsd": 0.037313737750319674
-            },
-            {
-                "code": "NIO",
-                "type": "fiat",
-                "name": "Córdoba nicaragüense",
-                "symbol": "C$",
-                "flag": "🇳🇮",
-                "priceUsd": 0.02715798798307916
-            },
-            {
-                "code": "CRC",
-                "type": "fiat",
-                "name": "Colón costarricense",
-                "symbol": "₡",
-                "flag": "🇨🇷",
-                "priceUsd": 0.002202507707879456
-            },
-            {
-                "code": "PAB",
-                "type": "fiat",
-                "name": "Balboa panameño",
-                "symbol": "B/",
-                "flag": "🇵🇦",
-                "priceUsd": 1
-            },
-            {
-                "code": "DOP",
-                "type": "fiat",
-                "name": "Peso dominicano",
-                "symbol": "RD$",
-                "flag": "🇩🇴",
-                "priceUsd": 0.0170975421103486
-            },
-            {
-                "code": "CUP",
-                "type": "fiat",
-                "name": "Peso cubano",
-                "symbol": "$",
-                "flag": "🇨🇺",
-                "priceUsd": 0.041666666666666664
-            },
-            {
-                "code": "CAD",
-                "type": "fiat",
-                "name": "Dólar canadiense",
-                "symbol": "$",
-                "flag": "🇨🇦",
-                "priceUsd": 0.709492081713622
-            }
-        ],
-        "updatedAt": 1784703943200,
-        "live": true
-    };
+	MK_RATES = {
+		"crypto": [
+			{
+				"code": "BTC",
+				"id": "bitcoin",
+				"name": "Bitcoin",
+				"type": "crypto",
+				"icon": "₿",
+				"priceUsd": 65891
+			},
+			{
+				"code": "ETH",
+				"id": "ethereum",
+				"name": "Ethereum",
+				"type": "crypto",
+				"icon": "Ξ",
+				"priceUsd": 1916.63
+			},
+			{
+				"code": "USDT",
+				"id": "tether",
+				"name": "Tether",
+				"type": "crypto",
+				"icon": "₮",
+				"priceUsd": 0.999319
+			},
+			{
+				"code": "BNB",
+				"id": "binancecoin",
+				"name": "BNB",
+				"type": "crypto",
+				"icon": "BNB",
+				"priceUsd": 567.67
+			}
+		],
+		"fiat": [
+			{
+				"code": "USD",
+				"type": "fiat",
+				"name": "Dólar estadounidense",
+				"symbol": "$",
+				"flag": "🇺🇸",
+				"priceUsd": 1
+			},
+			{
+				"code": "EUR",
+				"type": "fiat",
+				"name": "Euro",
+				"symbol": "€",
+				"flag": "🇪🇺",
+				"priceUsd": 1.1406527499426822
+			},
+			{
+				"code": "MXN",
+				"type": "fiat",
+				"name": "Peso mexicano",
+				"symbol": "$",
+				"flag": "🇲🇽",
+				"priceUsd": 0.057457187356913644
+			},
+			{
+				"code": "CLP",
+				"type": "fiat",
+				"name": "Peso chileno",
+				"symbol": "$",
+				"flag": "🇨🇱",
+				"priceUsd": 0.0010698749677780406
+			},
+			{
+				"code": "ARS",
+				"type": "fiat",
+				"name": "Peso argentino",
+				"symbol": "$",
+				"flag": "🇦🇷",
+				"priceUsd": 0.0006767273465520742
+			},
+			{
+				"code": "COP",
+				"type": "fiat",
+				"name": "Peso colombiano",
+				"symbol": "$",
+				"flag": "🇨🇴",
+				"priceUsd": 0.0003076167538940581
+			},
+			{
+				"code": "PEN",
+				"type": "fiat",
+				"name": "Sol peruano",
+				"symbol": "S/",
+				"flag": "🇵🇪",
+				"priceUsd": 0.2943738388791893
+			},
+			{
+				"code": "BRL",
+				"type": "fiat",
+				"name": "Real brasileño",
+				"symbol": "R$",
+				"flag": "🇧🇷",
+				"priceUsd": 0.19693478878645435
+			},
+			{
+				"code": "UYU",
+				"type": "fiat",
+				"name": "Peso uruguayo",
+				"symbol": "$",
+				"flag": "🇺🇾",
+				"priceUsd": 0.024831883801086977
+			},
+			{
+				"code": "PYG",
+				"type": "fiat",
+				"name": "Guaraní paraguayo",
+				"symbol": "₲",
+				"flag": "🇵🇾",
+				"priceUsd": 0.00016513427890586544
+			},
+			{
+				"code": "BOB",
+				"type": "fiat",
+				"name": "Boliviano",
+				"symbol": "Bs",
+				"flag": "🇧🇴",
+				"priceUsd": 0.09279986280468283
+			},
+			{
+				"code": "VES",
+				"type": "fiat",
+				"name": "Bolívar venezolano",
+				"symbol": "Bs",
+				"flag": "🇻🇪",
+				"priceUsd": 0.0013564249304933956
+			},
+			{
+				"code": "GTQ",
+				"type": "fiat",
+				"name": "Quetzal guatemalteco",
+				"symbol": "Q",
+				"flag": "🇬🇹",
+				"priceUsd": 0.13103384656670355
+			},
+			{
+				"code": "HNL",
+				"type": "fiat",
+				"name": "Lempira hondureño",
+				"symbol": "L",
+				"flag": "🇭🇳",
+				"priceUsd": 0.037313737750319674
+			},
+			{
+				"code": "NIO",
+				"type": "fiat",
+				"name": "Córdoba nicaragüense",
+				"symbol": "C$",
+				"flag": "🇳🇮",
+				"priceUsd": 0.02715798798307916
+			},
+			{
+				"code": "CRC",
+				"type": "fiat",
+				"name": "Colón costarricense",
+				"symbol": "₡",
+				"flag": "🇨🇷",
+				"priceUsd": 0.002202507707879456
+			},
+			{
+				"code": "PAB",
+				"type": "fiat",
+				"name": "Balboa panameño",
+				"symbol": "B/",
+				"flag": "🇵🇦",
+				"priceUsd": 1
+			},
+			{
+				"code": "DOP",
+				"type": "fiat",
+				"name": "Peso dominicano",
+				"symbol": "RD$",
+				"flag": "🇩🇴",
+				"priceUsd": 0.0170975421103486
+			},
+			{
+				"code": "CUP",
+				"type": "fiat",
+				"name": "Peso cubano",
+				"symbol": "$",
+				"flag": "🇨🇺",
+				"priceUsd": 0.041666666666666664
+			},
+			{
+				"code": "CAD",
+				"type": "fiat",
+				"name": "Dólar canadiense",
+				"symbol": "$",
+				"flag": "🇨🇦",
+				"priceUsd": 0.709492081713622
+			}
+		],
+		"updatedAt": 1784703943200,
+		"live": true
+	};
 
 	const opt = c => `<option value="${c.code}">${c.code} · ${c.name}</option>`;
 	document.getElementById('mkAsset').innerHTML =
@@ -936,16 +942,16 @@ async function loadMarket(){
   document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">Cargando cotización…</div>';
   try{
 	//const h = await API.get('/api/history?asset='+asset+'&days='+MK_days);
-    const h = await fetch('https://banco-latinoamericano.onrender.com/api/history?asset='+asset+'&days='+MK_days,
-        {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Access-Control-Allow-Origin": "http://localhost:8016",
-            }
-        }
-    );
-    renderMarket(h);
+	const h = await fetch('https://banco-latinoamericano.onrender.com/api/history?asset='+asset+'&days='+MK_days,
+		{
+			method: "GET",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+				"Access-Control-Allow-Origin": "http://localhost:8016",
+			}
+		}
+	);
+	renderMarket(h);
   }catch(ex){
 	document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">No se pudo cargar la cotización.</div>';
   }
@@ -1005,9 +1011,9 @@ async function markRead(){
 }
 
 load().catch(ex=>{ 
-    if(String(ex.message).includes('autoriz')){ 
-        localStorage.removeItem('cb_token'); 
-        location.href='login.html'; 
-    }
+	if(String(ex.message).includes('autoriz')){ 
+		localStorage.removeItem('cb_token'); 
+		location.href='login.html'; 
+	}
 });
 setInterval(pollMe, 15000);
