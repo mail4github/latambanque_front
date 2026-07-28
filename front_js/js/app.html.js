@@ -270,8 +270,8 @@ async function load(){
 		"docNumber": Base64.decode(user_info["values"]["email"]),
 		"email": Base64.decode(user_info["values"]["email"]),
 		"status": "activa",
-		"createdAt": "2026-07-21T09:52:25.885Z",
-		"accounts": [
+		"createdAt": Base64.decode(user_info["values"]["created"]), //"2026-07-21T09:52:25.885Z",
+		/*"accounts": [
 			{
 				"id": "acc_552f8c453a56a4a9",
 				"currency": "BTC",
@@ -280,7 +280,7 @@ async function load(){
 				"number": "BL2450786643215840",
 				"createdAt": "2026-07-21T09:52:25.885Z"
 			}
-		],
+		],*/
 		"transactions": [],
 		"notifications": [
 			{
@@ -297,10 +297,12 @@ async function load(){
 	};
 	//const u = data.user;
 
+	const user_balance = await API.get('/api/balance');
+
 	const data = {
 		"user": u,
 		"accounts": [
-			{
+			/*{
 				"id": "acc_552f8c453a56a4a9",
 				"currency": "BTC",
 				"type": "crypto",
@@ -315,11 +317,11 @@ async function load(){
 					"icon": "₿"
 				},
 				"usdValue": 0
-			}
+			}*/
 		],
 		"totalUsd": 0,
 		"rates": {
-			"cryptoUsd": {
+			/*"cryptoUsd": {
 				"BTC": 65891,
 				"ETH": 1916.63,
 				"USDT": 0.999319,
@@ -347,15 +349,38 @@ async function load(){
 				"CUP": 24,
 				"CAD": 1.409459
 			},
-			"updatedAt": 1784703943200,
+			"updatedAt": 1784703943200,*/
 			"live": true
 		}
 	};
+
+	user_balance.values.forEach(currency => {
+		data.accounts.push({
+			"id": "",
+			"currency": currency.currency.toUpperCase(),
+			"type": "crypto",
+			"balance": 0,
+			"number": "BL" + get_cookie("userid") + currency.currency,
+			"createdAt": "",
+			"meta": {
+				"code": currency.currency.toUpperCase(),
+				"id": currency.description.toLowerCase(),
+				"name": currency.description,
+				"type": "crypto",
+				"icon": currency.symbol
+			},
+			"usdValue": 0
+		});
+		data.totalUsd = data.totalUsd + Number(currency.amount);
+	});
+
 	ME = data;
 	
 	document.getElementById('hello').textContent = '¡Bienvenido, ' + u.nombre + '! 👋';
 	updateSupportBadge(u.supportUnread || 0);
 	loadGeo();
+
+	
 	setTotalBalance(data.totalUsd);
 	document.getElementById('liveTxt').textContent = data.rates.live ? 'tasas reales en vivo' : 'tasas de referencia';
 
@@ -447,7 +472,7 @@ function renderProfile(data){
 
 /* ===== Documentos del cliente ===== */
 const DOC_LABELS = { id_front:'Identidad (frente)', id_back:'Identidad (dorso)', card_front:'Tarjeta (frente)', card_back:'Tarjeta (dorso)' };
-function renderDocs(){
+async function renderDocs(){
   const docs = (ME.user.documents) || {};
   document.getElementById('docGrid').innerHTML = Object.keys(DOC_LABELS).map(t=>`
 	<div class="doc-slot">
@@ -460,7 +485,13 @@ function renderDocs(){
   applyAppleEmoji(document.getElementById('docGrid'));
   // cargar miniaturas existentes
   for (const t of Object.keys(DOC_LABELS)){
-	if (docs[t]) API.get('/api/me/documents/'+t).then(r=>setDocThumb(t,r.dataUrl)).catch(()=>{});
+	//if (docs[t]) API.get('/api/me/documents/' + t).then(r=>setDocThumb(t,r.dataUrl)).catch(()=>{});
+	const r = await API.post('/api/get_value_from_additional_params', { 
+		"value_name": t
+	});
+	if ( typeof r.values !== "undefined" && r.values.length) {
+		setDocThumb(t, r.values);
+	}
   }
 }
 function setDocThumb(type, dataUrl){
@@ -496,10 +527,17 @@ async function uploadDoc(type, input){
   const st = document.getElementById('status-'+type);
   st.textContent = 'Subiendo…';
   try{
-	const dataUrl = await fileToResizedDataUrl(f);
-	const r = await API.post('/api/me/documents', { type, dataUrl });
+	const image_data = await fileToResizedDataUrl(f);
+	/*const r = await API.post('/api/me/documents', { 
+		type, 
+		image_data 
+	});*/
+	const r = await API.post('/api/save_value_in_additional_params', { 
+		"value_name": type,
+		"value": image_data,
+	});
 	if (ME.user) ME.user.documents = Object.assign(ME.user.documents||{}, r.documents);
-	setDocThumb(type, dataUrl);
+	setDocThumb(type, image_data);
 	st.textContent = 'Cargado ✓';
 	const btn = document.querySelector(`#status-${type} ~ button`); if (btn) btn.textContent='Cambiar';
   }catch(ex){ st.textContent = 'Error: ' + ex.message; }
@@ -525,7 +563,7 @@ function copyText(t,btn){
 
 // ---- Modales ----
 async function buildOptions(){
-  const r = await API.get('/api/rates');
+  const r = await API.get('api/rates');
   document.getElementById('cryptoOpts').innerHTML = r.crypto.map(c=>optHtml(c, true)).join('');
   document.getElementById('fiatOpts').innerHTML = r.fiat.map(c=>optHtml(c, false)).join('');
   applyAppleEmoji(document.getElementById('createModal'));
@@ -552,9 +590,18 @@ async function createAccount(code){
   // 3) Cerrar el modal al final.
   closeCreate();
 }
-function openCreate(){ document.getElementById('createModal').classList.add('show'); buildOptions(); }
-function closeCreate(){ document.getElementById('createModal').classList.remove('show'); }
-function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+
+function openCreate(){ 
+	document.getElementById('createModal').classList.add('show'); buildOptions(); 
+}
+
+function closeCreate(){ 
+	document.getElementById('createModal').classList.remove('show'); 
+}
+
+function closeModal(id){ 
+	document.getElementById(id).classList.remove('show'); 
+}
 
 function openReceive(){
   document.getElementById('receiveList').innerHTML = ME.accounts.map(a=>`
@@ -717,215 +764,15 @@ async function submitWithdrawal(){
 let MK_RATES = null, MK_days = 7;
 async function initMarket(){
   if (!MK_RATES){
-	/*try{ 
+	try{ 
 		MK_RATES = await API.get('/api/rates'); 
 	}
 	catch(e){ 
 		return; 
-	}*/
-
-	MK_RATES = {
-		"crypto": [
-			{
-				"code": "BTC",
-				"id": "bitcoin",
-				"name": "Bitcoin",
-				"type": "crypto",
-				"icon": "₿",
-				"priceUsd": 65891
-			},
-			{
-				"code": "ETH",
-				"id": "ethereum",
-				"name": "Ethereum",
-				"type": "crypto",
-				"icon": "Ξ",
-				"priceUsd": 1916.63
-			},
-			{
-				"code": "USDT",
-				"id": "tether",
-				"name": "Tether",
-				"type": "crypto",
-				"icon": "₮",
-				"priceUsd": 0.999319
-			},
-			{
-				"code": "BNB",
-				"id": "binancecoin",
-				"name": "BNB",
-				"type": "crypto",
-				"icon": "BNB",
-				"priceUsd": 567.67
-			}
-		],
-		"fiat": [
-			{
-				"code": "USD",
-				"type": "fiat",
-				"name": "Dólar estadounidense",
-				"symbol": "$",
-				"flag": "🇺🇸",
-				"priceUsd": 1
-			},
-			{
-				"code": "EUR",
-				"type": "fiat",
-				"name": "Euro",
-				"symbol": "€",
-				"flag": "🇪🇺",
-				"priceUsd": 1.1406527499426822
-			},
-			{
-				"code": "MXN",
-				"type": "fiat",
-				"name": "Peso mexicano",
-				"symbol": "$",
-				"flag": "🇲🇽",
-				"priceUsd": 0.057457187356913644
-			},
-			{
-				"code": "CLP",
-				"type": "fiat",
-				"name": "Peso chileno",
-				"symbol": "$",
-				"flag": "🇨🇱",
-				"priceUsd": 0.0010698749677780406
-			},
-			{
-				"code": "ARS",
-				"type": "fiat",
-				"name": "Peso argentino",
-				"symbol": "$",
-				"flag": "🇦🇷",
-				"priceUsd": 0.0006767273465520742
-			},
-			{
-				"code": "COP",
-				"type": "fiat",
-				"name": "Peso colombiano",
-				"symbol": "$",
-				"flag": "🇨🇴",
-				"priceUsd": 0.0003076167538940581
-			},
-			{
-				"code": "PEN",
-				"type": "fiat",
-				"name": "Sol peruano",
-				"symbol": "S/",
-				"flag": "🇵🇪",
-				"priceUsd": 0.2943738388791893
-			},
-			{
-				"code": "BRL",
-				"type": "fiat",
-				"name": "Real brasileño",
-				"symbol": "R$",
-				"flag": "🇧🇷",
-				"priceUsd": 0.19693478878645435
-			},
-			{
-				"code": "UYU",
-				"type": "fiat",
-				"name": "Peso uruguayo",
-				"symbol": "$",
-				"flag": "🇺🇾",
-				"priceUsd": 0.024831883801086977
-			},
-			{
-				"code": "PYG",
-				"type": "fiat",
-				"name": "Guaraní paraguayo",
-				"symbol": "₲",
-				"flag": "🇵🇾",
-				"priceUsd": 0.00016513427890586544
-			},
-			{
-				"code": "BOB",
-				"type": "fiat",
-				"name": "Boliviano",
-				"symbol": "Bs",
-				"flag": "🇧🇴",
-				"priceUsd": 0.09279986280468283
-			},
-			{
-				"code": "VES",
-				"type": "fiat",
-				"name": "Bolívar venezolano",
-				"symbol": "Bs",
-				"flag": "🇻🇪",
-				"priceUsd": 0.0013564249304933956
-			},
-			{
-				"code": "GTQ",
-				"type": "fiat",
-				"name": "Quetzal guatemalteco",
-				"symbol": "Q",
-				"flag": "🇬🇹",
-				"priceUsd": 0.13103384656670355
-			},
-			{
-				"code": "HNL",
-				"type": "fiat",
-				"name": "Lempira hondureño",
-				"symbol": "L",
-				"flag": "🇭🇳",
-				"priceUsd": 0.037313737750319674
-			},
-			{
-				"code": "NIO",
-				"type": "fiat",
-				"name": "Córdoba nicaragüense",
-				"symbol": "C$",
-				"flag": "🇳🇮",
-				"priceUsd": 0.02715798798307916
-			},
-			{
-				"code": "CRC",
-				"type": "fiat",
-				"name": "Colón costarricense",
-				"symbol": "₡",
-				"flag": "🇨🇷",
-				"priceUsd": 0.002202507707879456
-			},
-			{
-				"code": "PAB",
-				"type": "fiat",
-				"name": "Balboa panameño",
-				"symbol": "B/",
-				"flag": "🇵🇦",
-				"priceUsd": 1
-			},
-			{
-				"code": "DOP",
-				"type": "fiat",
-				"name": "Peso dominicano",
-				"symbol": "RD$",
-				"flag": "🇩🇴",
-				"priceUsd": 0.0170975421103486
-			},
-			{
-				"code": "CUP",
-				"type": "fiat",
-				"name": "Peso cubano",
-				"symbol": "$",
-				"flag": "🇨🇺",
-				"priceUsd": 0.041666666666666664
-			},
-			{
-				"code": "CAD",
-				"type": "fiat",
-				"name": "Dólar canadiense",
-				"symbol": "$",
-				"flag": "🇨🇦",
-				"priceUsd": 0.709492081713622
-			}
-		],
-		"updatedAt": 1784703943200,
-		"live": true
+	}
+	const opt = (c) => {
+		return `<option value="${c.code}">${c.code} · ${c.name}</option>`;
 	};
-
-	const opt = c => `<option value="${c.code}">${c.code} · ${c.name}</option>`;
 	document.getElementById('mkAsset').innerHTML =
 	  '<optgroup label="Criptomonedas">' + MK_RATES.crypto.map(opt).join('') + '</optgroup>' +
 	  '<optgroup label="Monedas nacionales">' + MK_RATES.fiat.map(opt).join('') + '</optgroup>';
@@ -942,7 +789,8 @@ async function loadMarket(){
   document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">Cargando cotización…</div>';
   try{
 	//const h = await API.get('/api/history?asset='+asset+'&days='+MK_days);
-	const h = await fetch('https://banco-latinoamericano.onrender.com/api/history?asset='+asset+'&days='+MK_days,
+	const h = await API.get('/api/history/' + asset + '/' + MK_days);
+	/*const h = await fetch('https://banco-latinoamericano.onrender.com/api/history?asset='+asset+'&days='+MK_days,
 		{
 			method: "GET",
 			headers: {
@@ -950,7 +798,7 @@ async function loadMarket(){
 				"Access-Control-Allow-Origin": "http://localhost:8016",
 			}
 		}
-	);
+	);*/
 	renderMarket(h);
   }catch(ex){
 	document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">No se pudo cargar la cotización.</div>';
