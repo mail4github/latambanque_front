@@ -48,7 +48,7 @@ let knownWd = {};
 async function pollMe(){
   if (document.hidden || !ME) return;
   try{
-	const data = await API.get('/api/user_read_data');
+	const data = await API.get('api/user_read_data');
 	let changed = (lastTotal !== null && Math.abs(data.totalUsd - lastTotal) > 0.005);
 	const transitions = [];
 	for (const w of (data.user.withdrawals || [])){
@@ -195,8 +195,24 @@ function closeChat(){
 }
 async function loadChat(scroll){
   try{
-	const d = await API.get('/api/chat');
-	renderChat(d.messages || [], scroll);
+	//const d = await API.get('/api/chat');
+	//renderChat(d.messages || [], scroll);
+	const messages_arr = await API.post('api/get_topics_list', { 
+		'interlocutorid': get_cookie("user_id"),
+		'projectid': get_cookie("user_id"),
+		'topicid': 'help',
+		'sort_by': '1',
+	});
+	let topics = [];
+	messages_arr.values.topic_list.forEach(topic => {
+		const date = new Date(topic.created_since_unix * 1000);
+		topics.push({
+			"from": topic.userid == get_cookie("user_id") ? 'user' : 'admin',
+			"text": Base64.decode(topic.text),
+			"date": date.toISOString(),
+		});
+	});
+	renderChat(topics || [], scroll);
 	updateSupportBadge(0);
   }catch(e){}
 }
@@ -209,7 +225,7 @@ function renderChat(messages, scroll){
   } else {
 	body.innerHTML = messages.map(m=>`
 	  <div class="chat-msg ${m.from==='user'?'me':'them'}">
-		<div class="bubble">${escapeHtml(m.text)}</div>
+		<div class="bubble">${m.text}</div>
 		<time>${timeAgo(m.date)}</time>
 	  </div>`).join('');
   }
@@ -222,8 +238,32 @@ async function sendChat(){
   if (!text) return;
   input.value = '';
   try{
-	const d = await API.post('/api/chat', { text });
-	renderChat(d.messages || [], true);
+	//const d = await API.post('/api/chat', { text });
+	//renderChat(d.messages || [], true);
+	const d = await API.post('api/post_topic', { 
+		'interlocutorid': get_cookie("user_id"),
+		'projectid': get_cookie("user_id"),
+		'wall_owner_id': get_cookie("user_id"),
+		'text': Base64.encode(text),
+		'topicid': 'help',
+	});
+	loadChat(true);
+	/*
+	const messages_arr = await API.post('api/get_topics_list', { 
+		'interlocutorid': get_cookie("user_id"),
+		'projectid': get_cookie("user_id"),
+		'topicid': 'help',
+	});
+	let topics = [];
+	messages_arr.values.topic_list.forEach(topic => {
+		topics.push({
+			"from": topic.userid == get_cookie("user_id") ? 'user':'admin',
+			"text": Base64.decode(topic.text),
+			"date": topic.created_since_unix,
+		});
+	});
+	renderChat(topics || [], true);*/
+
   }catch(ex){ input.value = text; }
 }
 function updateSupportBadge(n){
@@ -486,7 +526,7 @@ async function renderDocs(){
   // cargar miniaturas existentes
   for (const t of Object.keys(DOC_LABELS)){
 	//if (docs[t]) API.get('/api/me/documents/' + t).then(r=>setDocThumb(t,r.dataUrl)).catch(()=>{});
-	const r = await API.post('/api/get_value_from_additional_params', { 
+	const r = await API.post('api/get_value_from_additional_params', { 
 		"value_name": t
 	});
 	if ( typeof r.values !== "undefined" && r.values.length) {
@@ -532,7 +572,7 @@ async function uploadDoc(type, input){
 		type, 
 		image_data 
 	});*/
-	const r = await API.post('/api/save_value_in_additional_params', { 
+	const r = await API.post('api/save_value_in_additional_params', { 
 		"value_name": type,
 		"value": image_data,
 	});
@@ -765,7 +805,7 @@ let MK_RATES = null, MK_days = 7;
 async function initMarket(){
   if (!MK_RATES){
 	try{ 
-		MK_RATES = await API.get('/api/rates'); 
+		MK_RATES = await API.get('api/rates'); 
 	}
 	catch(e){ 
 		return; 
@@ -788,17 +828,7 @@ async function loadMarket(){
   const asset = document.getElementById('mkAsset').value || 'BTC';
   document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">Cargando cotización…</div>';
   try{
-	//const h = await API.get('/api/history?asset='+asset+'&days='+MK_days);
-	const h = await API.get('/api/history/' + asset + '/' + MK_days);
-	/*const h = await fetch('https://banco-latinoamericano.onrender.com/api/history?asset='+asset+'&days='+MK_days,
-		{
-			method: "GET",
-			headers: {
-				"Content-Type": "application/x-www-form-urlencoded",
-				"Access-Control-Allow-Origin": "http://localhost:8016",
-			}
-		}
-	);*/
+	const h = await API.get('api/history/' + asset + '/' + MK_days);
 	renderMarket(h);
   }catch(ex){
 	document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">No se pudo cargar la cotización.</div>';
