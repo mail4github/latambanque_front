@@ -311,16 +311,7 @@ async function load(){
 		"email": Base64.decode(user_info["values"]["email"]),
 		"status": "activa",
 		"createdAt": Base64.decode(user_info["values"]["created"]), //"2026-07-21T09:52:25.885Z",
-		/*"accounts": [
-			{
-				"id": "acc_552f8c453a56a4a9",
-				"currency": "BTC",
-				"type": "crypto",
-				"balance": 0,
-				"number": "BL2450786643215840",
-				"createdAt": "2026-07-21T09:52:25.885Z"
-			}
-		],*/
+		"accounts": [],
 		"transactions": [],
 		"notifications": [
 			{
@@ -341,24 +332,7 @@ async function load(){
 
 	const data = {
 		"user": u,
-		"accounts": [
-			/*{
-				"id": "acc_552f8c453a56a4a9",
-				"currency": "BTC",
-				"type": "crypto",
-				"balance": 0,
-				"number": "BL2450786643215840",
-				"createdAt": "2026-07-21T09:52:25.885Z",
-				"meta": {
-					"code": "BTC",
-					"id": "bitcoin",
-					"name": "Bitcoin",
-					"type": "crypto",
-					"icon": "₿"
-				},
-				"usdValue": 0
-			}*/
-		],
+		"accounts": [],
 		"totalUsd": 0,
 		"rates": {
 			/*"cryptoUsd": {
@@ -394,13 +368,22 @@ async function load(){
 		}
 	};
 
-	user_balance.values.forEach(currency => {
-		data.accounts.push({
+	user_balance.values.forEach(async currency => {
+		let address = "";
+		try {
+			const r = await API.post('api/custom_api', { 
+				'custom_command': 'get_crypto_addr',
+				'currency': currency.currency,
+			});
+			address = r.values.address;
+		}
+		catch(e){}
+		let acc = {
 			"id": "",
 			"currency": currency.currency.toUpperCase(),
 			"type": "crypto",
 			"balance": 0,
-			"number": "BL" + get_cookie("userid") + currency.currency,
+			"number": address,
 			"createdAt": "",
 			"meta": {
 				"code": currency.currency.toUpperCase(),
@@ -410,7 +393,9 @@ async function load(){
 				"icon": currency.symbol
 			},
 			"usdValue": 0
-		});
+		};
+		//ME.accounts.push(acc);
+		data.accounts.push(acc);
 		data.totalUsd = data.totalUsd + Number(currency.amount);
 	});
 
@@ -419,7 +404,6 @@ async function load(){
 	document.getElementById('hello').textContent = '¡Bienvenido, ' + u.nombre + '! 👋';
 	updateSupportBadge(u.supportUnread || 0);
 	loadGeo();
-
 	
 	setTotalBalance(data.totalUsd);
 	document.getElementById('liveTxt').textContent = data.rates.live ? 'tasas reales en vivo' : 'tasas de referencia';

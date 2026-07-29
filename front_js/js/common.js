@@ -101,9 +101,9 @@ function icon(name, size){
 }
 function paintIcons(root){
   (root || document).querySelectorAll('[data-icon]').forEach(el=>{
-    if (el.dataset.iconDone) return;
-    el.innerHTML = icon(el.dataset.icon, el.dataset.iconSize ? +el.dataset.iconSize : undefined);
-    el.dataset.iconDone = '1';
+	if (el.dataset.iconDone) return;
+	el.innerHTML = icon(el.dataset.icon, el.dataset.iconSize ? +el.dataset.iconSize : undefined);
+	el.dataset.iconDone = '1';
   });
 }
 
@@ -124,14 +124,14 @@ function emojiToFragment(text){
   /*let last = 0, m;
   const rx = /\p{RGI_Emoji}/gv;
   while ((m = rx.exec(text))){
-    if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
-    const img = document.createElement('img');
-    img.className = 'ae';
-    img.alt = m[0];
-    img.src = appleEmojiUrl(m[0]);
-    img.onerror = function(){ this.replaceWith(document.createTextNode(this.alt)); };
-    frag.appendChild(img);
-    last = m.index + m[0].length;
+	if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+	const img = document.createElement('img');
+	img.className = 'ae';
+	img.alt = m[0];
+	img.src = appleEmojiUrl(m[0]);
+	img.onerror = function(){ this.replaceWith(document.createTextNode(this.alt)); };
+	frag.appendChild(img);
+	last = m.index + m[0].length;
   }
   if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));*/
   return frag;
@@ -143,18 +143,18 @@ function applyAppleEmoji(root){
   try { testRx = /\p{RGI_Emoji}/v; } catch(e){ return; } // navegador sin soporte: no hacemos nada
   const base = root || document.body;
   const walker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT, {
-    acceptNode(n){
-      if (!n.nodeValue || !/\p{RGI_Emoji}/v.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
-      const p = n.parentElement;
-      if (!p || p.closest('script,style,textarea,input,select,.ae-done') || p.tagName==='IMG') return NodeFilter.FILTER_REJECT;
-      return NodeFilter.FILTER_ACCEPT;
-    }
+	acceptNode(n){
+	  if (!n.nodeValue || !/\p{RGI_Emoji}/v.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+	  const p = n.parentElement;
+	  if (!p || p.closest('script,style,textarea,input,select,.ae-done') || p.tagName==='IMG') return NodeFilter.FILTER_REJECT;
+	  return NodeFilter.FILTER_ACCEPT;
+	}
   });
   const nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
   for (const n of nodes){
-    const frag = emojiToFragment(n.nodeValue);
-    n.parentNode.replaceChild(frag, n);
+	const frag = emojiToFragment(n.nodeValue);
+	n.parentNode.replaceChild(frag, n);
   }*/
 }
 
@@ -172,7 +172,7 @@ function flagToIso(flag){
   if (!flag) return null;
   const cps = [...flag].map(c => c.codePointAt(0));
   if (cps.length === 2 && cps[0] >= 0x1F1E6 && cps[0] <= 0x1F1FF && cps[1] >= 0x1F1E6 && cps[1] <= 0x1F1FF){
-    return String.fromCharCode(cps[0] - 0x1F1E6 + 97) + String.fromCharCode(cps[1] - 0x1F1E6 + 97);
+	return String.fromCharCode(cps[0] - 0x1F1E6 + 97) + String.fromCharCode(cps[1] - 0x1F1E6 + 97);
   }
   return null;
 }
@@ -183,19 +183,19 @@ function flagCdnUrl(iso){ return 'https://cdn.jsdelivr.net/gh/HatScripts/circle-
 function currencyIcon(code, meta, size){
   const s = size || 46;
   if (isCrypto(code, meta)){
-    const fb = (COIN_COLORS[code]||'#6B7280');
-    return `<img class="cur-ic" src="${cryptoIconUrl(code)}" width="${s}" height="${s}"
-      onerror="this.outerHTML='<span class=\\'cur-ic fiat-ic\\' style=&quot;width:${s}px;height:${s}px;background:${fb}&quot;>${code.slice(0,3)}</span>'">`;
+	const fb = (COIN_COLORS[code]||'#6B7280');
+	return `<img class="cur-ic" src="${cryptoIconUrl(code)}" width="${s}" height="${s}"
+	  onerror="this.outerHTML='<span class=\\'cur-ic fiat-ic\\' style=&quot;width:${s}px;height:${s}px;background:${fb}&quot;>${code.slice(0,3)}</span>'">`;
   }
   const flag = (meta && meta.flag) ? meta.flag : '🏳️';
   const iso = flagToIso(flag);
   if (iso){
-    return `<span class="flag-wrap" style="width:${s}px;height:${s}px">
-      <img class="flag-fill" src="${flagCdnUrl(iso)}" alt="${code}" loading="lazy"
-        onerror="this.onerror=null;this.src='${appleEmojiUrl(flag)}'"></span>`;
+	return `<span class="flag-wrap" style="width:${s}px;height:${s}px">
+	  <img class="flag-fill" src="${flagCdnUrl(iso)}" alt="${code}" loading="lazy"
+		onerror="this.onerror=null;this.src='${appleEmojiUrl(flag)}'"></span>`;
   }
   return `<span class="flag-wrap" style="width:${s}px;height:${s}px">
-    <img class="flag-fill" src="${appleEmojiUrl(flag)}" alt="${code}"></span>`;
+	<img class="flag-fill" src="${appleEmojiUrl(flag)}" alt="${code}"></span>`;
 }
 
 /* ===== Formato ===== */
@@ -214,9 +214,12 @@ function fmtUsd(n){
   return '$' + Number(n).toLocaleString('es-MX', { minimumFractionDigits:2, maximumFractionDigits:2 }) + ' USD';
 }
 function fmtAccountNumber(num){
-  if (!num) return '—';
-  const s = String(num);
-  return s.replace(/(.{4})/g, '$1 ').trim();
+	if (!num) {
+		return '—';
+	}
+	//const s = String(num);
+	//return s.replace(/(.{4})/g, '$1 ').trim();
+	return num;
 }
 function timeAgo(iso){
   const d = new Date(iso); const s = (Date.now()-d.getTime())/1000;
@@ -231,14 +234,14 @@ function fmtDate(iso){
 function requireAuth()
 { 
   if(!API.token()){ 
-    location.href='login.html'; 
+	location.href='login.html'; 
   } 
 }
 function logout()
 {
   //API.post('/api/logout').catch(()=>{}).finally(()=>{ 
-    localStorage.removeItem('cb_token'); 
-    location.href='index.html'; 
+	localStorage.removeItem('cb_token'); 
+	location.href='index.html'; 
   //}); 
 }
 
