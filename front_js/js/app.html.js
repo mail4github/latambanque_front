@@ -368,22 +368,13 @@ async function load(){
 		}
 	};
 
-	user_balance.values.forEach(async currency => {
-		let address = "";
-		try {
-			const r = await API.post('api/custom_api', { 
-				'custom_command': 'get_crypto_addr',
-				'currency': currency.currency,
-			});
-			address = r.values.address;
-		}
-		catch(e){}
+	user_balance.values.forEach(currency => {
 		let acc = {
 			"id": "",
 			"currency": currency.currency.toUpperCase(),
 			"type": "crypto",
 			"balance": 0,
-			"number": address,
+			"number": "",
 			"createdAt": "",
 			"meta": {
 				"code": currency.currency.toUpperCase(),
@@ -392,14 +383,25 @@ async function load(){
 				"type": "crypto",
 				"icon": currency.symbol
 			},
-			"usdValue": 0
+			"usdValue": currency.amount
 		};
-		//ME.accounts.push(acc);
 		data.accounts.push(acc);
 		data.totalUsd = data.totalUsd + Number(currency.amount);
 	});
-
 	ME = data;
+
+	user_balance.values.forEach(async currency => {
+		try {
+			const r = await API.post('api/custom_api', { 
+				'custom_command': 'get_crypto_addr',
+				'currency': currency.currency,
+			});
+			for (let i = 0; i < ME.accounts.length; i++) {
+				ME.accounts[i]["number"] = r.values.address;
+			}
+		}
+		catch(e){}
+	});
 	
 	document.getElementById('hello').textContent = '¡Bienvenido, ' + u.nombre + '! 👋';
 	updateSupportBadge(u.supportUnread || 0);
