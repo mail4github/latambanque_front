@@ -456,6 +456,8 @@ async function addTx(){
 		else {
 			amount = - Math.abs(amount);
 		}
+		const cur_array = document.getElementById('txAcc').value.split(',');
+		let crypto_name = cur_array[0];
 		await API.post('api/user_reward', { 
 			userid: CURRENT.user.id,
 			manager_userid: get_cookie("user_id"),
@@ -463,7 +465,7 @@ async function addTx(){
 			amount_in_usd: amount,
 			amount_in_currency: amount,
 			description: document.getElementById('txDesc').value, 
-			crypto_name: document.getElementById('txAcc').value, 
+			crypto_name: crypto_name,
 			transaction_type: document.getElementById('txType').value, 
 			hold_reward_for_days: 0, 
 			parent_transactionid: 0,
@@ -484,11 +486,7 @@ async function addTx(){
 }
 async function setBal(){
 	try{
-		/*await API.post('/api/admin/users/'+CURRENT.user.id+'/balance', {
-			accountId: document.getElementById('balAcc').value,
-			balance: document.getElementById('balVal').value,
-			note: document.getElementById('balNote').value,
-		}, tok());*/
+		
 		const cur_array = document.getElementById('balAcc').value.split(',');
 		let crypto_name = cur_array[0];
 		let currency_balance = Number(cur_array[1]);
