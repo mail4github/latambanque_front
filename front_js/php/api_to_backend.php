@@ -437,6 +437,7 @@ if ( $_GET['command'] == 'user_login' ) {
 		'verification_pin' => $data_arr[6],
 		'password_sign' => $data_arr[7],
 		'fingerprint' => $data_arr[8],
+		'login_as_manager' => $data_arr[9],
 	);
 	if ( !empty($_POST['real_user_ip']) )
 		$_SERVER['REMOTE_ADDR'] = $_POST['real_user_ip'];
@@ -459,8 +460,8 @@ else
 if ( $_GET['command'] == 'user_signup' ) {
 	
 	$_POST['signup_ip'] = base64_encode($_SERVER['REMOTE_ADDR']);
-	if (empty($_POST['user_domain']) && !empty($_POST['package_name']))
-		$_POST['user_domain'] = $_POST['package_name'];
+	//if (empty($_POST['user_domain']) && !empty($_POST['package_name']))
+	//	$_POST['user_domain'] = $_POST['package_name'];
 
 	$data = make_appserver_request($_GET['command'], '', $_POST);
 	echo generate_answer($data['success'], $data['message'], $data['values'], $data['error_code']);

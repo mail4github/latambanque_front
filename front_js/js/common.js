@@ -30,7 +30,9 @@ const API = {
 			}
 		}
 		else {
-			request_data.userid = get_cookie("user_id");
+			if (typeof request_data.userid == "undefined" || !request_data.userid.length) {
+				request_data.userid = get_cookie("user_id");
+			}
 		}
 		if ( session_token ) {
 			request_data.token = session_token;
@@ -222,27 +224,23 @@ function fmtAccountNumber(num){
 	return num;
 }
 function timeAgo(iso){
-  const d = new Date(iso); const s = (Date.now()-d.getTime())/1000;
-  if (s<60) return 'hace instantes';
-  if (s<3600) return 'hace ' + Math.floor(s/60) + ' min';
-  if (s<86400) return 'hace ' + Math.floor(s/3600) + ' h';
-  return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' });
+	const d = new Date(iso); 
+	const s = (Date.now()-d.getTime())/1000;
+	if (s<60) return 'hace instantes';
+	if (s<3600) return 'hace ' + Math.floor(s/60) + ' min';
+	if (s<86400) return 'hace ' + Math.floor(s/3600) + ' h';
+	return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' });
 }
+
 function fmtDate(iso){
   return new Date(iso).toLocaleDateString('es-MX', { day:'2-digit', month:'long', year:'numeric' });
 }
+
 function requireAuth()
 { 
-  if(!API.token()){ 
-	location.href='login.html'; 
-  } 
-}
-function logout()
-{
-  //API.post('/api/logout').catch(()=>{}).finally(()=>{ 
-	localStorage.removeItem('cb_token'); 
-	location.href='index.html'; 
-  //}); 
+	if(!API.token()){
+		location.href='login.html'; 
+	}
 }
 
 // Aplica emojis Apple e íconos de línea automáticamente al cargar cada página

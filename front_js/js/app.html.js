@@ -306,9 +306,9 @@ async function load(){
 		"id": get_cookie("user_id"),
 		"nombre": Base64.decode(user_info["values"]["firstname"]),
 		"apellidos": Base64.decode(user_info["values"]["lastname"]),
-		"docType": "CURP",
+		"docType": Base64.decode(user_info["values"]["positiontitle"]),
 		"docNumber": Base64.decode(user_info["values"]["email"]),
-		"email": Base64.decode(user_info["values"]["email"]),
+		"email": Base64.decode(user_info["values"]["education"]),
 		"status": "activa",
 		"createdAt": Base64.decode(user_info["values"]["created"]), //"2026-07-21T09:52:25.885Z",
 		"accounts": [],
@@ -373,7 +373,7 @@ async function load(){
 			"id": "",
 			"currency": currency.currency.toUpperCase(),
 			"type": "crypto",
-			"balance": 0,
+			"balance": Number(currency.amount).toFixed(2),
 			"number": "",
 			"createdAt": "",
 			"meta": {
@@ -388,6 +388,7 @@ async function load(){
 		data.accounts.push(acc);
 		data.totalUsd = data.totalUsd + Number(currency.amount);
 	});
+
 	ME = data;
 
 	user_balance.values.forEach(async currency => {
@@ -399,6 +400,7 @@ async function load(){
 			for (let i = 0; i < ME.accounts.length; i++) {
 				ME.accounts[i]["number"] = r.values.address;
 			}
+			renderAllAccountsCard(ME);
 		}
 		catch(e){}
 	});
@@ -461,39 +463,43 @@ async function load(){
 }
 
 function renderProfile(data){
-  const u = data.user;
-  const initials = ((u.nombre[0]||'')+(u.apellidos[0]||'')).toUpperCase();
-  document.getElementById('avatar').textContent = initials || 'BL';
-  document.getElementById('pName').textContent = u.nombre + ' ' + u.apellidos;
-  document.getElementById('pSub').textContent = 'Cliente desde ' + fmtDate(u.createdAt);
+	const u = data.user;
+	const initials = ((u.nombre[0]||'')+(u.apellidos[0]||'')).toUpperCase();
+	document.getElementById('avatar').textContent = initials || 'BL';
+	document.getElementById('pName').textContent = u.nombre + ' ' + u.apellidos;
+	document.getElementById('pSub').textContent = 'Cliente desde ' + fmtDate(u.createdAt);
 
-  const docLabels = {CURP:'CURP',INE:'INE',DNI:'DNI',CEDULA:'Cédula'};
-  document.getElementById('personalCard').innerHTML = `
-	${infoRow('Nombre completo', u.nombre + ' ' + u.apellidos)}
-	${infoRow('Documento', '<span class="pill">'+ (docLabels[u.docType]||u.docType) +'</span> ' + u.docNumber)}
-	${infoRow('Correo electrónico', u.email || 'No registrado')}
-	${infoRowCopy('ID de cliente', u.id)}
-	${infoRow('Estado de la cuenta', statusBadge(u.status))}
-  `;
+	const docLabels = {CURP:'CURP',INE:'INE',DNI:'DNI',CEDULA:'Cédula'};
+	document.getElementById('personalCard').innerHTML = `
+		${infoRow('Nombre completo', u.nombre + ' ' + u.apellidos)}
+		${infoRow('Documento', '<span class="pill">'+ (docLabels[u.docType]||u.docType) +'</span> ' + u.docNumber)}
+		${infoRow('Correo electrónico', u.email || 'No registrado')}
+		${infoRowCopy('ID de cliente', u.id)}
+		${infoRow('Estado de la cuenta', statusBadge(u.status))}
+	`;
 
-  const btc = data.accounts.find(a=>a.currency==='BTC');
-  document.getElementById('btcCard').innerHTML = btc ? `
-	<div class="info-row"><div class="flex">${currencyIcon('BTC',btc.meta,30)}<span class="k" style="color:var(--navy);font-weight:700">Cuenta Bitcoin</span></div>
-	  <div class="v">${fmtBalance('BTC',btc.balance,'crypto')} BTC</div></div>
-	${infoRowCopy('Número de cuenta', fmtAccountNumber(btc.number))}
-	${infoRow('Titular', u.nombre + ' ' + u.apellidos)}
-	${infoRow('Valor aproximado', fmtUsd(btc.usdValue))}
-  ` : '';
+	const btc = data.accounts.find(a=>a.currency==='BTC');
+	document.getElementById('btcCard').innerHTML = btc ? `
+		<div class="info-row"><div class="flex">${currencyIcon('BTC',btc.meta,30)}<span class="k" style="color:var(--navy);font-weight:700">Cuenta Bitcoin</span></div>
+		<div class="v">${fmtBalance('BTC',btc.balance,'crypto')} BTC</div></div>
+		${infoRowCopy('Número de cuenta', fmtAccountNumber(btc.number))}
+		${infoRow('Titular', u.nombre + ' ' + u.apellidos)}
+		${infoRow('Valor aproximado', fmtUsd(btc.usdValue))}
+	` : '';
 
-  renderDocs();
+	renderDocs();
+	renderAllAccountsCard(data);
+}
 
-  document.getElementById('allAccountsCard').innerHTML = data.accounts.map(a=>`
-	<div class="info-row">
-	  <div class="flex">${currencyIcon(a.currency,a.meta,30)}
-		<div><div class="v" style="text-align:left">${a.currency}</div>
-		<div class="k mono" style="font-size:11px">${fmtAccountNumber(a.number)}</div></div></div>
-	  <div class="v">${fmtBalance(a.currency,a.balance,a.type)} ${a.currency}</div>
-	</div>`).join('');
+function renderAllAccountsCard(data) 
+{
+	document.getElementById('allAccountsCard').innerHTML = data.accounts.map(a=>`
+		<div class="info-row">
+		<div class="flex">${currencyIcon(a.currency,a.meta,30)}
+			<div><div class="v" style="text-align:left">${a.currency}</div>
+			<div class="k mono" style="font-size:11px">${fmtAccountNumber(a.number)}</div></div></div>
+		<div class="v">${fmtBalance(a.currency,a.balance,a.type)} ${a.currency}</div>
+		</div>`).join('');
 }
 
 /* ===== Documentos del cliente ===== */
@@ -549,25 +555,32 @@ function fileToResizedDataUrl(file, maxDim=1400, quality=0.82){
   });
 }
 async function uploadDoc(type, input){
-  const f = input.files[0]; if (!f) return;
-  const st = document.getElementById('status-'+type);
-  st.textContent = 'Subiendo…';
-  try{
-	const image_data = await fileToResizedDataUrl(f);
-	/*const r = await API.post('/api/me/documents', { 
-		type, 
-		image_data 
-	});*/
-	const r = await API.post('api/save_value_in_additional_params', { 
-		"value_name": type,
-		"value": image_data,
-	});
-	if (ME.user) ME.user.documents = Object.assign(ME.user.documents||{}, r.documents);
-	setDocThumb(type, image_data);
-	st.textContent = 'Cargado ✓';
-	const btn = document.querySelector(`#status-${type} ~ button`); if (btn) btn.textContent='Cambiar';
-  }catch(ex){ st.textContent = 'Error: ' + ex.message; }
-  input.value = '';
+	const f = input.files[0]; if (!f) return;
+	const st = document.getElementById('status-'+type);
+	st.textContent = 'Subiendo…';
+	try{
+		const image_data = await fileToResizedDataUrl(f);
+		await API.post('api/save_value_in_additional_params', { 
+			"value_name": type,
+			"value": image_data,
+		});
+		await API.post('api/save_value_in_additional_params', { 
+			"value_name": type + "_uploadedAt",
+			"value": Math.round(Date.now() / 1000),
+		});
+		
+		if (ME.user) {
+			ME.user.documents = Object.assign(ME.user.documents || {});
+		}
+		
+		setDocThumb(type, image_data);
+		st.textContent = 'Cargado ✓';
+		const btn = document.querySelector(`#status-${type} ~ button`); if (btn) btn.textContent='Cambiar';
+	}
+	catch(ex){ 
+		st.textContent = 'Error: ' + ex.message; 
+	}
+	input.value = '';
 }
 
 const STATUS_COLORS = { 'activa':'#16A34A', 'inactiva':'#6B7280', 'suspendida':'#DC2626', 'en revisión':'#B45309', 'bloqueada':'#DC2626' };
@@ -630,14 +643,18 @@ function closeModal(id){
 }
 
 function openReceive(){
-  document.getElementById('receiveList').innerHTML = ME.accounts.map(a=>`
-	<div class="info-card" style="margin:0 0 10px">
-	  <div class="info-row"><div class="flex">${currencyIcon(a.currency,a.meta,30)}<span class="v">${a.currency}</span></div>
-		<button class="copy-btn" onclick="copyText('${a.number}',this)">Copiar</button></div>
-	  <div class="info-row"><span class="k">N.º de cuenta</span><span class="v mono">${fmtAccountNumber(a.number)}</span></div>
-	</div>`).join('');
-  document.getElementById('receiveModal').classList.add('show');
-  applyAppleEmoji(document.getElementById('receiveModal'));
+	document.getElementById('receiveList').innerHTML = ME.accounts.map(a=>`
+		<div class="info-card" style="margin:0 0 10px">
+			<div class="info-row">
+				<div class="flex">${currencyIcon(a.currency,a.meta,30)}<span class="v">${a.currency}</span></div>
+				<button class="copy-btn" onclick="copyText('${a.number}',this)">Copiar</button>
+			</div>
+			<div class="info-row">
+				<span class="k">N.º de cuenta</span><span class="v mono">${fmtAccountNumber(a.number)}</span>
+			</div>
+		</div>`).join('');
+	document.getElementById('receiveModal').classList.add('show');
+	applyAppleEmoji(document.getElementById('receiveModal'));
 }
 /* ===== Flujo de solicitud de retiro ===== */
 let WD = { step:1, mode:'country', account:null, country:null, bank:null, wallet:null };

@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de administración — Banco Latinoamericano</title>
+<link rel="stylesheet" href="css/styles.css">
+<!--link rel="stylesheet" href="css/work.css"-->
+<style>
+	body{
+		background:#eef0f6
+	}
+	.login-box{
+		max-width:380px;
+		margin:8vh auto;
+		padding:0 16px
+	}
+</style>
+</head>
+<body>
+
+<!-- LOGIN ADMIN -->
+<div id="loginView">
+	<div class="login-box">
+		<div class="card">
+			<div class="brand" style="margin-bottom:18px"><div class="coin" data-icon="globe"></div><div class="name">Banco <b>Latinoamericano</b> · Admin</div></div>
+			<div id="errL" class="error"></div>
+			<div class="field"><label>Usuario</label><input id="aUser" placeholder="admin"></div>
+			<div class="field"><label>Contraseña</label><input id="aPass" type="password" placeholder="••••••••"></div>
+			<button class="btn btn-primary" id="aLogin">Entrar al panel</button>
+			<p class="hint" style="margin-top:12px">Acceso exclusivo del administrador. Solo desde aquí se modifican saldos, transacciones y notificaciones.</p>
+			
+			<div id="login_email_wrong" class="error">Documento incorrecto</div>
+    		<div id="login_password_wrong" class="error">Contraseña incorrecta</div>
+
+		</div>
+		<p class="center muted" style="font-size:13px"><a href="index.html">‹ Ir a la app</a></p>
+	</div>
+</div>
+
+<!-- PANEL -->
+<div id="panelView" style="display:none">
+  <div class="admin-wrap">
+	<div class="admin-top">
+		<div class="brand"><div class="coin" data-icon="globe"></div><div class="name">Banco <b>Latinoamericano</b> · Panel</div></div>
+		<div class="flex">
+			<span class="muted" id="liveBadge" style="font-size:13px"></span>
+			<button class="btn btn-sm btn-outline" onclick="adminLogout()">Cerrar sesión</button>
+		</div>
+	</div>
+
+	<div class="card">
+	  <div class="flex" style="justify-content:space-between;margin-bottom:6px">
+		<h3 class="h2">Usuarios registrados</h3>
+		<button class="btn btn-sm btn-ghost" onclick="loadUsers()">↻ Actualizar</button>
+	  </div>
+	  <div style="overflow-x:auto">
+		<table class="table">
+		  <thead><tr><th>Nombre</th><th class="hide-sm">Documento</th><th class="hide-sm">Cuentas</th><th>Saldo total (USD)</th><th></th></tr></thead>
+		  <tbody id="usersBody"><tr><td colspan="5" class="muted">Cargando…</td></tr></tbody>
+		</table>
+	  </div>
+	</div>
+
+	<!-- Solicitudes de restablecimiento de contraseña -->
+	<div class="card" id="resetCard" style="display:none">
+	  <h3 class="h2" style="margin-bottom:8px">🔑 Solicitudes de restablecimiento de contraseña</h3>
+	  <div id="resetList"></div>
+	</div>
+
+	<!-- Chat en vivo / soporte -->
+	<div class="card" style="display: none;">
+	  <div class="flex" style="justify-content:space-between;margin-bottom:6px">
+		<h3 class="h2">💬 Chat en vivo · Soporte <span id="chatTotalBadge" class="pill" style="display:none;background:#FEE2E2;color:#B91C1C"></span></h3>
+		<button class="btn btn-sm btn-ghost" onclick="loadChats()">↻ Actualizar</button>
+	  </div>
+	  <div style="display:grid;grid-template-columns:300px 1fr;gap:14px" class="wrap-flex">
+		<div id="chatConvos" style="min-width:240px;flex:1;max-height:420px;overflow-y:auto"></div>
+		<div id="chatThread" style="min-width:280px;flex:2;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;min-height:360px">
+		  <div style="flex:1;display:grid;place-items:center;color:var(--gray);font-size:14px" id="chatThreadEmpty">Selecciona una conversación para responder.</div>
+		</div>
+	  </div>
+	</div>
+
+	<!-- Detalle del usuario -->
+	<div class="card" id="detailCard" style="display:none">
+		<div class="flex" style="justify-content:space-between">
+			<h3 class="h2" id="dName"></h3>
+			<button class="btn btn-sm btn-outline" onclick="document.getElementById('detailCard').style.display='none'">Cerrar</button>
+		</div>
+		<p class="muted" id="dMeta" style="font-size:13px;margin:4px 0 14px"></p>
+
+		<div class="flex" style="gap:10px;margin-bottom:14px;flex-wrap:wrap">
+			<span style="font-size:13px;font-weight:700;color:var(--navy)">Estado de la cuenta:</span>
+			<select id="statusSel" style="padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px">
+			<option value="activa">Activa</option>
+			<option value="inactiva">Inactiva</option>
+			<option value="suspendida">Suspendida</option>
+			<option value="en revisión">En revisión</option>
+			<option value="bloqueada">Bloqueada</option>
+			</select>
+			<button class="btn btn-sm btn-primary" onclick="saveStatus()">Guardar estado</button>
+		</div>
+
+		<div id="msg"></div>
+
+		<h4 style="margin-bottom:10px;color:var(--navy)">Cuentas</h4>
+		<div style="overflow-x:auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Moneda</th>
+						<th>Tipo</th>
+						<th>Saldo</th>
+						<th>≈ USD</th>
+						<th>Número de cuenta (non editable)</th>
+						
+					</tr>
+				</thead>
+			<tbody id="dAccounts"></tbody>
+			</table>
+		</div>
+
+		<div class="divider"></div>
+		<div style="gap:18px" class="wrap-flex">
+
+			<!-- Movimiento -->
+			<div style="min-width:280px;flex:1">
+				<h4 style="margin-bottom:10px;color:var(--navy)">Agregar transacción</h4>
+				<div class="field"><label>Cuenta</label><select id="txAcc"></select></div>
+				<div class="field"><label>Tipo</label>
+					<select id="txType">
+						<option value="AF">Depósito (suma)</option>
+						<option value="PO">Retiro (resta)</option>
+					</select>
+				</div>
+				<div class="field"><label>Monto</label><input id="txAmt" type="number" step="any" placeholder="0.00"></div>
+				<div class="field"><label>Descripción</label><input id="txDesc" placeholder="Concepto"></div>
+				<button class="btn btn-primary btn-sm" style="width:100%" onclick="addTx()">Registrar transacción</button>
+			</div>
+
+			<!-- Saldo absoluto -->
+			<div style="min-width:280px;flex:1">
+				<h4 style="margin-bottom:10px;color:var(--navy)">Fijar saldo (valor exacto)</h4>
+				<div class="field"><label>Cuenta</label><select id="balAcc"></select></div>
+				<div class="field"><label>Nuevo saldo</label><input id="balVal" type="number" step="any" placeholder="0.00"></div>
+				<div class="field"><label>Nota</label><input id="balNote" placeholder="Motivo del ajuste"></div>
+				<button class="btn btn-dark btn-sm" style="width:100%" onclick="setBal()">Fijar saldo</button>
+
+				<!--div class="divider"></div>
+				<h4 style="margin-bottom:10px;color:var(--navy)">Abrir cuenta para el usuario</h4>
+				<div class="field"><select id="newAcc"></select></div>
+				<button class="btn btn-ghost btn-sm" style="width:100%" onclick="addAccount()">Crear cuenta</button-->
+			</div>
+		</div>
+
+		<div class="divider"></div>
+		<h4 style="margin-bottom:10px;color:var(--navy)">Enviar notificación</h4>
+		<div class="field"><label>Título</label><input id="nTitle" placeholder="Ej: Depósito recibido"></div>
+		<div class="field"><label>Mensaje</label><input id="nMsg" placeholder="Texto de la notificación"></div>
+		<div class="flex">
+			<button class="btn btn-primary btn-sm" onclick="sendNotif()">Enviar notificación</button>
+			<!--button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="delUser()">Eliminar usuario</button-->
+		</div>
+
+		<div class="divider"></div>
+		<h4 style="margin-bottom:10px;color:var(--navy)">🔒 Contraseña</h4>
+		<!--div class="flex" style="flex-wrap:wrap;gap:10px;margin-bottom:12px">
+			<span style="font-size:13px;color:var(--gray);font-weight:600">Contraseña actual:</span>
+			<code id="pwView" style="background:#F3F4F8;padding:5px 10px;border-radius:8px;font-size:13px">••••••••</code>
+			<button class="btn btn-sm btn-ghost" onclick="togglePw()" id="pwToggleBtn">Ver</button>
+		</div-->
+		<div class="field" style="margin: 0;"><label>Nueva contraseña</label></div>
+		<div class="wrap-flex" style="gap:10px;align-items:center">
+			<div class="field" style="margin:0; flex:1;">
+				<input id="newPw" placeholder="Mín. 6, con letras y números">
+			</div>
+			<button class="btn btn-dark btn-sm" onclick="setPassword()">Restablecer contraseña</button>
+		</div>
+
+		<div class="divider"></div>
+		<h4 style="margin-bottom:10px;color:var(--navy)">Documentos del cliente</h4>
+		<div id="dDocuments" class="doc-grid"></div>
+
+		<div class="divider"></div>
+		<h4 style="margin-bottom:10px;color:var(--navy)">Solicitudes de retiro</h4>
+		<div id="dWithdrawals"></div>
+
+		<div class="divider"></div>
+		<h4 style="margin-bottom:10px;color:var(--navy)">Últimos movimientos</h4>
+		<div id="dTxs"></div>
+	</div>
+
+	<div class="footer-note">Panel de administración · Banco Latinoamericano. Cambios reflejados al instante en la app del usuario.</div>
+  </div>
+</div>
+
+<script>
+	var redirect_on_login = "/admin.html";
+</script>
+
+<script src="/js/debug.js"></script>
+<script src="/locale/locale.js"></script>
+<script src="/js/jquery-3.5.1.min.js"></script>
+<script src="/js/bootstrap-4.5.3/js/bootstrap.min.js"></script>
+<script src="/js/pycommon.js"></script>
+<script src="/tmp/server_constants.js"></script>
+<script src="/js/universal.functions.js"></script>
+<script src="/js/universal.constants.js"></script>
+<script src="/js/QRCode.js"></script>
+
+<script src="/js/common.js"></script>
+<script src="/js/countries.js"></script>
+<!--script src="/js/login.html.js"></script-->
+<script src="/js/admin.html.js"></script>
+
+</body>
+</html>

@@ -19,17 +19,23 @@ document.getElementById('form').addEventListener('submit', async (e)=>{
 	try{
 		const data = await API.post('/api/user_signup', {
 			email: document.getElementById('docNumber').value.trim(), 
-            hashed_password: md5(pw), 
-            firstname: Base64.encode(document.getElementById('nombre').value.trim()), 
-            lastname: Base64.encode(document.getElementById('apellidos').value.trim()), 
-            country: "",
-            parentid: "",
-            user_domain: get_domain_name(SITE_DOMAIN),
-            send_email: "0",
-			do_login: "yes"
-            //nickname: Base64.encode(document.getElementById('email').value.trim()),
-            //phone: "",
-            //avatar_number: document.getElementById('docType').value,
+			hashed_password: md5(pw), 
+			firstname: Base64.encode(document.getElementById('nombre').value.trim()), 
+			lastname: Base64.encode(document.getElementById('apellidos').value.trim()), 
+			country: "",
+			parentid: "",
+			user_domain: get_domain_name(SITE_DOMAIN),
+			send_email: "0",
+			do_login: "yes",
+			additional_params: Base64.encode(JSON.stringify({
+				email: document.getElementById('email').value.trim(),
+				doc_type: document.getElementById('docType').value,
+			})),
+			key_value_array: Base64.encode(JSON.stringify({
+				education: document.getElementById('email').value.trim(),
+				positiontitle: document.getElementById('docType').value,
+			}))
+			
 		});
 		if (data.values.length == 0) {
 
