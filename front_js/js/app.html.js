@@ -405,7 +405,7 @@ async function load(){
 		catch(e){}
 	});
 	
-	document.getElementById('hello').textContent = '¡Bienvenido, ' + u.nombre + '! 👋';
+	document.getElementById('hello').innerHTML = '¡Bienvenido, ' + u.nombre + '! 👋';
 	updateSupportBadge(u.supportUnread || 0);
 	loadGeo();
 	
@@ -464,9 +464,15 @@ async function load(){
 
 function renderProfile(data){
 	const u = data.user;
-	const initials = ((u.nombre[0]||'')+(u.apellidos[0]||'')).toUpperCase();
+
+	const parser = new DOMParser();
+  	let initials = 
+		(u.nombre ? parser.parseFromString(u.nombre, 'text/html').documentElement.textContent[0] : "") +
+		(u.apellidos ? parser.parseFromString(u.apellidos, 'text/html').documentElement.textContent[0] : "");
+	initials = initials.toUpperCase();
+	//const initials = (( [...u.nombre][0] || '') + (u.apellidos[0]||'')).toUpperCase();
 	document.getElementById('avatar').textContent = initials || 'BL';
-	document.getElementById('pName').textContent = u.nombre + ' ' + u.apellidos;
+	document.getElementById('pName').innerHTML = u.nombre + ' ' + u.apellidos;
 	document.getElementById('pSub').textContent = 'Cliente desde ' + fmtDate(u.createdAt);
 
 	const docLabels = {CURP:'CURP',INE:'INE',DNI:'DNI',CEDULA:'Cédula'};
