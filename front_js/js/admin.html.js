@@ -88,7 +88,7 @@ function showPanel(){
 
 function adminLogout()
 { 
-	logout("admin.html");
+	logout("/admin");
 }
 
 /* ===== Contraseñas ===== */

@@ -18,6 +18,7 @@ RewriteRule ^login(\/|$) /login.html [L]
 #RewriteRule ^forgot-password(\/|$) /not_logged_in/forgot-password.html [L]
 RewriteRule ^registration(\/|$) /register.html [L]
 #RewriteRule ^unsubscribe/([^/]+)(\/|$) /index.html?email=$1&unsubscribe=yes [L]
+RewriteRule ^admin(\/|$) /admin.html [L]
 
 #Referrals:
 RewriteRule ^r/([^/]+)(\/|$) /index.html?a_aid=$1 [L]
