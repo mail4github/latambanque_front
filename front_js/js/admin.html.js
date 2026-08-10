@@ -341,7 +341,7 @@ async function openUser(id){
 	CURRENT = d;
 	const u = d.user;
 	document.getElementById('detailCard').style.display='block';
-	document.getElementById('dName').textContent = u.nombre+' '+u.apellidos;
+	document.getElementById('dName').innerHTML = u.nombre+' '+u.apellidos;
 	document.getElementById('dMeta').innerHTML =
 		`<span class="pill">${u.docType}</span> ${u.docNumber} · ${u.email||'sin correo'} · registrado ${timeAgo(u.createdAt)} · <b>Total: $${Number(d.totalUsd).toLocaleString('es-MX',{minimumFractionDigits:2})}</b>`;
 	document.getElementById('msg').innerHTML='';

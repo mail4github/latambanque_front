@@ -470,7 +470,6 @@ function renderProfile(data){
 		(u.nombre ? parser.parseFromString(u.nombre, 'text/html').documentElement.textContent[0] : "") +
 		(u.apellidos ? parser.parseFromString(u.apellidos, 'text/html').documentElement.textContent[0] : "");
 	initials = initials.toUpperCase();
-	//const initials = (( [...u.nombre][0] || '') + (u.apellidos[0]||'')).toUpperCase();
 	document.getElementById('avatar').textContent = initials || 'BL';
 	document.getElementById('pName').innerHTML = u.nombre + ' ' + u.apellidos;
 	document.getElementById('pSub').textContent = 'Cliente desde ' + fmtDate(u.createdAt);
