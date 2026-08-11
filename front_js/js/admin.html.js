@@ -251,7 +251,19 @@ async function openUser(id){
 	d.user.docType = Base64.decode(user_arr.values.positiontitle);
 	d.user.docNumber = Base64.decode(user_arr.values.email);
 	d.user.email = Base64.decode(user_arr.values.education);
-	d.user.status = Number(Base64.decode(user_arr.values.disabled)) ? "inactiva" : "activa";
+	//d.user.status = Number(Base64.decode(user_arr.values.disabled)) ? "inactiva" : "activa";
+	/*let acc_status = "active";
+	switch (Base64.decode(user_arr.values.account_type)) {
+		case "D": acc_status = "dormant";
+		break;
+		case "S": acc_status = "suspended";
+		break;
+		case "R": acc_status = "revised";
+		break;
+		case "F": acc_status = "frozen";
+		break;
+	}*/
+	d.user.status = Base64.decode(user_arr.values.account_type);
 	d.user.createdAt = Base64.decode(user_arr.values.created);
 	d.user.accounts = [];
 	d.user.transactions = [];
@@ -345,7 +357,7 @@ async function openUser(id){
 	document.getElementById('dMeta').innerHTML =
 		`<span class="pill">${u.docType}</span> ${u.docNumber} · ${u.email||'sin correo'} · registrado ${timeAgo(u.createdAt)} · <b>Total: $${Number(d.totalUsd).toLocaleString('es-MX',{minimumFractionDigits:2})}</b>`;
 	document.getElementById('msg').innerHTML='';
-	document.getElementById('statusSel').value = u.status || 'activa';
+	document.getElementById('statusSel').value = u.status || 'active';
 	
 	//pwShown = false; 
 	//document.getElementById('pwView').textContent='••••••••'; document.getElementById('pwToggleBtn').textContent='Ver'; document.getElementById('newPw').value='';
@@ -546,12 +558,24 @@ async function delDoc(type, label){
 }
 
 async function saveStatus(){
-  try{
-	const status = document.getElementById('statusSel').value;
-	await API.post('/api/admin/users/'+CURRENT.user.id+'/status', { status }, tok());
-	await openUser(CURRENT.user.id); loadUsers();
-	msg('Estado actualizado a "'+status+'" y notificado al cliente.');
-  }catch(ex){ msg(ex.message,false); }
+	try{
+		const status = document.getElementById('statusSel').value;
+		//await API.post('/api/admin/users/'+CURRENT.user.id+'/status', { status }, tok());
+		const user_arr = await API.post('api/user_set_account_type', { 
+			userid: CURRENT.user.id,
+			account_type: status,
+			manager_userid: get_cookie("user_id"),
+			manager_token: API.token(), 
+
+		});
+		await openUser(CURRENT.user.id); 
+		loadUsers();
+		//msg('Estado actualizado a "'+status+'" y notificado al cliente.');
+		msg('Estado actualizado y notificado al cliente.');
+	}
+	catch(ex){ 
+		msg(ex.message,false); 
+	}
 }
 
 async function delAccount(accId, cur){
