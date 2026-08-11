@@ -70,9 +70,18 @@ img.ae{height:1em;width:1em;vertical-align:-0.15em;object-fit:contain;margin:0 .
 /* Marca */
 .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px}
 .brand .coin{
-  width:36px;height:36px;border-radius:50%;background:var(--navy);
-  border:2px solid var(--gold);
-  display:grid;place-items:center;color:#fff;font-weight:900;font-size:17px;
+	width:36px;
+	min-width:36px;
+	height:36px;
+	min-height:36px;
+	border-radius:50%;
+	background:var(--navy);
+	border:2px solid var(--gold);
+	display:grid;
+	place-items:center;
+	color:#fff;
+	font-weight:900;
+	font-size:17px;
 }
 .brand .coin img.ae{height:.95em;width:.95em}
 .brand .name{font-size:16px;color:var(--navy);font-weight:700}
