@@ -414,12 +414,13 @@ async function openUser(id){
 
 	// Movimientos
 	const user_transactions = await API.post('api/get_sorted_table', { 
-		userid: id,
+		for_userid: id,
 		manager_userid: get_cookie("user_id"),
 		manager_token: API.token(),
 		table_name: 'transactions',
 		sort_order: 'DESC',
 		max_ros: 20,
+		display_in_short: 1,
 	});
 	user_transactions.values.table.forEach(transaction => {
 		let tr = {
