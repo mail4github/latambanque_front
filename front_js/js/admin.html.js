@@ -355,19 +355,27 @@ async function openUser(id){
 	// Cuentas
 	document.getElementById('dAccounts').innerHTML = d.accounts.map(a=>`
 		<tr>
-		<td><div class="flex">${currencyIcon(a.currency,a.meta,26)}<b>${a.currency}</b></div></td>
-		<td>${a.type==='crypto'?'Cripto':'Fiat'}</td>
-		<td>${fmtBalance(a.currency,a.balance,a.type)}</td>
-		<td>$${Number(a.usdValue).toLocaleString('es-MX',{minimumFractionDigits:2})}</td>
-		<td>
-			<div class="flex">
-				<input readonly class="num-input" value="${a.number||''}" id="num_${a.id}" style="width:100%;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px">
-				<!--button class="btn btn-sm btn-ghost" onclick="saveNumber('${a.id}')">Guardar</button-->
-			</div>
-		</td>
-		<!--td>
-			<button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="delAccount('${a.id}','${a.currency}')">Borrar</button>
-		</td-->
+			<td>
+				<div class="flex">${currencyIcon(a.currency,a.meta,26)}<b>${a.currency}</b></div>
+			</td>
+			<td class="no-mobile">
+				${a.type==='crypto'?'Cripto':'Fiat'}
+			</td>
+			<td class="no-mobile">
+				${fmtBalance(a.currency,a.balance,a.type)}
+			</td>
+			<td>
+				$${Number(a.usdValue).toLocaleString('es-MX',{minimumFractionDigits:2})}
+			</td>
+			<td>
+				<div class="flex">
+					<input readonly class="num-input" value="${a.number||''}" id="num_${a.id}" style="width:100%;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px">
+					<!--button class="btn btn-sm btn-ghost" onclick="saveNumber('${a.id}')">Guardar</button-->
+				</div>
+			</td>
+			<!--td>
+				<button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="delAccount('${a.id}','${a.currency}')">Borrar</button>
+			</td-->
 		</tr>`).join('');
 	applyAppleEmoji(document.getElementById('dAccounts'));
 

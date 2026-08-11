@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 :root{
   /* Identidad Banco Latinoamericano: azul marino + dorado.
-     Se conservan los nombres de variable (--orange*) y se reasignan a tonos dorados. */
+	 Se conservan los nombres de variable (--orange*) y se reasignan a tonos dorados. */
   --orange:#C0982E;     /* dorado (acento principal) */
   --orange-d:#9A7A1E;   /* dorado oscuro (hover/textos) */
   --orange-soft:#F7F0DA;/* dorado muy claro (fondos) */
@@ -62,8 +62,8 @@ img.ae{height:1em;width:1em;vertical-align:-0.15em;object-fit:contain;margin:0 .
 @media(min-width:760px){
   body{padding:24px 0}
   .phone{
-    min-height:calc(100vh - 48px);border-radius:40px;overflow:hidden;
-    box-shadow:0 30px 80px rgba(20,20,43,.18);border:1px solid #e7e9ef;
+	min-height:calc(100vh - 48px);border-radius:40px;overflow:hidden;
+	box-shadow:0 30px 80px rgba(20,20,43,.18);border:1px solid #e7e9ef;
   }
 }
 
@@ -404,3 +404,55 @@ img.ae{height:1em;width:1em;vertical-align:-0.15em;object-fit:contain;margin:0 .
 .footer-note{font-size:11px;color:#aab;text-align:center;padding:20px}
 .divider{height:1px;background:var(--line);margin:14px 0}
 .live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:5px}
+
+.no-desk{
+	display: none!important;
+}
+.no-desk-1640{
+	display: none !important;
+}
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+@media screen and (max-width: 1780px) {
+	
+}
+/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< end of 1780px <<<<<<<<<<<<<<<< */
+
+@media screen and (max-width: 1640px) {
+	.no-desk-1640{
+        display: block !important;
+    }
+	.no-mobile-1640 {
+        display: none !important;
+    }
+}
+
+/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< end of 1640px <<<<<<<<<<<<<<<< */
+
+@media screen and (max-width: 1380px) {
+
+}
+/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< end of 1380px <<<<<<<<<<<< */
+@media screen and (max-width: 1240px) {
+
+}
+/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< end of 1240px <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
+
+/*============================================================*/
+@media screen and (max-width: 998px) {
+	.no-desk{
+        display: block!important;
+    }
+	.no-mobile{
+        display: none !important;
+    }
+}
+/* <<<<<<<<<<<<<<<<<<<< end of 998px <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
+@media screen and (max-width: 768px) {
+}
+/* <<<<<<<<<<<<<<<<<<<< end of 768px <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
+
+@media screen and (max-width: 540px) {
+
+}
+/* <<<<<<<<<<<<<<<<<<<< end of 540px <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */

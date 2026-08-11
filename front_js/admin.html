@@ -111,11 +111,10 @@
 				<thead>
 					<tr>
 						<th>Moneda</th>
-						<th>Tipo</th>
-						<th>Saldo</th>
+						<th class="no-mobile">Tipo</th>
+						<th class="no-mobile">Saldo</th>
 						<th>≈ USD</th>
 						<th>Número de cuenta (non editable)</th>
-						
 					</tr>
 				</thead>
 			<tbody id="dAccounts"></tbody>
@@ -171,9 +170,11 @@
 			<code id="pwView" style="background:#F3F4F8;padding:5px 10px;border-radius:8px;font-size:13px">••••••••</code>
 			<button class="btn btn-sm btn-ghost" onclick="togglePw()" id="pwToggleBtn">Ver</button>
 		</div-->
-		<div class="field" style="margin: 0;"><label>Nueva contraseña</label></div>
+		<div class="field" style="margin: 0;">
+			<label>Nueva contraseña</label>
+		</div>
 		<div class="wrap-flex" style="gap:10px;align-items:center">
-			<div class="field" style="margin:0; flex:1;">
+			<div class="field" style="margin:0; flex:1; min-width: 200px;">
 				<input id="newPw" placeholder="Mín. 6, con letras y números">
 			</div>
 			<button class="btn btn-dark btn-sm" onclick="setPassword()">Restablecer contraseña</button>
