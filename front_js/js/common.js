@@ -57,7 +57,7 @@ const API = {
 				console.error(e);
 			}
 			if ( !res_ok ) {
-				throw new Error(data.error || ('Error autoriz ' + res.status));
+				throw new Error(data.message || ('Error autoriz ' + res.status));
 			}
 			return data;
 		}

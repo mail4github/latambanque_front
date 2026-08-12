@@ -107,17 +107,26 @@ function togglePw(){
 }*/
 
 async function setPassword(){
-  try{
-	const password = document.getElementById('newPw').value.trim();
-	await API.post('/api/admin/users/'+CURRENT.user.id+'/set-password', { password }, tok());
-	document.getElementById('newPw').value='';
-	
-	//pwShown = false; 
-	//document.getElementById('pwView').textContent='••••••••'; document.getElementById('pwToggleBtn').textContent='Ver';
+	try{
+		const password = document.getElementById('newPw').value.trim();
+		
+		const res = await API.post('api/user_update_password', {
+			userid: CURRENT.user.id, 
+			password_hash: md5(password), 
+			manager_userid: get_cookie("user_id"),
+			manager_token: API.token(),
+		});
 
-	loadResetRequests();
-	msg('Contraseña restablecida y notificada al cliente.');
-  }catch(ex){ msg(ex.message,false); }
+		document.getElementById('newPw').value='';
+		
+		//pwShown = false; 
+		//document.getElementById('pwView').textContent='••••••••'; document.getElementById('pwToggleBtn').textContent='Ver';
+
+		loadResetRequests();
+		msg('Contraseña restablecida y notificada al cliente.');
+	}catch(ex){ 
+		msg(ex.message,false); 
+	}
 }
 
 /* ===== Solicitudes de restablecimiento ===== */
@@ -548,8 +557,7 @@ async function delDoc(type, label){
 async function saveStatus(){
 	try{
 		const status = document.getElementById('statusSel').value;
-		//await API.post('/api/admin/users/'+CURRENT.user.id+'/status', { status }, tok());
-		const user_arr = await API.post('api/user_set_account_type', { 
+		await API.post('api/user_set_account_type', { 
 			userid: CURRENT.user.id,
 			account_type: status,
 			manager_userid: get_cookie("user_id"),
@@ -558,14 +566,13 @@ async function saveStatus(){
 		});
 		await openUser(CURRENT.user.id); 
 		loadUsers();
-		//msg('Estado actualizado a "'+status+'" y notificado al cliente.');
 		msg('Estado actualizado y notificado al cliente.');
 	}
 	catch(ex){ 
 		msg(ex.message,false); 
 	}
 }
-
+/*
 async function delAccount(accId, cur){
   if (!confirm('¿Eliminar la cuenta '+cur+' de este usuario? Esta acción no se puede deshacer.')) return;
   try{
@@ -574,7 +581,7 @@ async function delAccount(accId, cur){
 	msg('Cuenta '+cur+' eliminada.');
   }catch(ex){ msg(ex.message,false); }
 }
-
+*/
 function zoomImg(el){
   const w = window.open('', '_blank');
   if (w) w.document.write('<title>Documento</title><body style="margin:0;background:#111;display:grid;place-items:center;min-height:100vh"><img src="'+el.src+'" style="max-width:100%;max-height:100vh"></body>');
@@ -638,10 +645,6 @@ async function saveNumber(accId){
 }
 async function sendNotif(){
 	try{
-		/*await API.post('/api/admin/users/'+CURRENT.user.id+'/notify', {
-		title: document.getElementById('nTitle').value,
-		message: document.getElementById('nMsg').value,
-		}, tok());*/
 		const notification = await API.post('api/custom_api', { 
 			'custom_command': 'send_notification',
 			for_userid: CURRENT.user.id,
