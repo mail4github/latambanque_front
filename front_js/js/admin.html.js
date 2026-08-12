@@ -251,18 +251,6 @@ async function openUser(id){
 	d.user.docType = Base64.decode(user_arr.values.positiontitle);
 	d.user.docNumber = Base64.decode(user_arr.values.email);
 	d.user.email = Base64.decode(user_arr.values.education);
-	//d.user.status = Number(Base64.decode(user_arr.values.disabled)) ? "inactiva" : "activa";
-	/*let acc_status = "active";
-	switch (Base64.decode(user_arr.values.account_type)) {
-		case "D": acc_status = "dormant";
-		break;
-		case "S": acc_status = "suspended";
-		break;
-		case "R": acc_status = "revised";
-		break;
-		case "F": acc_status = "frozen";
-		break;
-	}*/
 	d.user.status = Base64.decode(user_arr.values.account_type);
 	d.user.createdAt = Base64.decode(user_arr.values.created);
 	d.user.accounts = [];
@@ -649,14 +637,28 @@ async function saveNumber(accId){
   }catch(ex){ msg(ex.message,false); }
 }
 async function sendNotif(){
-  try{
-	await API.post('/api/admin/users/'+CURRENT.user.id+'/notify', {
-	  title: document.getElementById('nTitle').value,
-	  message: document.getElementById('nMsg').value,
-	}, tok());
-	document.getElementById('nTitle').value=''; document.getElementById('nMsg').value='';
-	msg('Notificación enviada.');
-  }catch(ex){ msg(ex.message,false); }
+	try{
+		/*await API.post('/api/admin/users/'+CURRENT.user.id+'/notify', {
+		title: document.getElementById('nTitle').value,
+		message: document.getElementById('nMsg').value,
+		}, tok());*/
+		const notification = await API.post('api/custom_api', { 
+			'custom_command': 'send_notification',
+			for_userid: CURRENT.user.id,
+			subject: document.getElementById('nTitle').value,
+			message: document.getElementById('nMsg').value,
+		});
+		if ( !notification.success ) {
+			throw new Error("Error: " + notification.message);
+		}
+
+		document.getElementById('nTitle').value=''; 
+		document.getElementById('nMsg').value='';
+		msg('Notificación enviada.');
+	}
+	catch(ex){ 
+		msg(ex.message, false); 
+	}
 }
 
 /*async function delUser(){

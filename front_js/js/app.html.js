@@ -313,15 +313,7 @@ async function load(){
 		"createdAt": Base64.decode(user_info["values"]["created"]), //"2026-07-21T09:52:25.885Z",
 		"accounts": [],
 		"transactions": [],
-		"notifications": [
-			{
-				"id": "ntf_8897d378070b3e5d",
-				"title": "¡Bienvenido a Banco Latinoamericano!",
-				"message": "Tu cuenta fue creada correctamente. Ya puedes operar y abrir nuevas cuentas en cripto y monedas nacionales de toda Latinoamérica.",
-				"date": "2026-07-21T09:52:25.885Z",
-				"read": false
-			}
-		],
+		"notifications": [],
 		"withdrawals": [],
 		"documents": {},
 		"supportUnread": 0
@@ -431,6 +423,24 @@ async function load(){
 		? ('<div class="section-label">Solicitudes de retiro</div>' + wds.slice(0,10).map(renderWdCard).join(''))
 		: '';
 	for (const w of wds) knownWd[w.id] = w.status;
+	
+	const user_transactions = await API.post('api/get_sorted_table', { 
+		for_userid: get_cookie("user_id"),
+		table_name: 'transactions',
+		sort_order: 'DESC',
+		max_ros: 20,
+	});
+	user_transactions.values.table.forEach(transaction => {
+		let tr = {
+			type: (transaction.c_type == "MA" ? "adjustment" : transaction.c_type),
+			amount: Number(transaction.c_commission_as_number),
+			description: transaction.c_description,
+			date: format_unix_timestamp(Number(transaction.c_unix_created), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
+			currency: transaction.c_currency,
+			balanceAfter: transaction.c_currency_balance,
+		};
+		u.transactions.push(tr);
+	});
 
 	// ---- Movimientos (Actividad) ----
 	const txs = u.transactions || [];
@@ -447,6 +457,26 @@ async function load(){
 	}).join('') : '<p class="muted" style="padding:16px 22px;font-size:14px">Aún no tienes movimientos. Cuando recibas fondos aparecerán aquí.</p>';
 
 	// ---- Notificaciones (Actividad) ----
+	const user_notifications = await API.post('api/get_sorted_table', { 
+		for_userid: get_cookie("user_id"),
+		table_name: 'user_emails',
+		sort_column: 2,
+		sort_order: 'DESC',
+		max_ros: 20,
+		additional_columns: Base64.encode(JSON.stringify({'c_message': 'body_html',})),
+		
+	});
+	user_notifications.values.table.forEach(note => {
+		let tr = {
+			id: note.c_mailid,
+			title: note.c_subject,
+			message: note.c_message,
+			date: format_unix_timestamp(Number(note.c_created_time), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
+			read: false
+		};
+		u.notifications.push(tr);
+	});
+
 	const notifs = u.notifications || [];
 	const unread = notifs.filter(n=>!n.read).length;
 	document.getElementById('notCount').textContent = unread ? '· ' + unread : '';
