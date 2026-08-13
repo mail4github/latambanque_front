@@ -546,12 +546,24 @@ async function addAccount(){
 }*/
 
 async function delDoc(type, label){
-  if (!confirm('¿Borrar el documento "'+label+'" de este usuario?')) return;
-  try{
-	await API.del('/api/admin/users/'+CURRENT.user.id+'/documents/'+type, tok());
-	await openUser(CURRENT.user.id);
-	msg('Documento "'+label+'" eliminado.');
-  }catch(ex){ msg(ex.message,false); }
+	if (!confirm('¿Borrar el documento "'+label+'" de este usuario?')) {
+		return;
+	}
+	try{
+		const res = await API.post('api/save_value_in_additional_params', { 
+			userid: CURRENT.user.id,
+			manager_userid: get_cookie("user_id"),
+			manager_token: API.token(),
+			"value_name": type,
+			"value": "",
+		});
+
+		await openUser(CURRENT.user.id);
+		msg('Documento "'+label+'" eliminado.');
+	}
+	catch(ex){ 
+		msg(ex.message,false); 
+	}
 }
 
 async function saveStatus(){

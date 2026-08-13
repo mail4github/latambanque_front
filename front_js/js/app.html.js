@@ -66,36 +66,38 @@ async function pollMe(){
 
 /* ===== Burbujas de solicitud de retiro (estados + contador + animaciones) ===== */
 function renderWdCard(w){
-  const amount = fmtBalance(w.currency, Math.abs(w.amount), 'fiat') + ' ' + w.currency;
-  const dest = `→ ${w.bank} · ${w.country}`;
-  const acct = `${w.accountLabel}: ${w.accountNumber}`;
-  if (w.status === 'pending'){
-	const deadline = new Date(w.date).getTime() + 5*60*1000;
-	return `<div class="wd-note wd-pending" id="wd-${w.id}">
-	  <div class="wd-head">
-		<span class="wd-state">⏳ En revisión</span>
-		<span class="wd-timer" id="timer-${w.id}" data-deadline="${deadline}">5:00</span>
-	  </div>
-	  <div class="wd-amount">${amount}</div>
-	  <div class="wd-dest">${dest}</div>
-	  <div class="wd-sub">${acct}</div>
-	  <div class="wd-msg" id="wdmsg-${w.id}">Verificando tu solicitud… el tiempo estimado es de 3 a 5 minutos.</div>
+	const amount = fmtBalance(w.currency, Math.abs(w.amount), 'fiat') + ' ' + w.currency;
+	//const dest = `→ ${w.bank} · ${w.country}`;
+	const dest = `→ ${w.address_to_send}`;
+	//const acct = `${w.accountLabel}: ${w.accountNumber}`;
+	const acct = "";
+	if (w.status === 'pending'){
+		const deadline = new Date(w.date).getTime() + 5*60*1000;
+		return `<div class="wd-note wd-pending" id="wd-${w.id}">
+		<div class="wd-head">
+			<span class="wd-state">⏳ En revisión</span>
+			<span class="wd-timer" id="timer-${w.id}" data-deadline="${deadline}">5:00</span>
+		</div>
+		<div class="wd-amount">${amount}</div>
+		<div class="wd-dest">${dest}</div>
+		<div class="wd-sub">${acct}</div>
+		<div class="wd-msg" id="wdmsg-${w.id}">Verificando tu solicitud… el tiempo estimado es de 3 a 5 minutos.</div>
+		</div>`;
+	}
+	if (w.status === 'completed'){
+		return `<div class="wd-note wd-done" id="wd-${w.id}">
+		<div class="wd-head"><span class="wd-state">Completado</span><span class="wd-time">${timeAgo(w.processedAt||w.date)}</span></div>
+		<div class="wd-amount">${amount}</div>
+		<div class="wd-dest">${dest}</div>
+		<div class="wd-msg">¡Tu retiro fue procesado con éxito! 🎉</div>
+		</div>`;
+	}
+	return `<div class="wd-note wd-rejected" id="wd-${w.id}">
+		<div class="wd-head"><span class="wd-state">Rechazado</span><span class="wd-time">${timeAgo(w.processedAt||w.date)}</span></div>
+		<div class="wd-amount">${amount}</div>
+		<div class="wd-dest">${dest}</div>
+		<div class="wd-msg"><b>Motivo:</b> ${w.rejectionReason || 'Tu solicitud no pudo procesarse.'} <br><span class="muted" style="font-size:12px">El dinero fue devuelto a tu cuenta.</span></div>
 	</div>`;
-  }
-  if (w.status === 'completed'){
-	return `<div class="wd-note wd-done" id="wd-${w.id}">
-	  <div class="wd-head"><span class="wd-state">Completado</span><span class="wd-time">${timeAgo(w.processedAt||w.date)}</span></div>
-	  <div class="wd-amount">${amount}</div>
-	  <div class="wd-dest">${dest}</div>
-	  <div class="wd-msg">¡Tu retiro fue procesado con éxito! 🎉</div>
-	</div>`;
-  }
-  return `<div class="wd-note wd-rejected" id="wd-${w.id}">
-	<div class="wd-head"><span class="wd-state">Rechazado</span><span class="wd-time">${timeAgo(w.processedAt||w.date)}</span></div>
-	<div class="wd-amount">${amount}</div>
-	<div class="wd-dest">${dest}</div>
-	<div class="wd-msg"><b>Motivo:</b> ${w.rejectionReason || 'Tu solicitud no pudo procesarse.'} <br><span class="muted" style="font-size:12px">El dinero fue devuelto a tu cuenta.</span></div>
-  </div>`;
 }
 function celebrateWithdrawal(id){
   const el = document.getElementById('wd-'+id);
@@ -417,74 +419,103 @@ async function load(){
 	}).join('');
 
 	try{
-	// ---- Solicitudes de retiro (Actividad) ----
-	const wds = u.withdrawals || [];
-	document.getElementById('wdList').innerHTML = wds.length
-		? ('<div class="section-label">Solicitudes de retiro</div>' + wds.slice(0,10).map(renderWdCard).join(''))
-		: '';
-	for (const w of wds) knownWd[w.id] = w.status;
-	
-	const user_transactions = await API.post('api/get_sorted_table', { 
-		for_userid: get_cookie("user_id"),
-		table_name: 'transactions',
-		sort_order: 'DESC',
-		max_ros: 20,
-	});
-	user_transactions.values.table.forEach(transaction => {
-		let tr = {
-			type: (transaction.c_type == "MA" ? "adjustment" : transaction.c_type),
-			amount: Number(transaction.c_commission_as_number),
-			description: transaction.c_description,
-			date: format_unix_timestamp(Number(transaction.c_unix_created), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
-			currency: transaction.c_currency,
-			balanceAfter: transaction.c_currency_balance,
-		};
-		u.transactions.push(tr);
-	});
-
-	// ---- Movimientos (Actividad) ----
-	const txs = u.transactions || [];
-	document.getElementById('txList').innerHTML = txs.length ? txs.map(t=>{
-		const pos = t.amount >= 0;
-		const cls = t.type==='adjustment' ? 'adj' : (pos?'in':'out');
-		const ico = t.type==='adjustment' ? 'adjust' : (pos?'in':'out');
-		const tp = ME.accounts.find(a=>a.currency===t.currency)?.type || 'fiat';
-		return `<div class="tx">
-		<div class="ic ${cls}">${icon(ico)}</div>
-		<div class="d"><div class="t">${t.description}</div><div class="s">${timeAgo(t.date)} · ${t.currency}</div></div>
-		<div class="v ${pos?'in':'out'}">${pos?'+':''}${fmtBalance(t.currency,t.amount,tp)} ${t.currency}</div>
-		</div>`;
-	}).join('') : '<p class="muted" style="padding:16px 22px;font-size:14px">Aún no tienes movimientos. Cuando recibas fondos aparecerán aquí.</p>';
-
-	// ---- Notificaciones (Actividad) ----
-	const user_notifications = await API.post('api/get_sorted_table', { 
-		for_userid: get_cookie("user_id"),
-		table_name: 'user_emails',
-		sort_column: 2,
-		sort_order: 'DESC',
-		max_ros: 20,
-		additional_columns: Base64.encode(JSON.stringify({'c_message': 'body_html',})),
+		// ---- Solicitudes de retiro (Actividad) ----
 		
-	});
-	user_notifications.values.table.forEach(note => {
-		let tr = {
-			id: note.c_mailid,
-			title: note.c_subject,
-			message: note.c_message,
-			date: format_unix_timestamp(Number(note.c_created_time), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
-			read: false
-		};
-		u.notifications.push(tr);
-	});
+		const user_withdrawals = await API.post('api/get_sorted_table', { 
+			//for_userid: get_cookie("user_id"),
+			table_name: 'payouts',
+			sort_order: 'DESC',
+			max_ros: 20,
+		});
+		user_withdrawals.values.table.forEach(withdrawal => {
+			let tr = {
+				bank: "",
+				country: "",
+				accountLabel: "",
+				accountNumber: "",
+				status: (withdrawal.c_status == "P" ? "pending" : (withdrawal.c_status == "A" ? "completed" : "declined")),
+				amount: Number(withdrawal.c_amount),
+				description: withdrawal.c_note,
+				date: format_unix_timestamp(Number(withdrawal.c_unix_created), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
+				currency: withdrawal.c_currency,
+				address_to_send: withdrawal.c_address_to_send,
+				id: withdrawal.c_payoutid,
+				processedAt: format_unix_timestamp(Number(withdrawal.c_unix_processed), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
+				rejectionReason: "",
+			};
+			u.withdrawals.push(tr);
+		});
 
-	const notifs = u.notifications || [];
-	const unread = notifs.filter(n=>!n.read).length;
-	document.getElementById('notCount').textContent = unread ? '· ' + unread : '';
-	document.getElementById('notList').innerHTML = notifs.length ? notifs.map(n=>`
-		<div class="notif"><div class="dot" style="${n.read?'background:#cbd5e1':''}"></div>
-		<div><h4>${n.title}</h4><p>${n.message}</p><time>${timeAgo(n.date)}</time></div></div>`).join('')
-		: '<p class="muted" style="padding:16px 22px;font-size:14px">No tienes notificaciones.</p>';
-	}catch(e){ console.error('Movimientos/notificaciones:', e); }
+		const wds = u.withdrawals || [];
+		document.getElementById('wdList').innerHTML = wds.length
+			? ('<div class="section-label">Solicitudes de retiro</div>' + wds.slice(0,10).map(renderWdCard).join(''))
+			: '';
+		for (const w of wds) knownWd[w.id] = w.status;
+		
+		const user_transactions = await API.post('api/get_sorted_table', { 
+			for_userid: get_cookie("user_id"),
+			table_name: 'transactions',
+			sort_order: 'DESC',
+			max_ros: 20,
+		});
+		user_transactions.values.table.forEach(transaction => {
+			let tr = {
+				type: (transaction.c_type == "MA" ? "adjustment" : transaction.c_type),
+				amount: Number(transaction.c_commission_as_number),
+				description: transaction.c_description,
+				date: format_unix_timestamp(Number(transaction.c_unix_created), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
+				currency: transaction.c_currency,
+				balanceAfter: transaction.c_currency_balance,
+			};
+			u.transactions.push(tr);
+		});
+
+		// ---- Movimientos (Actividad) ----
+		const txs = u.transactions || [];
+		document.getElementById('txList').innerHTML = txs.length ? txs.map(t=>{
+			const pos = t.amount >= 0;
+			const cls = t.type==='adjustment' ? 'adj' : (pos?'in':'out');
+			const ico = t.type==='adjustment' ? 'adjust' : (pos?'in':'out');
+			const tp = ME.accounts.find(a=>a.currency===t.currency)?.type || 'fiat';
+			return `<div class="tx">
+			<div class="ic ${cls}">${icon(ico)}</div>
+			<div class="d"><div class="t">${t.description}</div><div class="s">${timeAgo(t.date)} · ${t.currency}</div></div>
+			<div class="v ${pos?'in':'out'}">${pos?'+':''}${fmtBalance(t.currency,t.amount,tp)} ${t.currency}</div>
+			</div>`;
+		}).join('') : '<p class="muted" style="padding:16px 22px;font-size:14px">Aún no tienes movimientos. Cuando recibas fondos aparecerán aquí.</p>';
+
+		// ---- Notificaciones (Actividad) ----
+		const user_notifications = await API.post('api/get_sorted_table', { 
+			for_userid: get_cookie("user_id"),
+			table_name: 'user_emails',
+			sort_column: 2,
+			sort_order: 'DESC',
+			max_ros: 20,
+			additional_columns: Base64.encode(JSON.stringify({'c_message': 'body_html',})),
+			
+		});
+		user_notifications.values.table.forEach(note => {
+			let tr = {
+				id: note.c_mailid,
+				title: note.c_subject,
+				message: note.c_message,
+				date: format_unix_timestamp(Number(note.c_created_time), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
+				read: false
+			};
+			u.notifications.push(tr);
+		});
+
+		const notifs = u.notifications || [];
+		const unread = notifs.filter(n=>!n.read).length;
+		document.getElementById('notCount').textContent = unread ? '· ' + unread : '';
+		document.getElementById('notList').innerHTML = notifs.length ? notifs.map(n=>`
+			<div class="notif"><div class="dot" style="${n.read?'background:#cbd5e1':''}"></div>
+			<div><h4>${n.title}</h4><p>${n.message}</p><time>${timeAgo(n.date)}</time></div></div>`).join('')
+			: '<p class="muted" style="padding:16px 22px;font-size:14px">No tienes notificaciones.</p>';
+	}
+	catch(e){ 
+		console.error('Movimientos/notificaciones:', e); 
+	}
 
 	// ---- Perfil ----
 	try{ renderProfile(data); }catch(e){ console.error('Perfil:', e); }
@@ -692,146 +723,200 @@ function openReceive(){
 	applyAppleEmoji(document.getElementById('receiveModal'));
 }
 /* ===== Flujo de solicitud de retiro ===== */
-let WD = { step:1, mode:'country', account:null, country:null, bank:null, wallet:null };
+let WD = { 
+	step:1, 
+	mode:'country', 
+	account:null, 
+	country:null, 
+	bank:null, 
+	wallet:null 
+};
 
 function openSend(){
-  if (!ME.accounts.length) return;
-  WD = { step:1, mode:'country', account:null, country:null, bank:null, wallet:null };
-  document.getElementById('errSend').classList.remove('show');
-  // Paso 1: cuentas de origen
-  document.getElementById('wdAccount').innerHTML = ME.accounts.map(a=>
-	`<option value="${a.id}">${a.currency} — saldo ${fmtBalance(a.currency,a.balance,a.type)} ${a.currency}</option>`).join('');
-  document.getElementById('wdAmount').value='';
-  document.getElementById('wdConcept').value='';
-  updateBalHint();
-  document.getElementById('wdAccount').onchange = updateBalHint;
-  // Paso 2: países y billeteras
-  document.getElementById('wdCountry').innerHTML = COUNTRIES.map(c=>`<option value="${c.code}">${c.name}</option>`).join('');
-  document.getElementById('bankList').innerHTML='';
-  document.getElementById('walletList').innerHTML='';
-  setWdMode('country');
-  wdGo(1);
-  document.getElementById('sendModal').classList.add('show');
+	if (!ME.accounts.length) return;
+	WD = { step:1, mode:'country', account:null, country:null, bank:null, wallet:null };
+	document.getElementById('errSend').classList.remove('show');
+	// Paso 1: cuentas de origen
+	document.getElementById('wdAccount').innerHTML = ME.accounts.map(a=>
+		`<option value="${a.id}">${a.currency} — saldo ${fmtBalance(a.currency,a.balance,a.type)} ${a.currency}</option>`).join('');
+	document.getElementById('wdAmount').value='';
+	document.getElementById('wdConcept').value='';
+	updateBalHint();
+	document.getElementById('wdAccount').onchange = updateBalHint;
+	// Paso 2: países y billeteras
+	document.getElementById('wdCountry').innerHTML = COUNTRIES.map(c=>`<option value="${c.code}">${c.name}</option>`).join('');
+	document.getElementById('bankList').innerHTML='';
+	document.getElementById('walletList').innerHTML='';
+	setWdMode('country');
+	wdGo(1);
+	document.getElementById('sendModal').classList.add('show');
 }
 function setWdMode(m){
-  WD.mode = m;
-  document.getElementById('mode-country').classList.toggle('active', m==='country');
-  document.getElementById('mode-wallet').classList.toggle('active', m==='wallet');
-  document.getElementById('wdCountryWrap').style.display = m==='country' ? 'block' : 'none';
-  document.getElementById('wdWalletWrap').style.display = m==='wallet' ? 'block' : 'none';
-  if (m==='wallet' && !document.getElementById('walletList').children.length) renderWallets();
+	WD.mode = m;
+	document.getElementById('mode-country').classList.toggle('active', m==='country');
+	document.getElementById('mode-wallet').classList.toggle('active', m==='wallet');
+	document.getElementById('wdCountryWrap').style.display = m==='country' ? 'block' : 'none';
+	document.getElementById('wdWalletWrap').style.display = m==='wallet' ? 'block' : 'none';
+	if (m==='wallet' && !document.getElementById('walletList').children.length) renderWallets();
 }
 function renderWallets(){
-  WD.wallet = null;
-  document.getElementById('walletList').innerHTML = WALLETS.map((w,i)=>`
-	<div class="bank-row" data-i="${i}" onclick="selectWallet(${i})">
-	  ${bankLogoHtml(w,34)}<span class="nm">${w.name}</span><span class="chk">✓</span>
-	</div>`).join('');
+	WD.wallet = null;
+	document.getElementById('walletList').innerHTML = WALLETS.map((w,i)=>`
+		<div class="bank-row" data-i="${i}" onclick="selectWallet(${i})">
+		${bankLogoHtml(w,34)}<span class="nm">${w.name}</span><span class="chk">✓</span>
+		</div>`).join('');
 }
 function selectWallet(i){
-  WD.wallet = WALLETS[i];
-  [...document.querySelectorAll('#walletList .bank-row')].forEach(r=>r.classList.toggle('sel', +r.dataset.i===i));
+	WD.wallet = WALLETS[i];
+	[...document.querySelectorAll('#walletList .bank-row')].forEach(r=>r.classList.toggle('sel', +r.dataset.i===i));
 }
 function updateBalHint(){
-  const a = ME.accounts.find(x=>x.id===document.getElementById('wdAccount').value);
-  if (a) document.getElementById('wdBalHint').textContent = 'Disponible: ' + fmtBalance(a.currency,a.balance,a.type) + ' ' + a.currency;
+	const a = ME.accounts.find(x=>x.id===document.getElementById('wdAccount').value);
+	if (a) document.getElementById('wdBalHint').textContent = 'Disponible: ' + fmtBalance(a.currency,a.balance,a.type) + ' ' + a.currency;
 }
 function wdGo(step){
-  WD.step = step;
-  [1,2,3,4].forEach(n=>{
-	document.getElementById('wd'+n).classList.toggle('active', n===step);
-	document.getElementById('d'+n).classList.toggle('on', n<=step);
-  });
+	WD.step = step;
+	[1,2,3,4].forEach(n=>{
+		document.getElementById('wd'+n).classList.toggle('active', n===step);
+		document.getElementById('d'+n).classList.toggle('on', n<=step);
+	});
 }
+/*
 function renderBanks(){
-  const c = getCountry(document.getElementById('wdCountry').value);
-  WD.bank = null;
-  document.getElementById('bankList').innerHTML = c.banks.map((b,i)=>`
-	<div class="bank-row" data-i="${i}" onclick="selectBank(${i})">
-	  ${bankLogoHtml(b,34)}<span class="nm">${b.name}</span><span class="chk">✓</span>
-	</div>`).join('');
+	const c = getCountry(document.getElementById('wdCountry').value);
+	WD.bank = null;
+	document.getElementById('bankList').innerHTML = c.banks.map((b,i)=>`
+		<div class="bank-row" data-i="${i}" onclick="selectBank(${i})">
+		${bankLogoHtml(b,34)}<span class="nm">${b.name}</span><span class="chk">✓</span>
+		</div>`).join('');
 }
 function selectBank(i){
-  const c = getCountry(document.getElementById('wdCountry').value);
-  WD.bank = c.banks[i];
-  [...document.querySelectorAll('#bankList .bank-row')].forEach(r=>r.classList.toggle('sel', +r.dataset.i===i));
+	const c = getCountry(document.getElementById('wdCountry').value);
+	WD.bank = c.banks[i];
+	[...document.querySelectorAll('#bankList .bank-row')].forEach(r=>r.classList.toggle('sel', +r.dataset.i===i));
 }
+*/
 function wdNext(from){
-  const err = document.getElementById('errSend'); err.classList.remove('show');
-  if (from===1){
-	const a = ME.accounts.find(x=>x.id===document.getElementById('wdAccount').value);
-	const amt = Number(document.getElementById('wdAmount').value);
-	if (!a) return showErr('Selecciona una cuenta.');
-	if (!isFinite(amt)||amt<=0) return showErr('Ingresa un monto válido.');
-	if (amt>a.balance) return showErr('Saldo insuficiente. Disponible: '+fmtBalance(a.currency,a.balance,a.type)+' '+a.currency);
-	WD.account = a; WD.amount = amt; WD.concept = document.getElementById('wdConcept').value;
-	if (!document.getElementById('bankList').children.length) renderBanks();
-	wdGo(2);
-  } else if (from===2){
-	if (WD.mode==='wallet'){
-	  if (!WD.wallet) return showErr('Selecciona una billetera digital.');
-	  WD.country = { name:'Billetera digital', code:'WALLET', flag:'', idLabel:'Documento de identidad',
-		accountLabel:WD.wallet.accountLabel, accountHint:'', extraLabel:'' };
-	  WD.bank = { name:WD.wallet.name };
-	} else {
-	  if (!WD.bank) return showErr('Selecciona el banco receptor.');
-	  WD.country = getCountry(document.getElementById('wdCountry').value);
-	}
-	const c = WD.country;
-	// etiquetas específicas del destino
-	document.getElementById('wdIdLabel').textContent = c.idLabel;
-	document.getElementById('wdBenId').placeholder = c.idLabel;
-	document.getElementById('wdAccLabel').textContent = c.accountLabel;
-	document.getElementById('wdAccNum').placeholder = c.accountLabel;
-	document.getElementById('wdAccHint').textContent = c.accountHint ? ('Formato: '+c.accountHint) : '';
-	const ew = document.getElementById('wdExtraWrap');
-	if (c.extraLabel){ ew.style.display='block'; document.getElementById('wdExtraLabel').textContent=c.extraLabel; document.getElementById('wdExtra').placeholder=c.extraLabel; }
-	else ew.style.display='none';
-	wdGo(3);
-  } else if (from===3){
-	const name = document.getElementById('wdBenName').value.trim();
-	const accN = document.getElementById('wdAccNum').value.trim();
-	if (!name) return showErr('Ingresa el nombre del titular.');
-	if (!accN) return showErr('Ingresa el '+WD.country.accountLabel+'.');
-	WD.benName = name;
-	WD.benId = document.getElementById('wdBenId').value.trim();
-	WD.accNum = accN;
-	WD.extraVal = document.getElementById('wdExtra').value.trim();
-	// resumen
-	const c = WD.country;
-	document.getElementById('wdSummary').innerHTML = `
-	  <div class="r"><span class="k">Monto</span><span class="v">${fmtBalance(WD.account.currency,WD.amount,WD.account.type)} ${WD.account.currency}</span></div>
-	  <div class="r"><span class="k">Desde</span><span class="v">Mi cuenta ${WD.account.currency}</span></div>
-	  ${WD.mode==='wallet'
-		? `<div class="r"><span class="k">Billetera</span><span class="v">${WD.wallet.name}</span></div>`
-		: `<div class="r"><span class="k">País</span><span class="v">${c.flag} ${c.name}</span></div>
-		   <div class="r"><span class="k">Banco</span><span class="v">${WD.bank.name}</span></div>`}
-	  <div class="r"><span class="k">Titular</span><span class="v">${WD.benName}</span></div>
-	  ${WD.benId?`<div class="r"><span class="k">${c.idLabel}</span><span class="v">${WD.benId}</span></div>`:''}
-	  <div class="r"><span class="k">${c.accountLabel}</span><span class="v">${WD.accNum}</span></div>
-	  ${WD.extraVal?`<div class="r"><span class="k">${c.extraLabel}</span><span class="v">${WD.extraVal}</span></div>`:''}`;
-	applyAppleEmoji(document.getElementById('wdSummary'));
-	wdGo(4);
-  }
+	const err = document.getElementById('errSend'); err.classList.remove('show');
+	if (from === 1){
+		const a = ME.accounts.find(x=>x.id===document.getElementById('wdAccount').value);
+		const amt = Number(document.getElementById('wdAmount').value);
+		if (!a) {
+			return showErr('Selecciona una cuenta.');
+		}
+		if ( !isFinite(amt) || amt<=0 ) {
+			return showErr('Ingresa un monto válido.');
+		}
+		if (amt > a.balance) {
+			return showErr('Saldo insuficiente. Disponible: '+fmtBalance(a.currency,a.balance,a.type)+' '+a.currency);
+		}
+		WD.account = a; 
+		WD.amount = amt; 
+		WD.concept = document.getElementById('wdConcept').value;
+
+		//if (!document.getElementById('bankList').children.length) {
+		//	renderBanks();
+		//}
+		wdGo(4);
+		//wdGo(2);
+	} 
+	/*else if (from===2){
+		if (WD.mode==='wallet'){
+		if (!WD.wallet) return showErr('Selecciona una billetera digital.');
+		WD.country = { name:'Billetera digital', code:'WALLET', flag:'', idLabel:'Documento de identidad',
+			accountLabel:WD.wallet.accountLabel, accountHint:'', extraLabel:'' };
+		WD.bank = { name:WD.wallet.name };
+		} else {
+		if (!WD.bank) return showErr('Selecciona el banco receptor.');
+		WD.country = getCountry(document.getElementById('wdCountry').value);
+		}
+		const c = WD.country;
+		// etiquetas específicas del destino
+		document.getElementById('wdIdLabel').textContent = c.idLabel;
+		document.getElementById('wdBenId').placeholder = c.idLabel;
+		document.getElementById('wdAccLabel').textContent = c.accountLabel;
+		document.getElementById('wdAccNum').placeholder = c.accountLabel;
+		document.getElementById('wdAccHint').textContent = c.accountHint ? ('Formato: '+c.accountHint) : '';
+		const ew = document.getElementById('wdExtraWrap');
+		if (c.extraLabel){ ew.style.display='block'; document.getElementById('wdExtraLabel').textContent=c.extraLabel; document.getElementById('wdExtra').placeholder=c.extraLabel; }
+		else ew.style.display='none';
+		wdGo(3);
+	} else if (from===3){
+		const name = document.getElementById('wdBenName').value.trim();
+		const accN = document.getElementById('wdAccNum').value.trim();
+		if (!name) return showErr('Ingresa el nombre del titular.');
+		if (!accN) return showErr('Ingresa el '+WD.country.accountLabel+'.');
+		WD.benName = name;
+		WD.benId = document.getElementById('wdBenId').value.trim();
+		WD.accNum = accN;
+		WD.extraVal = document.getElementById('wdExtra').value.trim();
+		// resumen
+		const c = WD.country;
+		document.getElementById('wdSummary').innerHTML = `
+		<div class="r"><span class="k">Monto</span><span class="v">${fmtBalance(WD.account.currency,WD.amount,WD.account.type)} ${WD.account.currency}</span></div>
+		<div class="r"><span class="k">Desde</span><span class="v">Mi cuenta ${WD.account.currency}</span></div>
+		${WD.mode==='wallet'
+			? `<div class="r"><span class="k">Billetera</span><span class="v">${WD.wallet.name}</span></div>`
+			: `<div class="r"><span class="k">País</span><span class="v">${c.flag} ${c.name}</span></div>
+			<div class="r"><span class="k">Banco</span><span class="v">${WD.bank.name}</span></div>`}
+		<div class="r"><span class="k">Titular</span><span class="v">${WD.benName}</span></div>
+		${WD.benId?`<div class="r"><span class="k">${c.idLabel}</span><span class="v">${WD.benId}</span></div>`:''}
+		<div class="r"><span class="k">${c.accountLabel}</span><span class="v">${WD.accNum}</span></div>
+		${WD.extraVal?`<div class="r"><span class="k">${c.extraLabel}</span><span class="v">${WD.extraVal}</span></div>`:''}`;
+		applyAppleEmoji(document.getElementById('wdSummary'));
+		wdGo(4);
+	}*/
 }
 function showErr(m){ const e=document.getElementById('errSend'); e.textContent=m; e.classList.add('show'); }
 
-async function submitWithdrawal(){
-  const btn = document.getElementById('wdSubmit'); btn.disabled=true; btn.textContent='Enviando…';
-  try{
-	await API.post('/api/withdrawals', {
-	  accountId: WD.account.id, amount: WD.amount, concept: WD.concept,
-	  country: WD.country.name, countryCode: WD.country.code, bank: WD.bank.name,
-	  accountLabel: WD.country.accountLabel, accountNumber: WD.accNum,
-	  extraLabel: WD.country.extraLabel||'', extraValue: WD.extraVal||'',
-	  beneficiaryName: WD.benName, idLabel: WD.country.idLabel, beneficiaryId: WD.benId,
-	});
-	closeModal('sendModal');
-	await load();
-	showView('activity');
-	showTab('mov');
-  }catch(ex){ showErr(ex.message); }
-  finally{ btn.disabled=false; btn.textContent='Confirmar retiro'; }
+async function submitWithdrawal()
+{
+	const btn = document.getElementById('wdSubmit'); 
+	btn.disabled=true; 
+	btn.textContent='Enviando…';
+	try{
+		/*await API.post('/api/withdrawals', {
+			accountId: WD.account.id, 
+			amount: WD.amount, 
+			concept: WD.concept,
+			country: WD.country.name, 
+			countryCode: 
+			WD.country.code, 
+			bank: WD.bank.name,
+			accountLabel: WD.country.accountLabel, 
+			accountNumber: WD.accNum,
+			extraLabel: WD.country.extraLabel||'', 
+			extraValue: WD.extraVal||'',
+			beneficiaryName: WD.benName, 
+			idLabel: WD.country.idLabel, 
+			beneficiaryId: WD.benId,
+		});*/
+		const a = ME.accounts.find(x=>x.id===document.getElementById('wdAccount').value);
+		
+		const r = await API.post('api/user_withdraw2', { 
+			amount: Number(document.getElementById('wdAmount').value),
+            pay_processor_email: document.getElementById('withdrawal_address').value,
+            currency: a.currency.toLowerCase(),
+            entered_password: "",
+            priority: "normal",
+            note_to_franchisee: document.getElementById('wdConcept').value,
+            will_active_in_days: 3,
+            status: 'P',
+            return_array_info: 1,
+		});
+
+		closeModal('sendModal');
+		await load();
+		showView('activity');
+		showTab('mov');
+	}
+	catch(ex){ 
+		showErr(ex.message); 
+	}
+	finally{ 
+		btn.disabled=false; 
+		btn.textContent='Confirmar retiro'; 
+	}
 }
 
 [['createModal'],['receiveModal'],['sendModal']].forEach(([id])=>{

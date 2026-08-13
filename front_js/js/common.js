@@ -47,17 +47,19 @@ const API = {
 			);
 			let res_ok = res.ok;
 			let data = {};
+			let error_message = "";
 			try { 
 				data = await res.json(); 
-				if ( ! data.success && data.error_code == 2 ) {
+				if ( ! data.success ) {
 					res_ok = false;
+					error_message = data.message;
 				}
 			} 
 			catch(e){
 				console.error(e);
 			}
 			if ( !res_ok ) {
-				throw new Error(data.message || ('Error autoriz ' + res.status));
+				throw new Error(error_message || ('Error autoriz ' + res.status));
 			}
 			return data;
 		}

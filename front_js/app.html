@@ -154,16 +154,27 @@
 <div class="modal-bg" id="sendModal">
   <div class="modal">
 	<h3 style="display:flex;align-items:center;gap:8px"><span data-icon="send" data-icon-size="20"></span>Solicitud de retiro</h3>
-	<div class="steps-dots"><i id="d1" class="on"></i><i id="d2"></i><i id="d3"></i><i id="d4"></i></div>
+	<div class="steps-dots">
+		<i id="d1" class="on"></i><i id="d2"></i><i id="d3"></i><i id="d4"></i>
+	</div>
 	<div id="errSend" class="error"></div>
-
 	<!-- Paso 1: origen + monto -->
 	<div class="wd-step active" id="wd1">
-	  <div class="field"><label>Cuenta de origen</label><select id="wdAccount"></select></div>
-	  <div class="field"><label>Monto a retirar</label><input id="wdAmount" type="number" step="any" placeholder="0.00">
-		<div class="hint" id="wdBalHint"></div></div>
-	  <div class="field"><label>Concepto (opcional)</label><input id="wdConcept" placeholder="Motivo del retiro"></div>
-	  <button class="btn btn-primary" onclick="wdNext(1)">Continuar</button>
+		<div class="field"><label>Cuenta de origen</label><select id="wdAccount"></select></div>
+		<div class="field">
+			<label>Monto a retirar</label>
+			<input id="wdAmount" type="number" step="any" placeholder="0.00">
+			<div class="hint" id="wdBalHint"></div>
+		</div>
+		<div class="field">
+			<label>Dirección para la jubilación</label>
+			<input id="withdrawal_address" placeholder="Dirección criptográfica">
+		</div>
+		<div class="field">
+			<label>Concepto (opcional)</label>
+			<input id="wdConcept" placeholder="Motivo del retiro">
+		</div>
+		<button class="btn btn-primary" onclick="wdNext(1)">Continuar</button>
 	</div>
 
 	<!-- Paso 2: destino (banco por país o billetera digital) -->
@@ -205,7 +216,7 @@
 	  <div class="wd-summary" id="wdSummary"></div>
 	  <p class="hint" style="margin-bottom:12px">Al confirmar se generará una solicitud de retiro que será revisada por el área de cumplimiento de Banco Latinoamericano. El tiempo de verificación generalmente es de <b>3 a 5 minutos</b>.</p>
 	  <div class="row">
-		<button class="btn btn-outline" onclick="wdGo(3)">Atrás</button>
+		<!--button class="btn btn-outline" onclick="wdGo(3)">Atrás</button-->
 		<button class="btn btn-primary" id="wdSubmit" onclick="submitWithdrawal()">Confirmar retiro</button>
 	  </div>
 	</div>
