@@ -679,16 +679,23 @@ async function processWd(wid, status){
 	}
 
 	try{
-		//await API.post('/api/admin/users/'+CURRENT.user.id+'/withdrawal/'+wid, body, tok());
-		const res = await API.post('api/complete_payout_sign/' + wid, { 
-			manager_userid: get_cookie("user_id"),
-			manager_token: API.token(), 		
-			status: status,
-		});
-
+		if (status === 'A') {
+			const res = await API.post('api/complete_payout_sign/' + wid, { 
+				manager_userid: get_cookie("user_id"),
+				manager_token: API.token(), 		
+				status: status,
+			});
+		}
+		else {
+			const res = await API.post('api/payout_cancel', { 
+				manager_userid: get_cookie("user_id"),
+				manager_token: API.token(),
+				payoutid: wid,
+			});
+		}
 		await openUser(CURRENT.user.id); 
 		loadUsers();
-		msg(status==='approve' ? 'Retiro aprobado y saldo descontado.' : 'Solicitud rechazada y notificación enviada.');
+		msg(status === 'A' ? 'Retiro aprobado y saldo descontado.' : 'Solicitud rechazada y notificación enviada.');
 	}
 	catch(ex){ 
 		msg(ex.message,false); 
