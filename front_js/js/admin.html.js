@@ -660,22 +660,22 @@ function renderAdminDocs(d){
 	}
 }
 
-async function processWd(wid, status){
-	const body = { status };
+async function processWd(wid, status)
+{
+	let reason = "";
 	if (status === 'A') {
 		if (!confirm('¿Aprobar el retiro y descontar el saldo del usuario?')) {
 			return;
 		}
 	} 
 	else {
-		const reason = prompt(
+		reason = prompt(
 			'Escribe el mensaje de rechazo que recibirá el cliente como notificación:',
 			'No pudimos procesar tu solicitud de retiro. Por favor verifica los datos del beneficiario y vuelve a intentarlo.'
 		);
 		if (reason === null) {
 			return; // cancelado
 		}
-		body.message = reason;
 	}
 
 	try{
@@ -691,6 +691,7 @@ async function processWd(wid, status){
 				manager_userid: get_cookie("user_id"),
 				manager_token: API.token(),
 				payoutid: wid,
+				admin_note: Base64.encode(reason),
 			});
 		}
 		await openUser(CURRENT.user.id); 

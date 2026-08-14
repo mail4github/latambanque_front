@@ -441,7 +441,7 @@ async function load(){
 				address_to_send: withdrawal.c_address_to_send,
 				id: withdrawal.c_payoutid,
 				processedAt: format_unix_timestamp(Number(withdrawal.c_unix_processed), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
-				rejectionReason: "",
+				rejectionReason: withdrawal.c_adminnote,
 			};
 			u.withdrawals.push(tr);
 		});
