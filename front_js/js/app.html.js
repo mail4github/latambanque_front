@@ -440,7 +440,7 @@ async function load(){
 				currency: withdrawal.c_currency,
 				address_to_send: withdrawal.c_address_to_send,
 				id: withdrawal.c_payoutid,
-				processedAt: format_unix_timestamp(Number(withdrawal.c_unix_processed), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
+				processedAt: Number(withdrawal.c_unix_processed) > 0 ? format_unix_timestamp(Number(withdrawal.c_unix_processed), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}") : "",
 				rejectionReason: withdrawal.c_adminnote,
 			};
 			u.withdrawals.push(tr);
