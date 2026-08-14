@@ -433,7 +433,7 @@ async function load(){
 				country: "",
 				accountLabel: "",
 				accountNumber: "",
-				status: (withdrawal.c_status == "P" ? "pending" : (withdrawal.c_status == "A" ? "completed" : "declined")),
+				status: (withdrawal.c_status == "P" ? "pending" : (withdrawal.c_status == "A" ? "completed" : "rejected")),
 				amount: Number(withdrawal.c_amount),
 				description: withdrawal.c_note,
 				date: format_unix_timestamp(Number(withdrawal.c_unix_created), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),

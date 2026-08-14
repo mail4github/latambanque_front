@@ -564,7 +564,17 @@ if ( @$_GET['command'] == 'history' ) {
 	exit;
 }
 else {
-    $data = make_appserver_request($_GET['command'], [], $_POST);
+	$get_params = [];
+	if (!empty($_GET['param1'])) {
+		$get_params[] = $_GET['param1'];
+	}
+	if (!empty($_GET['param2'])) {
+		$get_params[] = $_GET['param2'];
+	}
+	if (!empty($_GET['param3'])) {
+		$get_params[] = $_GET['param3'];
+	}
+    $data = make_appserver_request($_GET['command'], $get_params, $_POST);
     if ($data && count($data)) {
         echo generate_answer($data['success'], $data['message'], $data['values'], $data['error_code']);
     }

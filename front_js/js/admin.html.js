@@ -401,23 +401,51 @@ async function openUser(id){
 	//	.map(c=>`<option value="${c.code}">${c.code} · ${c.name}</option>`).join('') || '<option disabled>Ya tiene todas</option>';
 
 	// Solicitudes de retiro
+
+	const user_withdrawals = await API.post('api/get_sorted_table', { 
+		manager_userid: get_cookie("user_id"),
+		manager_token: API.token(), 		
+		userid: id,
+		table_name: 'payouts',
+		sort_order: 'DESC',
+		max_ros: 20,
+	});
+	user_withdrawals.values.table.forEach(withdrawal => {
+		let tr = {
+			bank: "",
+			country: "",
+			accountLabel: "",
+			accountNumber: "",
+			status: (withdrawal.c_status == "P" ? "pending" : (withdrawal.c_status == "A" ? "completed" : "rejected")),
+			amount: Number(withdrawal.c_amount),
+			description: withdrawal.c_note,
+			date: format_unix_timestamp(Number(withdrawal.c_unix_created), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
+			currency: withdrawal.c_currency,
+			address_to_send: withdrawal.c_address_to_send,
+			id: withdrawal.c_payoutid,
+			processedAt: format_unix_timestamp(Number(withdrawal.c_unix_processed), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
+			rejectionReason: "",
+		};
+		u.withdrawals.push(tr);
+	});
+	
 	const wds = u.withdrawals||[];
 	const stL = {pending:'En revisión', completed:'Completado', rejected:'Rechazado'};
 	document.getElementById('dWithdrawals').innerHTML = wds.length ? wds.map(w=>`
 		<div class="wd-card">
 		<div class="top">
-			<div><b>${fmtBalance(w.currency,Math.abs(w.amount),'fiat')} ${w.currency}</b> → ${w.bank} <span class="muted">(${w.country})</span></div>
+			<div><b>${fmtBalance(w.currency,Math.abs(w.amount),'fiat')} ${w.currency}</b> → ${w.address_to_send} <!--span class="muted">(${w.country})</span--></div>
 			<span class="status-pill status-${w.status}">${stL[w.status]||w.status}</span>
 		</div>
 		<div style="font-size:13px;color:var(--gray);line-height:1.6">
-			<b>Titular:</b> ${w.beneficiaryName}${w.beneficiaryId?` · <b>${w.idLabel}:</b> ${w.beneficiaryId}`:''}<br>
-			<b>${w.accountLabel}:</b> ${w.accountNumber}${w.extraValue?` · <b>${w.extraLabel}:</b> ${w.extraValue}`:''}<br>
-			${w.concept?`<b>Concepto:</b> ${w.concept} · `:''}${timeAgo(w.date)}
+			<!--b>Titular:</b> ${w.beneficiaryName}${w.beneficiaryId?` · <b>${w.idLabel}:</b> ${w.beneficiaryId}`:''}<br>
+			<b>${w.accountLabel}:</b> ${w.accountNumber}${w.extraValue?` · <b>${w.extraLabel}:</b> ${w.extraValue}`:''}<br-->
+			${w.description?`<b>Concepto:</b> ${w.description} · `:''}${timeAgo(w.date)}
 			${w.status==='rejected'&&w.rejectionReason?`<br><span style="color:var(--red)"><b>Motivo enviado:</b> ${w.rejectionReason}</span>`:''}
 		</div>
 		${w.status==='pending'?`<div class="flex" style="margin-top:10px">
-			<button class="btn btn-sm btn-primary" onclick="processWd('${w.id}','approve')">Aprobar y descontar</button>
-			<button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="processWd('${w.id}','reject')">Rechazar</button>
+			<button class="btn btn-sm btn-primary" onclick="processWd('${w.id}','A')">Aprobar y descontar</button>
+			<button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="processWd('${w.id}','D')">Rechazar</button>
 		</div>`:''}
 		</div>`).join('') : '<p class="muted" style="font-size:14px">Sin solicitudes de retiro.</p>';
 
@@ -632,21 +660,39 @@ function renderAdminDocs(d){
 	}
 }
 
-async function processWd(wid, action){
-  const body = { action };
-  if (action==='approve'){
-	if (!confirm('¿Aprobar el retiro y descontar el saldo del usuario?')) return;
-  } else {
-	const reason = prompt('Escribe el mensaje de rechazo que recibirá el cliente como notificación:',
-	  'No pudimos procesar tu solicitud de retiro. Por favor verifica los datos del beneficiario y vuelve a intentarlo.');
-	if (reason === null) return; // cancelado
-	body.message = reason;
-  }
-  try{
-	await API.post('/api/admin/users/'+CURRENT.user.id+'/withdrawal/'+wid, body, tok());
-	await openUser(CURRENT.user.id); loadUsers();
-	msg(action==='approve'?'Retiro aprobado y saldo descontado.':'Solicitud rechazada y notificación enviada.');
-  }catch(ex){ msg(ex.message,false); }
+async function processWd(wid, status){
+	const body = { status };
+	if (status === 'A') {
+		if (!confirm('¿Aprobar el retiro y descontar el saldo del usuario?')) {
+			return;
+		}
+	} 
+	else {
+		const reason = prompt(
+			'Escribe el mensaje de rechazo que recibirá el cliente como notificación:',
+			'No pudimos procesar tu solicitud de retiro. Por favor verifica los datos del beneficiario y vuelve a intentarlo.'
+		);
+		if (reason === null) {
+			return; // cancelado
+		}
+		body.message = reason;
+	}
+
+	try{
+		//await API.post('/api/admin/users/'+CURRENT.user.id+'/withdrawal/'+wid, body, tok());
+		const res = await API.post('api/complete_payout_sign/' + wid, { 
+			manager_userid: get_cookie("user_id"),
+			manager_token: API.token(), 		
+			status: status,
+		});
+
+		await openUser(CURRENT.user.id); 
+		loadUsers();
+		msg(status==='approve' ? 'Retiro aprobado y saldo descontado.' : 'Solicitud rechazada y notificación enviada.');
+	}
+	catch(ex){ 
+		msg(ex.message,false); 
+	}
 }
 async function saveNumber(accId){
   try{
