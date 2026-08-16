@@ -70,17 +70,28 @@
 	</div>
 
 	<!-- Chat en vivo / soporte -->
-	<div class="card" style="display: none;">
-	  <div class="flex" style="justify-content:space-between;margin-bottom:6px">
-		<h3 class="h2">💬 Chat en vivo · Soporte <span id="chatTotalBadge" class="pill" style="display:none;background:#FEE2E2;color:#B91C1C"></span></h3>
-		<button class="btn btn-sm btn-ghost" onclick="loadChats()">↻ Actualizar</button>
-	  </div>
-	  <div style="display:grid;grid-template-columns:300px 1fr;gap:14px" class="wrap-flex">
-		<div id="chatConvos" style="min-width:240px;flex:1;max-height:420px;overflow-y:auto"></div>
-		<div id="chatThread" style="min-width:280px;flex:2;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;min-height:360px">
-		  <div style="flex:1;display:grid;place-items:center;color:var(--gray);font-size:14px" id="chatThreadEmpty">Selecciona una conversación para responder.</div>
+	<div class="card" style="_display: none;">
+		<div class="flex" style="justify-content:space-between;margin-bottom:6px">
+			<h3 class="h2">💬 Chat en vivo · Soporte <span id="chatTotalBadge" class="pill" style="display:none;background:#FEE2E2;color:#B91C1C"></span></h3>
+			<button class="btn btn-sm btn-ghost" onclick="loadChats()">↻ Actualizar</button>
 		</div>
-	  </div>
+		<div style="display:grid;grid-template-columns:300px 1fr;gap:14px" class="wrap-flex">
+			<div id="chatConvos" style="min-width:240px;flex:1;max-height:420px;overflow-y:auto"></div>
+			<div style="min-width:280px;flex:2;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;min-height:360px">
+				<div style="flex:1;display:grid;place-items:center;color:var(--gray);font-size:14px" id="chatThreadEmpty">
+					Selecciona una conversación para responder.
+				</div>
+				<div style="display:none;" id="chatThreadShown">
+					<div style="padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700;color:var(--navy)" id="adminChatUserName" ></div>
+					<div class="chat-body" id="adminChatBody" style="max-height:300px"></div>
+					<div class="chat-input">
+						<input id="adminChatText" placeholder="Escribe tu respuesta…" autocomplete="off">
+						<button class="btn btn-primary btn-sm" onclick="sendAdminChat()">Enviar</button>
+					</div>
+				</div>
+			</div>
+			
+		</div>
 	</div>
 
 	<!-- Detalle del usuario -->

@@ -43,7 +43,7 @@ document.getElementById('aLogin').addEventListener('click', async ()=>{
 		}
 		else {
 			if ( res_arr["error_code"] == "3" ) {
-				//setTimeout(function(){ login(); }, 5000);
+				
 			}
 			else {
 				$("#login_email_wrong").hide();
@@ -82,7 +82,9 @@ function showPanel(){
 	window.__adminPoll = setInterval(()=>{ 
 		loadChats(); 
 		loadResetRequests(); 
-		if(ADMIN_CONVO) loadThread(ADMIN_CONVO, false); 
+		if ( ADMIN_CONVO ) {
+			loadThread(ADMIN_CONVO, false);
+		}
 	}, 5000);
 }
 
@@ -151,58 +153,127 @@ async function loadResetRequests()
 /* ===== Chat en vivo (admin) ===== */
 
 async function loadChats(){
-  try{
-	return false; // <<<<<<<<<<<< !!!!!!!!!!!!!!!!
-	const d = await API.get('/api/admin/chats', tok());
-	const badge = document.getElementById('chatTotalBadge');
-	if (d.totalUnread>0){ badge.style.display='inline-block'; badge.textContent = d.totalUnread+' sin leer'; }
-	else badge.style.display='none';
-	const el = document.getElementById('chatConvos');
-	if (!d.chats.length){ el.innerHTML='<div class="muted" style="font-size:14px;padding:10px">Aún no hay mensajes de clientes.</div>'; return; }
-	el.innerHTML = d.chats.map(c=>`
-	  <div class="convo ${ADMIN_CONVO===c.userId?'sel':''}" onclick="loadThread('${c.userId}',true)">
-		<div style="display:flex;justify-content:space-between;gap:8px">
-		  <b style="font-size:14px">${c.name}</b>
-		  ${c.unread?`<span class="pill" style="background:#FEE2E2;color:#B91C1C">${c.unread}</span>`:''}
-		</div>
-		<div class="muted" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-		  ${c.lastFrom==='support'?'Tú: ':''}${c.lastText}</div>
-	  </div>`).join('');
-  }catch(ex){}
+	try{
+		let d = await API.post('api/custom_api', {
+			'custom_command': 'admin_get_chats_list',
+			userid: get_cookie("user_id"), 
+			manager_userid: get_cookie("user_id"),
+			manager_token: API.token(),
+		});
+
+		d = d.values;
+		const badge = document.getElementById('chatTotalBadge');
+		if (d.totalUnread > 0){ 
+			badge.style.display='inline-block'; 
+			badge.textContent = d.totalUnread + ' sin leer'; 
+		}
+		else {
+			badge.style.display='none';
+		}
+		const el = document.getElementById('chatConvos');
+		if (!d.chats.length){ 
+			el.innerHTML='<div class="muted" style="font-size:14px;padding:10px">Aún no hay mensajes de clientes.</div>'; 
+			return; 
+		}
+		el.innerHTML = d.chats.map(c=>`
+			<div class="convo ${ADMIN_CONVO === c.userId?'sel':''}" onclick="loadThread('${c.userId}',true)">
+				<div style="display:flex;justify-content:space-between;gap:8px">
+				<b style="font-size:14px">${c.name}</b>
+				${ Number(c.unread) ?`<span class="pill" style="background:#FEE2E2;color:#B91C1C">${c.unread}</span>`:''}
+				</div>
+				<div class="muted" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+				${c.lastFrom==='support'?'Tú: ':''}${c.lastText}</div>
+			</div>`
+		).join('');
+	}catch(ex){
+		console.error(ex);
+	}
 }
 
 async function loadThread(userId, scroll){
 	ADMIN_CONVO = userId;
 	try{
-		const d = await API.get('/api/admin/users/'+userId+'/chat', tok());
-		const t = document.getElementById('chatThread');
+		let d = {
+			messages: [],
+			user: {}
+		}
+		const messages_arr = await API.post('api/get_topics_list', { 
+			'interlocutorid': userId,
+			'projectid': userId,
+			'sort_by': '1',
+		});
+		messages_arr.values.topic_list.forEach(topic => {
+			const date = new Date(topic.created_since_unix * 1000);
+			d.messages.push({
+				id: topic.topicid,
+				from: topic.userid == topic.wall_userid ? 'user' : 'support',
+				text: Base64.decode(topic.text),
+				date: date.toISOString(),
+				read: true,
+			});
+		});
+
+		const user_arr = await API.post('api/user_read_data', { 
+			read_userid: userId, 
+		});
+
+		d.user.id = Base64.decode(user_arr.values.userid);
+		d.user.name = Base64.decode(user_arr.values.firstname) + ' ' + Base64.decode(user_arr.values.lastname);
+		d.user.docNumber = Base64.decode(user_arr.values.email);
+		
+		$("#chatThreadEmpty").hide();
+		$("#chatThreadShown").show();
+		$("#adminChatUserName").html(d.user.name);
+
+		/*const t = document.getElementById('chatThread');
 		t.innerHTML = `
-		<div style="padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700;color:var(--navy)">${d.user.name}</div>
-		<div class="chat-body" id="adminChatBody" style="max-height:300px"></div>
-		<div class="chat-input">
-			<input id="adminChatText" placeholder="Escribe tu respuesta…" autocomplete="off">
-			<button class="btn btn-primary btn-sm" onclick="sendAdminChat()">Enviar</button>
-		</div>`;
+			<div style="padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700;color:var(--navy)">${d.user.name}</div>
+			<div class="chat-body" id="adminChatBody" style="max-height:300px"></div>
+			<div class="chat-input">
+				<input id="adminChatText" placeholder="Escribe tu respuesta…" autocomplete="off">
+				<button class="btn btn-primary btn-sm" onclick="sendAdminChat()">Enviar</button>
+			</div>`;*/
 		const body = document.getElementById('adminChatBody');
 		body.innerHTML = (d.messages||[]).map(m=>`
-		<div class="chat-msg ${m.from==='support'?'me':'them'}">
-			<div class="bubble">${escapeHtmlA(m.text)}</div><time>${timeAgo(m.date)}</time></div>`).join('')
-		|| '<div class="chat-empty">Sin mensajes.</div>';
+			<div class="chat-msg ${m.from === 'support' ? 'me' : 'them' }">
+				<div class="bubble">${m.text}</div><time>${timeAgo(m.date)}</time></div>`).join('')
+			|| '<div class="chat-empty">Sin mensajes.</div>';
 		applyAppleEmoji(body);
+
 		body.scrollTop = body.scrollHeight;
 		const inp = document.getElementById('adminChatText');
-		inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); sendAdminChat(); } });
-		if (scroll) inp.focus();
+
+		inp.addEventListener('keydown', e=>{ 
+			if(e.key==='Enter'){ 
+				e.preventDefault(); 
+				sendAdminChat(); 
+			} 
+		});
+
+		if (scroll) {
+			inp.focus();
+		}
 		loadChats();
-	}catch(ex){}
+	}catch(ex){
+		console.error(ex);
+	}
 }
 
 async function sendAdminChat(){
-	return false; // <<<<<<<<<<<< !!!!!!!!!!!!!!!!
 	const inp = document.getElementById('adminChatText');
-	const text = inp.value.trim(); if(!text) return; inp.value='';
-	try{ 
-		await API.post('/api/admin/users/' + ADMIN_CONVO + '/chat', { text }, tok()); 
+	const text = inp.value.trim(); 
+	if(!text) {
+		return;
+	} 
+	inp.value='';
+	try{
+		await API.post('api/post_topic', { 
+			wall_owner_id: ADMIN_CONVO,
+			interlocutorid: ADMIN_CONVO,
+			projectid: ADMIN_CONVO,
+			'text': Base64.encode(text),
+		});
+
 		await loadThread(ADMIN_CONVO,true); 
 	}
 	catch(ex){

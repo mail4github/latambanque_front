@@ -185,20 +185,18 @@ async function loadGeo(){
 /* ===== Chat de soporte ===== */
 let chatPoll = null, lastChatCount = -1;
 function openChat(){
-  document.getElementById('chatModal').classList.add('show');
-  loadChat(true);
-  clearInterval(chatPoll);
-  chatPoll = setInterval(()=>loadChat(false), 4000);
+	document.getElementById('chatModal').classList.add('show');
+	loadChat(true);
+	clearInterval(chatPoll);
+	chatPoll = setInterval(()=>loadChat(false), 4000);
 }
 function closeChat(){
-  document.getElementById('chatModal').classList.remove('show');
-  clearInterval(chatPoll); chatPoll = null;
-  pollMe();
+	document.getElementById('chatModal').classList.remove('show');
+	clearInterval(chatPoll); chatPoll = null;
+	pollMe();
 }
 async function loadChat(scroll){
   try{
-	//const d = await API.get('/api/chat');
-	//renderChat(d.messages || [], scroll);
 	const messages_arr = await API.post('api/get_topics_list', { 
 		'interlocutorid': get_cookie("user_id"),
 		'projectid': get_cookie("user_id"),
@@ -235,70 +233,57 @@ function renderChat(messages, scroll){
   body.scrollTop = body.scrollHeight;
 }
 async function sendChat(){
-  const input = document.getElementById('chatText');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-  try{
-	//const d = await API.post('/api/chat', { text });
-	//renderChat(d.messages || [], true);
-	const d = await API.post('api/post_topic', { 
-		'interlocutorid': get_cookie("user_id"),
-		'projectid': get_cookie("user_id"),
-		'wall_owner_id': get_cookie("user_id"),
-		'text': Base64.encode(text),
-		'topicid': 'help',
-	});
-	loadChat(true);
-	/*
-	const messages_arr = await API.post('api/get_topics_list', { 
-		'interlocutorid': get_cookie("user_id"),
-		'projectid': get_cookie("user_id"),
-		'topicid': 'help',
-	});
-	let topics = [];
-	messages_arr.values.topic_list.forEach(topic => {
-		topics.push({
-			"from": topic.userid == get_cookie("user_id") ? 'user':'admin',
-			"text": Base64.decode(topic.text),
-			"date": topic.created_since_unix,
+	const input = document.getElementById('chatText');
+	const text = input.value.trim();
+	if (!text) return;
+	input.value = '';
+	try{
+		const d = await API.post('api/post_topic', { 
+			'interlocutorid': get_cookie("user_id"),
+			'projectid': get_cookie("user_id"),
+			'wall_owner_id': get_cookie("user_id"),
+			'text': Base64.encode(text),
+			'topicid': 'help',
 		});
-	});
-	renderChat(topics || [], true);*/
-
-  }catch(ex){ input.value = text; }
+		loadChat(true);
+		
+	}catch(ex){ input.value = text; }
 }
 function updateSupportBadge(n){
-  const b = document.getElementById('supportBadge');
-  if (n > 0){ b.style.display='inline-block'; b.textContent = n; }
-  else b.style.display='none';
+	const b = document.getElementById('supportBadge');
+	if (n > 0){ b.style.display='inline-block'; b.textContent = n; }
+	else b.style.display='none';
 }
-function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function escapeHtml(s){ 
+	return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); 
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
-  const ct = document.getElementById('chatText');
-  if (ct) ct.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); sendChat(); } });
-  const cm = document.getElementById('chatModal');
-  if (cm) cm.addEventListener('click', e=>{ if(e.target.id==='chatModal') closeChat(); });
+	const ct = document.getElementById('chatText');
+	if (ct) ct.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); sendChat(); } });
+	const cm = document.getElementById('chatModal');
+	if (cm) cm.addEventListener('click', e=>{ if(e.target.id==='chatModal') closeChat(); });
 });
 
 function showView(name){
-  ['home','activity','market','profile'].forEach(v=>{
-	document.getElementById('view-'+v).classList.toggle('active', v===name);
-	document.getElementById('nav-'+v).classList.toggle('active', v===name);
-  });
-  if (name==='activity') markRead();
-  if (name==='market') initMarket();
-  window.scrollTo(0,0);
+	['home','activity','market','profile'].forEach(v=>{
+		document.getElementById('view-'+v).classList.toggle('active', v===name);
+		document.getElementById('nav-'+v).classList.toggle('active', v===name);
+	});
+	if (name==='activity') markRead();
+	if (name==='market') initMarket();
+	window.scrollTo(0,0);
 }
 function showTab(t){
-  document.getElementById('tab-mov').classList.toggle('active', t==='mov');
-  document.getElementById('tab-not').classList.toggle('active', t==='not');
-  document.getElementById('pane-mov').style.display = t==='mov'?'block':'none';
-  document.getElementById('pane-not').style.display = t==='not'?'block':'none';
+	document.getElementById('tab-mov').classList.toggle('active', t==='mov');
+	document.getElementById('tab-not').classList.toggle('active', t==='not');
+	document.getElementById('pane-mov').style.display = t==='mov'?'block':'none';
+	document.getElementById('pane-not').style.display = t==='not'?'block':'none';
 }
 
 async function load(){
-	//OWNED = new Set(data.accounts.map(a=>a.currency));
+	
 	const user_info = await API.get('/api/user_read_data');
 	OWNED = new Set([
 		"BTC"
