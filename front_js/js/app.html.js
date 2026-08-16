@@ -272,7 +272,10 @@ function showView(name){
 		document.getElementById('nav-'+v).classList.toggle('active', v===name);
 	});
 	if (name==='activity') markRead();
-	if (name==='market') initMarket();
+	if (name==='market') {
+		buildOptions();
+		initMarket();
+	}
 	window.scrollTo(0,0);
 }
 function showTab(t){
@@ -653,11 +656,12 @@ function copyText(t,btn){
 
 // ---- Modales ----
 async function buildOptions(){
-  const r = await API.get('api/rates');
-  document.getElementById('cryptoOpts').innerHTML = r.crypto.map(c=>optHtml(c, true)).join('');
-  document.getElementById('fiatOpts').innerHTML = r.fiat.map(c=>optHtml(c, false)).join('');
-  applyAppleEmoji(document.getElementById('createModal'));
+	const r = await API.get('api/rates');
+	document.getElementById('cryptoOpts').innerHTML = r.values.crypto.map(c=>optHtml(c, true)).join('');
+	document.getElementById('fiatOpts').innerHTML = r.values.fiat.map(c=>optHtml(c, false)).join('');
+	applyAppleEmoji(document.getElementById('createModal'));
 }
+
 function optHtml(c, isCrypto){
   const owned = OWNED.has(c.code);
   const price = isCrypto ? ('$'+Number(c.priceUsd).toLocaleString('es-MX',{maximumFractionDigits:2})) : (c.name);
@@ -681,8 +685,10 @@ async function createAccount(code){
   closeCreate();
 }
 
-function openCreate(){ 
-	document.getElementById('createModal').classList.add('show'); buildOptions(); 
+function openCreate()
+{ 
+	document.getElementById('createModal').classList.add('show'); 
+	buildOptions(); 
 }
 
 function closeCreate(){ 
@@ -922,49 +928,49 @@ async function initMarket(){
 		return `<option value="${c.code}">${c.code} · ${c.name}</option>`;
 	};
 	document.getElementById('mkAsset').innerHTML =
-	  '<optgroup label="Criptomonedas">' + MK_RATES.crypto.map(opt).join('') + '</optgroup>' +
-	  '<optgroup label="Monedas nacionales">' + MK_RATES.fiat.map(opt).join('') + '</optgroup>';
+	  '<optgroup label="Criptomonedas">' + MK_RATES.values.crypto.map(opt).join('') + '</optgroup>' +
+	  '<optgroup label="Monedas nacionales">' + MK_RATES.values.fiat.map(opt).join('') + '</optgroup>';
   }
   loadMarket();
 }
 function setRange(d){
-  MK_days = d;
-  [...document.querySelectorAll('#mkRange button')].forEach(b=>b.classList.toggle('active', +b.dataset.d===d));
-  loadMarket();
+	MK_days = d;
+	[...document.querySelectorAll('#mkRange button')].forEach(b=>b.classList.toggle('active', +b.dataset.d===d));
+	loadMarket();
 }
 async function loadMarket(){
-  const asset = document.getElementById('mkAsset').value || 'BTC';
-  document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">Cargando cotización…</div>';
-  try{
-	const h = await API.get('api/history/' + asset + '/' + MK_days);
-	renderMarket(h);
-  }catch(ex){
-	document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">No se pudo cargar la cotización.</div>';
-  }
+	const asset = document.getElementById('mkAsset').value || 'BTC';
+	document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">Cargando cotización…</div>';
+	try{
+		const h = await API.get('api/history/' + asset + '/' + MK_days);
+		renderMarket(h.values);
+	}catch(ex){
+		document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">No se pudo cargar la cotización.</div>';
+	}
 }
 function fmtPrice(v){
-  v = Number(v)||0;
-  if (v>=1) return v.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
-  return v.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:6});
+	v = Number(v)||0;
+	if (v>=1) return v.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+	return v.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:6});
 }
 function renderChart(points, up){
-  if (!points || points.length<2) return '';
-  const W=320,H=140,P=10;
-  const vals=points.map(p=>p.v), min=Math.min(...vals), max=Math.max(...vals), rng=(max-min)||1;
-  const X=i=>P+i*(W-2*P)/(points.length-1);
-  const Y=v=>P+(1-(v-min)/rng)*(H-2*P);
-  const line=points.map((p,i)=>`${X(i).toFixed(1)},${Y(p.v).toFixed(1)}`).join(' ');
-  const color=up?'#16A34A':'#DC2626';
-  const area=`${P.toFixed(1)},${(H-P).toFixed(1)} ${line} ${(W-P).toFixed(1)},${(H-P).toFixed(1)}`;
-  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg">
-	<defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
-	  <stop offset="0" stop-color="${color}" stop-opacity="0.22"/>
-	  <stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
-	<polygon points="${area}" fill="url(#cg)"/>
-	<polyline points="${line}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
-	<circle cx="${X(points.length-1).toFixed(1)}" cy="${Y(points[points.length-1].v).toFixed(1)}" r="3.6" fill="${color}"/>
-  </svg>
-  <div class="chart-meta"><span>máx $${fmtPrice(max)}</span><span>mín $${fmtPrice(min)}</span></div>`;
+	if (!points || points.length<2) return '';
+	const W=320,H=140,P=10;
+	const vals=points.map(p=>p.v), min=Math.min(...vals), max=Math.max(...vals), rng=(max-min)||1;
+	const X=i=>P+i*(W-2*P)/(points.length-1);
+	const Y=v=>P+(1-(v-min)/rng)*(H-2*P);
+	const line=points.map((p,i)=>`${X(i).toFixed(1)},${Y(p.v).toFixed(1)}`).join(' ');
+	const color=up?'#16A34A':'#DC2626';
+	const area=`${P.toFixed(1)},${(H-P).toFixed(1)} ${line} ${(W-P).toFixed(1)},${(H-P).toFixed(1)}`;
+	return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg">
+		<defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+		<stop offset="0" stop-color="${color}" stop-opacity="0.22"/>
+		<stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+		<polygon points="${area}" fill="url(#cg)"/>
+		<polyline points="${line}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+		<circle cx="${X(points.length-1).toFixed(1)}" cy="${Y(points[points.length-1].v).toFixed(1)}" r="3.6" fill="${color}"/>
+	</svg>
+	<div class="chart-meta"><span>máx $${fmtPrice(max)}</span><span>mín $${fmtPrice(min)}</span></div>`;
 }
 function renderMarket(h){
   const m = h.meta || {};
