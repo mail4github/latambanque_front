@@ -465,9 +465,8 @@ async function openUser(id){
 	document.getElementById('balAcc').innerHTML = opts;
 
 	// Monedas disponibles para abrir (que no tenga)
-	const owned = new Set(d.accounts.map(a=>a.currency));
-	const all = [...RATES2crypto(), ...RATES2fiat()];
-
+	//const owned = new Set(d.accounts.map(a=>a.currency));
+	//const all = [...RATES2crypto(), ...RATES2fiat()];
 	//document.getElementById('newAcc').innerHTML = all.filter(c=>!owned.has(c.code))
 	//	.map(c=>`<option value="${c.code}">${c.code} · ${c.name}</option>`).join('') || '<option disabled>Ya tiene todas</option>';
 
