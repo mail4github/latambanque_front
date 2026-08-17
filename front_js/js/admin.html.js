@@ -812,13 +812,13 @@ async function ensureRates(){
 	if(!CACHE_RATES) CACHE_RATES = await API.get('/api/rates'); 
 }
 
-function RATES2crypto(){ 
+/*function RATES2crypto(){ 
 	return CACHE_RATES?CACHE_RATES.crypto:[]; 
 }
 
 function RATES2fiat(){ 
 	return CACHE_RATES?CACHE_RATES.fiat:[]; 
-}
+}*/
 
 // ---- Login admin ----
 if (tok()) {
