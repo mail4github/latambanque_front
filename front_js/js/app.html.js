@@ -748,7 +748,7 @@ function optHtml(c, isCrypto){
 	const price = isCrypto ? ('$' + Number(c.priceUsd).toLocaleString('es-MX',{maximumFractionDigits:2})) : (c.name);
 	return `<div class="coin-opt" style="${owned?'opacity:.45;pointer-events:none':''}" onclick="createAccount('${c.code}')">
 		${currencyIcon(c.code, c, 34)}
-		<div><b>${c.code}</b>${owned?' <span class="tag">Tienes</span>':''}<small>${isCrypto ? c.name /*+ ' · ' + price*/ : ''/*price*/}</small></div>
+		<div><b>${c.code}</b>${owned?' <span class="tag">Tienes</span>':''}<small>${isCrypto ? c.name /*+ ' · ' + price*/ : c.name/*price*/}</small></div>
 	</div>`;
 }
 

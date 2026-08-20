@@ -197,7 +197,7 @@ function currencyIcon(code, meta, size){
 	}
 	const flag = (meta && meta.flag) ? meta.flag : '🏳️';
 	return `
-		<div class="flag-wrap" style="width:${s}px; height:${s}px; display:flex;">
+		<div class="flag-wrap" style="width:${s}px; height:${s}px; display:flex; justify-content:center;">
 			${flag}
 		</div>`;
 	/*
