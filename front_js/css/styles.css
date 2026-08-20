@@ -294,6 +294,7 @@ img.ae{height:1em;width:1em;vertical-align:-0.15em;object-fit:contain;margin:0 .
 	text-align:right;
 	word-break:break-word;
 	min-width: 45px;
+	text-wrap-mode: nowrap;
 }
 .info-row .v.mono{font-variant-numeric:tabular-nums;letter-spacing:.4px}
 .copy-btn{background:var(--orange-soft);color:var(--orange-d);border:none;border-radius:8px;
