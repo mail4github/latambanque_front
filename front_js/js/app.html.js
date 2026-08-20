@@ -622,10 +622,11 @@ function renderAllAccountsCard(data)
 {
 	document.getElementById('allAccountsCard').innerHTML = data.accounts.map(a=>`
 		<div class="info-row">
-		<div class="flex">${currencyIcon(a.currency,a.meta,30)}
-			<div><div class="v" style="text-align:left">${a.currency}</div>
-			<div class="k mono" style="font-size:11px">${fmtAccountNumber(a.number)}</div></div></div>
-		<div class="v">${fmtBalance(a.currency,a.balance,a.type)} ${a.currency}</div>
+			<div class="flex">${currencyIcon(a.currency,a.meta,30)}
+				<div class="v" style="text-align:left">${a.currency}</div>
+				<div class="k mono" style="font-size:11px; word-break:break-all;">${fmtAccountNumber(a.number)}</div>
+			</div>
+			<div class="v">${fmtBalance(a.currency,a.balance,a.type)} ${a.currency}</div>
 		</div>`).join('');
 }
 
