@@ -1,5 +1,14 @@
+const STATUS_COLORS = { 'activa':'#16A34A', 'inactiva':'#6B7280', 'suspendida':'#DC2626', 'en revisión':'#B45309', 'bloqueada':'#DC2626' };
+const ACCOUNT_TYPE_TO_STATUS = {"B": "Activa", "D": "Inactiva", "S": "Suspendida", "R": "En revisión", "F": "Bloqueada",};
+
+let ME = null;
+//let OWNED = new Set();
+let OWNED = new Map();
+
+let CRYPTOS_arr = [];
+let FIATSS_arr = [];
+
 requireAuth();
-let ME = null, OWNED = new Set();
 
 /* ===== Saldo total con animación al recibir dinero ===== */
 let lastTotal = null;
@@ -288,9 +297,8 @@ function showTab(t){
 async function load(){
 	
 	const user_info = await API.get('/api/user_read_data');
-	OWNED = new Set([
-		"BTC"
-	]);
+	//OWNED = new Set([]);
+	OWNED = new Map();
 
 	let u = {
 		"id": get_cookie("user_id"),
@@ -299,7 +307,7 @@ async function load(){
 		"docType": Base64.decode(user_info["values"]["positiontitle"]),
 		"docNumber": Base64.decode(user_info["values"]["email"]),
 		"email": Base64.decode(user_info["values"]["education"]),
-		"status": "activa",
+		"status": ACCOUNT_TYPE_TO_STATUS[Base64.decode(user_info["values"]["account_type"])],
 		"createdAt": Base64.decode(user_info["values"]["created"]), //"2026-07-21T09:52:25.885Z",
 		"accounts": [],
 		"transactions": [],
@@ -349,7 +357,7 @@ async function load(){
 			"live": true
 		}
 	};
-
+	/*
 	user_balance.values.forEach(currency => {
 		let acc = {
 			"id": "",
@@ -369,43 +377,108 @@ async function load(){
 		};
 		data.accounts.push(acc);
 		data.totalUsd = data.totalUsd + Number(currency.amount);
-	});
+	});*/
 
 	ME = data;
 
+	CRYPTOS_arr = [];
+	FIATSS_arr = [];
 	user_balance.values.forEach(async currency => {
 		try {
+			if ( Number(currency.instant_exchange) ) {
+				CRYPTOS_arr.push(
+					{
+						"code": currency.currency_code,
+						"id": currency.currency,
+						"name": currency.description,
+						"type": "crypto",
+						"icon": currency.symbol,
+						"priceUsd": 1,
+						"flag": currency.logo,
+					}
+				);
+			}
+			else {
+				FIATSS_arr.push(
+					{
+						"code": currency.currency_code,
+						"id": currency.currency,
+						"name": currency.description,
+						"type": "fiat",
+						"icon": currency.symbol,
+						"priceUsd": 1,
+						"flag": currency.logo,
+					}
+				);
+			}
 			const r = await API.post('api/custom_api', { 
-				'custom_command': 'get_crypto_addr',
+				'custom_command': 'get_account_number',
 				'currency': currency.currency,
 			});
-			for (let i = 0; i < ME.accounts.length; i++) {
-				ME.accounts[i]["number"] = r.values.address;
+			if (typeof r.values.address !== "undefined" && r.values.address !== null && r.values.address.length) {
+
+				let acc = {
+					"id": "",
+					"currency": currency.currency.toUpperCase(),
+					"type": Number(currency.instant_exchange) ? "crypto" : "fiat",
+					"balance": Number(currency.amount).toFixed(2),
+					"number": r.values.address,
+					"createdAt": "",
+					"meta": {
+						"code": currency.currency.toUpperCase(),
+						"id": currency.description.toLowerCase(),
+						"name": currency.description,
+						"type": Number(currency.instant_exchange) ? "crypto" : "fiat",
+						"icon": currency.symbol,
+						"flag": currency.logo,
+					},
+					"usdValue": currency.amount
+				};
+				ME.accounts.push(acc);
+				ME.totalUsd = ME.totalUsd + Number(currency.amount);
+				OWNED.set(currency.currency.toUpperCase(), acc);
+				/*
+				for (let i = 0; i < ME.accounts.length; i++) {
+					if (ME.accounts[i]["currency"].toLowerCase() == currency.currency.toLowerCase() ) {
+						ME.accounts[i]["number"] = r.values.address;
+					}
+				}*/
+				renderAllAccountsCard(ME);
+
+				setTotalBalance(ME.totalUsd);
+				document.getElementById('liveTxt').textContent = ME.rates.live ? 'tasas reales en vivo' : 'tasas de referencia';
+
+				// ---- Cuentas (Inicio) ----
+				document.getElementById('accounts').innerHTML = ME.accounts.map(a=>{
+					const m = a.meta || {};
+					return `
+					<div class="acct" onclick="showView('activity')">
+						${currencyIcon(a.currency, m, 46)}
+						<div class="info">
+							<div class="nm">${m.name || a.currency}</div>
+							<div class="sub">${a.currency} · ${a.type === 'crypto' ? 'Cripto' : 'Moneda nacional'}</div>
+						</div>
+						<div class="amt">
+							<div class="b">${fmtBalance(a.currency,a.balance,a.type)} ${a.currency}</div>
+							<div class="u">${fmtUsd(a.usdValue)}</div>
+						</div>
+					</div>
+					`;
+				}).join('');
+
 			}
-			renderAllAccountsCard(ME);
+			
 		}
-		catch(e){}
+		catch(e){
+			console.error(e);
+		}
 	});
 	
 	document.getElementById('hello').innerHTML = '¡Bienvenido, ' + u.nombre + '! 👋';
 	updateSupportBadge(u.supportUnread || 0);
 	loadGeo();
 	
-	setTotalBalance(data.totalUsd);
-	document.getElementById('liveTxt').textContent = data.rates.live ? 'tasas reales en vivo' : 'tasas de referencia';
-
-	// ---- Cuentas (Inicio) ----
-	document.getElementById('accounts').innerHTML = data.accounts.map(a=>{
-		const m = a.meta || {};
-		return `<div class="acct" onclick="showView('activity')">
-		${currencyIcon(a.currency, m, 46)}
-		<div class="info"><div class="nm">${m.name || a.currency}</div>
-			<div class="sub">${a.currency} · ${a.type==='crypto'?'Cripto':'Moneda nacional'}</div></div>
-		<div class="amt"><div class="b">${fmtBalance(a.currency,a.balance,a.type)} ${a.currency}</div>
-			<div class="u">${fmtUsd(a.usdValue)}</div></div>
-		</div>`;
-	}).join('');
-
+	
 	try{
 		// ---- Solicitudes de retiro (Actividad) ----
 		
@@ -637,12 +710,13 @@ async function uploadDoc(type, input){
 	input.value = '';
 }
 
-const STATUS_COLORS = { 'activa':'#16A34A', 'inactiva':'#6B7280', 'suspendida':'#DC2626', 'en revisión':'#B45309', 'bloqueada':'#DC2626' };
+
+
 function statusBadge(status){
-  const s = (status||'activa').toLowerCase();
-  const c = STATUS_COLORS[s] || '#6B7280';
-  const label = s.charAt(0).toUpperCase() + s.slice(1);
-  return `<span style="color:${c}">● ${label}</span>`;
+	const s = (status || 'activa').toLowerCase();
+	const c = STATUS_COLORS[s] || '#6B7280';
+	const label = s.charAt(0).toUpperCase() + s.slice(1);
+	return `<span style="color:${c}">● ${label}</span>`;
 }
 
 function infoRow(k,v){ return `<div class="info-row"><span class="k">${k}</span><span class="v">${v}</span></div>`; }
@@ -656,33 +730,52 @@ function copyText(t,btn){
 
 // ---- Modales ----
 async function buildOptions(){
-	const r = await API.get('api/rates');
-	document.getElementById('cryptoOpts').innerHTML = r.values.crypto.map(c=>optHtml(c, true)).join('');
-	document.getElementById('fiatOpts').innerHTML = r.values.fiat.map(c=>optHtml(c, false)).join('');
+	//const r = await API.get('api/rates');
+	//document.getElementById('cryptoOpts').innerHTML = r.values.crypto.map(c=>optHtml(c, true)).join('');
+	document.getElementById('cryptoOpts').innerHTML = CRYPTOS_arr.map(c=>optHtml(c, true)).join('');
+	//document.getElementById('fiatOpts').innerHTML = r.values.fiat.map(c=>optHtml(c, false)).join('');
+	document.getElementById('fiatOpts').innerHTML = FIATSS_arr.map(c=>optHtml(c, false)).join('');
+	
 	applyAppleEmoji(document.getElementById('createModal'));
 }
 
 function optHtml(c, isCrypto){
-  const owned = OWNED.has(c.code);
-  const price = isCrypto ? ('$'+Number(c.priceUsd).toLocaleString('es-MX',{maximumFractionDigits:2})) : (c.name);
-  return `<div class="coin-opt" style="${owned?'opacity:.45;pointer-events:none':''}" onclick="createAccount('${c.code}')">
-	${currencyIcon(c.code, c, 34)}
-	<div><b>${c.code}</b>${owned?' <span class="tag">Tienes</span>':''}<small>${isCrypto?c.name+' · '+price:price}</small></div>
-  </div>`;
+	const owned = OWNED.has(c.code);
+	const price = isCrypto ? ('$' + Number(c.priceUsd).toLocaleString('es-MX',{maximumFractionDigits:2})) : (c.name);
+	return `<div class="coin-opt" style="${owned?'opacity:.45;pointer-events:none':''}" onclick="createAccount('${c.code}')">
+		${currencyIcon(c.code, c, 34)}
+		<div><b>${c.code}</b>${owned?' <span class="tag">Tienes</span>':''}<small>${isCrypto ? c.name /*+ ' · ' + price*/ : ''/*price*/}</small></div>
+	</div>`;
 }
+
 async function createAccount(code){
-  const err = document.getElementById('err2'); err.classList.remove('show');
-  // 1) Crear la cuenta. Si falla, mostramos el error DENTRO del modal (sigue abierto).
-  try{
-	await API.post('/api/accounts', { currency: code });
-  }catch(ex){
-	err.textContent = ex.message; err.classList.add('show');
-	return;
-  }
-  // 2) Refrescar la vista (best-effort). Aunque esto fallara, la cuenta ya quedó creada.
-  try{ await load(); }catch(e){ console.error('Error al refrescar tras crear cuenta:', e); }
-  // 3) Cerrar el modal al final.
-  closeCreate();
+	const err = document.getElementById('err2'); 
+	err.classList.remove('show');
+	// 1) Crear la cuenta. Si falla, mostramos el error DENTRO del modal (sigue abierto).
+	try{
+		//await API.post('/api/accounts', { currency: code });
+		const r = await API.post('api/custom_api', { 
+			'custom_command': 'get_account_number',
+			'currency': code,
+			'create_if_not_exists': 1,
+		});
+		//if (typeof r.values.address !== "undefined" && r.values.address !== null && r.values.address.length) {
+		//}
+	}
+	catch(ex){
+		err.textContent = ex.message; 
+		err.classList.add('show');
+		return;
+	}
+	// 2) Refrescar la vista (best-effort). Aunque esto fallara, la cuenta ya quedó creada.
+	try{ 
+		await load(); 
+	}
+	catch(e){ 
+		console.error('Error al refrescar tras crear cuenta:', e); 
+	}
+	// 3) Cerrar el modal al final.
+	closeCreate();
 }
 
 function openCreate()

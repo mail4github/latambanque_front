@@ -405,7 +405,7 @@ async function openUser(id){
 	user_balance.values.forEach(async currency => {
 		try {
 			const r = await API.post('api/custom_api', { 
-				custom_command: 'get_crypto_addr',
+				custom_command: 'get_account_number',
 				userid: id,
 				manager_userid: get_cookie("user_id"),
 				manager_token: API.token(),
@@ -415,7 +415,9 @@ async function openUser(id){
 				d.accounts[i]["number"] = r.values.address;
 			}
 		}
-		catch(e){}
+		catch(e){
+			console.error(e);
+		}
 	});
 
 	CURRENT = d;

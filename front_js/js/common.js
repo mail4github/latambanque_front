@@ -173,33 +173,42 @@ function coinColor(code){ return COIN_COLORS[code] || '#6B7280'; }
 
 // Código ISO de país (2 letras) a partir del emoji de bandera (indicadores regionales)
 function flagToIso(flag){
-  if (!flag) return null;
-  const cps = [...flag].map(c => c.codePointAt(0));
-  if (cps.length === 2 && cps[0] >= 0x1F1E6 && cps[0] <= 0x1F1FF && cps[1] >= 0x1F1E6 && cps[1] <= 0x1F1FF){
-	return String.fromCharCode(cps[0] - 0x1F1E6 + 97) + String.fromCharCode(cps[1] - 0x1F1E6 + 97);
-  }
-  return null;
+	if (!flag) {
+		return null;
+	}
+	const cps = [...flag].map(c => c.codePointAt(0));
+	if (cps.length === 2 && cps[0] >= 0x1F1E6 && cps[0] <= 0x1F1FF && cps[1] >= 0x1F1E6 && cps[1] <= 0x1F1FF){
+		return String.fromCharCode(cps[0] - 0x1F1E6 + 97) + String.fromCharCode(cps[1] - 0x1F1E6 + 97);
+	}
+	return null;
 }
 // Banderas circulares (diseñadas para círculo): rellenan completo sin cortar estrellas/cantones.
-function flagCdnUrl(iso){ return 'https://cdn.jsdelivr.net/gh/HatScripts/circle-flags@gh-pages/flags/' + iso + '.svg'; }
+function flagCdnUrl(iso){ 
+	return 'https://cdn.jsdelivr.net/gh/HatScripts/circle-flags@gh-pages/flags/' + iso + '.svg'; 
+}
 
 // Devuelve el HTML de un icono de moneda (logo cripto o bandera plana que rellena el círculo)
 function currencyIcon(code, meta, size){
-  const s = size || 46;
-  if (isCrypto(code, meta)){
-	const fb = (COIN_COLORS[code]||'#6B7280');
-	return `<img class="cur-ic" src="${cryptoIconUrl(code)}" width="${s}" height="${s}"
-	  onerror="this.outerHTML='<span class=\\'cur-ic fiat-ic\\' style=&quot;width:${s}px;height:${s}px;background:${fb}&quot;>${code.slice(0,3)}</span>'">`;
-  }
-  const flag = (meta && meta.flag) ? meta.flag : '🏳️';
-  const iso = flagToIso(flag);
-  if (iso){
+	const s = size || 46;
+	if (isCrypto(code, meta)){
+		const fb = (COIN_COLORS[code]||'#6B7280');
+		return `<img class="cur-ic" src="${cryptoIconUrl(code)}" width="${s}" height="${s}"
+		onerror="this.outerHTML='<span class=\\'cur-ic fiat-ic\\' style=&quot;width:${s}px;height:${s}px;background:${fb}&quot;>${code.slice(0,3)}</span>'">`;
+	}
+	const flag = (meta && meta.flag) ? meta.flag : '🏳️';
+	return `
+		<div class="flag-wrap" style="width:${s}px; height:${s}px; display:flex;">
+			${flag}
+		</div>`;
+	/*
+	const iso = flagToIso(flag);
+	if (iso){
+		return `<span class="flag-wrap" style="width:${s}px;height:${s}px">
+		<img class="flag-fill" src="${flagCdnUrl(iso)}" alt="${code}" loading="lazy"
+			onerror="this.onerror=null;this.src='${appleEmojiUrl(flag)}'"></span>`;
+	}
 	return `<span class="flag-wrap" style="width:${s}px;height:${s}px">
-	  <img class="flag-fill" src="${flagCdnUrl(iso)}" alt="${code}" loading="lazy"
-		onerror="this.onerror=null;this.src='${appleEmojiUrl(flag)}'"></span>`;
-  }
-  return `<span class="flag-wrap" style="width:${s}px;height:${s}px">
-	<img class="flag-fill" src="${appleEmojiUrl(flag)}" alt="${code}"></span>`;
+		<img class="flag-fill" src="${appleEmojiUrl(flag)}" alt="${code}"></span>`;*/
 }
 
 /* ===== Formato ===== */
