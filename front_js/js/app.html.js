@@ -357,28 +357,7 @@ async function load(){
 			"live": true
 		}
 	};
-	/*
-	user_balance.values.forEach(currency => {
-		let acc = {
-			"id": "",
-			"currency": currency.currency.toUpperCase(),
-			"type": "crypto",
-			"balance": Number(currency.amount).toFixed(2),
-			"number": "",
-			"createdAt": "",
-			"meta": {
-				"code": currency.currency.toUpperCase(),
-				"id": currency.description.toLowerCase(),
-				"name": currency.description,
-				"type": "crypto",
-				"icon": currency.symbol
-			},
-			"usdValue": currency.amount
-		};
-		data.accounts.push(acc);
-		data.totalUsd = data.totalUsd + Number(currency.amount);
-	});*/
-
+	
 	ME = data;
 
 	CRYPTOS_arr = [];
@@ -437,12 +416,7 @@ async function load(){
 				ME.accounts.push(acc);
 				ME.totalUsd = ME.totalUsd + Number(currency.amount);
 				OWNED.set(currency.currency.toUpperCase(), acc);
-				/*
-				for (let i = 0; i < ME.accounts.length; i++) {
-					if (ME.accounts[i]["currency"].toLowerCase() == currency.currency.toLowerCase() ) {
-						ME.accounts[i]["number"] = r.values.address;
-					}
-				}*/
+				
 				renderAllAccountsCard(ME);
 
 				setTotalBalance(ME.totalUsd);

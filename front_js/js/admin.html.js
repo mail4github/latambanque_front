@@ -369,7 +369,7 @@ async function openUser(id){
 	catch(ex){ 
 		console.error(ex);
 	}
-	//d.totalUsd = Base64.decode(user_arr.values.stat_balance);
+	
 	d.accounts = [];
 	
 	const user_balance = await API.post('api/balance', { 
@@ -381,7 +381,7 @@ async function openUser(id){
 	});
 
 	d.totalUsd = 0;
-	user_balance.values.forEach(currency => {
+	/*user_balance.values.forEach(currency => {
 		d.totalUsd = d.totalUsd + currency.amount_in_usd;
 		let acc = {
 			"id": "",
@@ -400,10 +400,16 @@ async function openUser(id){
 			"usdValue": currency.amount_in_usd
 		};
 		d.accounts.push(acc);
-	});
+	});*/
+
+	CURRENT = d;
 
 	user_balance.values.forEach(async currency => {
 		try {
+
+			document.getElementById('newAcc').innerHTML = document.getElementById('newAcc').innerHTML 
+				+ `<option value="${currency.currency}">${currency.currency.toUpperCase()} · ${currency.description}</option>`;
+			
 			const r = await API.post('api/custom_api', { 
 				custom_command: 'get_account_number',
 				userid: id,
@@ -411,16 +417,67 @@ async function openUser(id){
 				manager_token: API.token(),
 				currency: currency.currency,
 			});
-			for (let i = 0; i < d.accounts.length; i++) {
-				d.accounts[i]["number"] = r.values.address;
-			}
+			//for (let i = 0; i < d.accounts.length; i++) {
+			//	d.accounts[i]["number"] = r.values.address;
+			//}
+			let acc = {
+				"id": "",
+				"currency": currency.currency.toUpperCase(),
+				"type": Number(currency.instant_exchange) ? "crypto" : "fiat",
+				"balance": Number(currency.amount).toFixed(2),
+				"number": r.values.address,
+				"createdAt": "",
+				"meta": {
+					"code": currency.currency.toUpperCase(),
+					"id": currency.description.toLowerCase(),
+					"name": currency.description,
+					"type": Number(currency.instant_exchange) ? "crypto" : "fiat",
+					"icon": currency.symbol,
+					"flag": currency.logo,
+				},
+				"usdValue": currency.amount
+			};
+			CURRENT.accounts.push(acc);
+			CURRENT.totalUsd = CURRENT.totalUsd + Number(currency.amount);
+			
+			// Cuentas
+			document.getElementById('dAccounts').innerHTML = CURRENT.accounts.map(a=>`
+				<tr>
+					<td>
+						<div class="flex">${currencyIcon(a.currency,a.meta,26)}<b>${a.currency}</b></div>
+					</td>
+					<td class="no-mobile">
+						${a.type==='crypto'?'Cripto':'Fiat'}
+					</td>
+					<td class="no-mobile">
+						${fmtBalance(a.currency,a.balance,a.type)}
+					</td>
+					<td>
+						$${Number(a.usdValue).toLocaleString('es-MX',{minimumFractionDigits:2})}
+					</td>
+					<td>
+						<div class="flex">
+							<input readonly class="num-input" value="${a.number||''}" id="num_${a.id}" style="width:100%;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px">
+							<!--button class="btn btn-sm btn-ghost" onclick="saveNumber('${a.id}')">Guardar</button-->
+						</div>
+					</td>
+					<!--td>
+						<button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="delAccount('${a.id}','${a.currency}')">Borrar</button>
+					</td-->
+				</tr>`).join('');
+			applyAppleEmoji(document.getElementById('dAccounts'));
+
+			// Selects de cuentas
+			const opts = CURRENT.accounts.map(a=>`<option value="${a.currency},${a.balance}">${a.currency} (${fmtBalance(a.currency,a.balance,a.type)})</option>`).join('');
+			document.getElementById('txAcc').innerHTML = opts;
+			document.getElementById('balAcc').innerHTML = opts;
 		}
 		catch(e){
 			console.error(e);
 		}
 	});
 
-	CURRENT = d;
+	
 	const u = d.user;
 	document.getElementById('detailCard').style.display='block';
 	document.getElementById('dName').innerHTML = u.nombre+' '+u.apellidos;
@@ -435,6 +492,7 @@ async function openUser(id){
 	document.getElementById('detailCard').scrollIntoView({behavior:'smooth'});
 
 	// Cuentas
+	/*
 	document.getElementById('dAccounts').innerHTML = d.accounts.map(a=>`
 		<tr>
 			<td>
@@ -465,7 +523,7 @@ async function openUser(id){
 	const opts = d.accounts.map(a=>`<option value="${a.currency},${a.balance}">${a.currency} (${fmtBalance(a.currency,a.balance,a.type)})</option>`).join('');
 	document.getElementById('txAcc').innerHTML = opts;
 	document.getElementById('balAcc').innerHTML = opts;
-
+	*/
 	// Monedas disponibles para abrir (que no tenga)
 	//const owned = new Set(d.accounts.map(a=>a.currency));
 	//const all = [...RATES2crypto(), ...RATES2fiat()];
@@ -635,15 +693,27 @@ async function setBal(){
 	}
 }
 
-/*
+
 async function addAccount(){
-  try{
-	await API.post('/api/admin/users/'+CURRENT.user.id+'/account', {
-	  currency: document.getElementById('newAcc').value,
-	}, tok());
-	await openUser(CURRENT.user.id); msg('Cuenta creada.');
-  }catch(ex){ msg(ex.message,false); }
-}*/
+	try{
+		/*await API.post('/api/admin/users/'+CURRENT.user.id+'/account', {
+			currency: document.getElementById('newAcc').value,
+		}, tok());*/
+		await API.post('api/custom_api', { 
+			custom_command: 'get_account_number',
+			userid: CURRENT.user.id,
+			manager_userid: get_cookie("user_id"),
+			manager_token: API.token(),
+			currency: document.getElementById('newAcc').value,
+			create_if_not_exists: 1,
+		});
+		await openUser(CURRENT.user.id); 
+		msg('Cuenta creada.');
+	}
+	catch(ex){ 
+		msg(ex.message,false); 
+	}
+}
 
 async function delDoc(type, label){
 	if (!confirm('¿Borrar el documento "'+label+'" de este usuario?')) {

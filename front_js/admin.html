@@ -51,16 +51,28 @@
 	</div>
 
 	<div class="card">
-	  <div class="flex" style="justify-content:space-between;margin-bottom:6px">
-		<h3 class="h2">Usuarios registrados</h3>
-		<button class="btn btn-sm btn-ghost" onclick="loadUsers()">↻ Actualizar</button>
-	  </div>
-	  <div style="overflow-x:auto">
-		<table class="table">
-		  <thead><tr><th>Nombre</th><th class="hide-sm">Documento</th><th class="hide-sm">Cuentas</th><th>Saldo total (USD)</th><th></th></tr></thead>
-		  <tbody id="usersBody"><tr><td colspan="5" class="muted">Cargando…</td></tr></tbody>
-		</table>
-	  </div>
+		<div class="flex" style="justify-content:space-between;margin-bottom:6px">
+			<h3 class="h2">Usuarios registrados</h3>
+			<button class="btn btn-sm btn-ghost" onclick="loadUsers()">↻ Actualizar</button>
+		</div>
+		<div style="overflow-x:auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Nombre</th>
+						<th class="hide-sm">Documento</th>
+						<th class="hide-sm">Cuentas</th>
+						<th>Saldo total (USD)</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody id="usersBody">
+					<tr>
+						<td colspan="5" class="muted">Cargando…</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	</div>
 
 	<!-- Solicitudes de restablecimiento de contraseña -->
@@ -158,10 +170,12 @@
 				<div class="field"><label>Nota</label><input id="balNote" placeholder="Motivo del ajuste"></div>
 				<button class="btn btn-dark btn-sm" style="width:100%" onclick="setBal()">Fijar saldo</button>
 
-				<!--div class="divider"></div>
+				<div class="divider"></div>
 				<h4 style="margin-bottom:10px;color:var(--navy)">Abrir cuenta para el usuario</h4>
-				<div class="field"><select id="newAcc"></select></div>
-				<button class="btn btn-ghost btn-sm" style="width:100%" onclick="addAccount()">Crear cuenta</button-->
+				<div class="field">
+					<select id="newAcc"></select>
+				</div>
+				<button class="btn btn-ghost btn-sm" style="width:100%" onclick="addAccount()">Crear cuenta</button>
 			</div>
 		</div>
 
