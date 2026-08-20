@@ -287,7 +287,14 @@ img.ae{height:1em;width:1em;vertical-align:-0.15em;object-fit:contain;margin:0 .
 .info-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
 .info-row:last-child{border-bottom:none}
 .info-row .k{font-size:13px;color:var(--gray);font-weight:600}
-.info-row .v{font-size:14px;color:var(--navy);font-weight:700;text-align:right;word-break:break-word}
+.info-row .v{
+	font-size:14px;
+	color:var(--navy);
+	font-weight:700;
+	text-align:right;
+	word-break:break-word;
+	min-width: 45px;
+}
 .info-row .v.mono{font-variant-numeric:tabular-nums;letter-spacing:.4px}
 .copy-btn{background:var(--orange-soft);color:var(--orange-d);border:none;border-radius:8px;
   padding:5px 9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-left:8px}
@@ -429,11 +436,11 @@ img.ae{height:1em;width:1em;vertical-align:-0.15em;object-fit:contain;margin:0 .
 
 @media screen and (max-width: 1640px) {
 	.no-desk-1640{
-        display: block !important;
-    }
+		display: block !important;
+	}
 	.no-mobile-1640 {
-        display: none !important;
-    }
+		display: none !important;
+	}
 }
 
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< end of 1640px <<<<<<<<<<<<<<<< */
@@ -450,11 +457,11 @@ img.ae{height:1em;width:1em;vertical-align:-0.15em;object-fit:contain;margin:0 .
 /*============================================================*/
 @media screen and (max-width: 998px) {
 	.no-desk{
-        display: block!important;
-    }
+		display: block!important;
+	}
 	.no-mobile{
-        display: none !important;
-    }
+		display: none !important;
+	}
 }
 /* <<<<<<<<<<<<<<<<<<<< end of 998px <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 @media screen and (max-width: 768px) {
