@@ -17,6 +17,7 @@ let WD = {
 };
 let lastTotal = null;
 let knownWd = {};
+const DOC_LABELS = { id_front:'Identidad (frente)', id_back:'Identidad (dorso)', card_front:'Tarjeta (frente)', card_back:'Tarjeta (dorso)' };
 
 requireAuth();
 
@@ -612,7 +613,7 @@ async function load(){
 
 	// ---- Perfil ----
 	try{ 
-		renderProfile(data); 
+		renderProfile(ME); 
 	}catch(e){ 
 		console.error('Perfil:', e); 
 	}
@@ -674,34 +675,34 @@ function renderAllAccountsCard(data)
 }
 
 /* ===== Documentos del cliente ===== */
-const DOC_LABELS = { id_front:'Identidad (frente)', id_back:'Identidad (dorso)', card_front:'Tarjeta (frente)', card_back:'Tarjeta (dorso)' };
+
 async function renderDocs(){
-  const docs = (ME.user.documents) || {};
-  document.getElementById('docGrid').innerHTML = Object.keys(DOC_LABELS).map(t=>`
-	<div class="doc-slot">
-	  <div class="doc-thumb" id="thumb-${t}">📄</div>
-	  <div class="doc-name">${DOC_LABELS[t]}</div>
-	  <div class="doc-status" id="status-${t}">${docs[t]?'Cargado ✓':'Pendiente'}</div>
-	  <input type="file" accept="image/*" id="file-${t}" style="display:none" onchange="uploadDoc('${t}',this)">
-	  <button class="btn btn-sm btn-ghost" style="width:100%" onclick="document.getElementById('file-${t}').click()">${docs[t]?'Cambiar':'Subir'}</button>
-	</div>`).join('');
-  applyAppleEmoji(document.getElementById('docGrid'));
-  // cargar miniaturas existentes
-  for (const t of Object.keys(DOC_LABELS)){
-	//if (docs[t]) API.get('/api/me/documents/' + t).then(r=>setDocThumb(t,r.dataUrl)).catch(()=>{});
-	const r = await API.post('api/get_value_from_additional_params', { 
-		"value_name": t
-	});
-	if ( typeof r.values !== "undefined" && r.values.length) {
-		setDocThumb(t, r.values);
+	const docs = (ME.user.documents) || {};
+	document.getElementById('docGrid').innerHTML = Object.keys(DOC_LABELS).map(t=>`
+		<div class="doc-slot">
+		<div class="doc-thumb" id="thumb-${t}">📄</div>
+		<div class="doc-name">${DOC_LABELS[t]}</div>
+		<div class="doc-status" id="status-${t}">${docs[t]?'Cargado ✓':'Pendiente'}</div>
+		<input type="file" accept="image/*" id="file-${t}" style="display:none" onchange="uploadDoc('${t}',this)">
+		<button class="btn btn-sm btn-ghost" style="width:100%" onclick="document.getElementById('file-${t}').click()">${docs[t]?'Cambiar':'Subir'}</button>
+		</div>`).join('');
+	applyAppleEmoji(document.getElementById('docGrid'));
+	// cargar miniaturas existentes
+	for (const t of Object.keys(DOC_LABELS)){
+		//if (docs[t]) API.get('/api/me/documents/' + t).then(r=>setDocThumb(t,r.dataUrl)).catch(()=>{});
+		const r = await API.post('api/get_value_from_additional_params', { 
+			"value_name": t
+		});
+		if ( typeof r.values !== "undefined" && r.values.length) {
+			setDocThumb(t, r.values);
+		}
 	}
-  }
 }
 function setDocThumb(type, dataUrl){
-  const el = document.getElementById('thumb-'+type);
-  if (!el) return;
-  el.innerHTML = `<img src="${dataUrl}" onclick="zoomImg(this)">`;
-  el.classList.add('has');
+	const el = document.getElementById('thumb-'+type);
+	if (!el) return;
+	el.innerHTML = `<img src="${dataUrl}" onclick="zoomImg(this)">`;
+	el.classList.add('has');
 }
 function zoomImg(el){
   const w = window.open('', '_blank');
