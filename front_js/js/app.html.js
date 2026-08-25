@@ -868,7 +868,7 @@ function renderBanks(){
 	WD.bank = null;
 	document.getElementById('bankList').innerHTML = c.banks.map((b,i)=>`
 		<div class="bank-row" data-i="${i}" onclick="selectBank(${i})">
-		${bankLogoHtml(b,34)}<span class="nm">${b.name}</span><span class="chk">✓</span>
+			${bankLogoHtml(b,34)}<span class="nm">${b.name}</span><span class="chk">✓</span>
 		</div>`).join('');
 }
 
