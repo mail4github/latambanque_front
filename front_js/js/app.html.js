@@ -989,22 +989,6 @@ async function submitWithdrawal()
 	btn.disabled=true; 
 	btn.textContent='Enviando…';
 	try{
-		/*await API.post('/api/withdrawals', {
-			accountId: WD.account.id, 
-			amount: WD.amount, 
-			concept: WD.concept,
-			country: WD.country.name, 
-			countryCode: 
-			WD.country.code, 
-			bank: WD.bank.name,
-			accountLabel: WD.country.accountLabel, 
-			accountNumber: WD.accNum,
-			extraLabel: WD.country.extraLabel||'', 
-			extraValue: WD.extraVal||'',
-			beneficiaryName: WD.benName, 
-			idLabel: WD.country.idLabel, 
-			beneficiaryId: WD.benId,
-		});*/
 		const a = ME.accounts.find(x=>x.id === document.getElementById('wdAccount').value);
 		
 		let additional_data = {
