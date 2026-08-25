@@ -547,7 +547,7 @@ async function openUser(id){
 			address_to_send: withdrawal.c_address_to_send,
 			id: withdrawal.c_payoutid,
 			processedAt: format_unix_timestamp(Number(withdrawal.c_unix_processed), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
-			rejectionReason: "",
+			rejectionReason: withdrawal.c_adminnote,
 
 			accountId: additional_data_arr.accountId, 
 			countryCode: additional_data_arr.countryCode, 
@@ -582,7 +582,13 @@ async function openUser(id){
 				<span class="status-pill status-${w.status}">${stL[w.status]||w.status}</span>
 			</div>
 			<div style="font-size:13px;color:var(--gray);line-height:1.6">
-				<b>Titular:</b> ${w.beneficiaryName}${w.beneficiaryId?` · <b>${w.idLabel}:</b> ${w.beneficiaryId}`:''}<br>
+				${w.beneficiaryName 
+					? '<b>Titular:</b> ' + w.beneficiaryName 
+					: ''
+				}${w.beneficiaryId 
+					? ` · <b>${w.idLabel}:</b> ${w.beneficiaryId}`
+					:''
+				}<br>
 				<b>${w.accountLabel}:</b> ${w.accountNumber}${w.extraValue?` · <b>${w.extraLabel}:</b> ${w.extraValue}`:''}<br>
 				${w.description
 					?`<b>Concepto:</b> ${w.description} · `

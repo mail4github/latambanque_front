@@ -105,7 +105,7 @@ async function pollMe(){
 /* ===== Withdrawal request bubbles (statuses + counter + animations) ===== */
 function renderWdCard(w){
 	const amount = fmtBalance(w.currency, Math.abs(w.amount), 'fiat') + ' ' + w.currency;
-	const dest = `→ ${w.bank} · ${w.country}`;
+	const dest = w.bank || w.country ? `→ ${w.bank} · ${w.country}` : "";
 	//const dest = `→ ${w.address_to_send}`;
 	const acct = `${w.accountLabel}: ${w.accountNumber}`;
 	//const acct = "";
@@ -482,70 +482,7 @@ async function load(){
 		setTimeout(() => {
 			renderWithdrawals();	
 		}, 100);
-		// ---- Solicitudes de retiro (Actividad) ----
-		/*
-		const user_withdrawals = await API.post('api/get_sorted_table', { 
-			table_name: 'payouts',
-			sort_order: 'DESC',
-			max_ros: 20,
-		});
-		user_withdrawals.values.table.forEach(withdrawal => {
-			let additional_data_arr = {
-				bank: "",
-				country: "",
-				accountLabel: "",
-				concept: "",
-			};
-			try{
-				let additional_data = withdrawal.c_note.replace(/&amp;quot;/g, '"');
-				additional_data = additional_data.replace(/&quot;/g, '"');
-				additional_data_arr = JSON.parse(additional_data);
-			}
-			catch(e){ 
-				console.error(e); 
-			}
-			let tr = {
-				bank: additional_data_arr.bank,
-				country: additional_data_arr.country,
-				accountLabel: additional_data_arr.accountLabel,
-				accountNumber: withdrawal.c_address_to_send,
-				status: (withdrawal.c_status == "P" ? "pending" : (withdrawal.c_status == "A" ? "completed" : "rejected")),
-				amount: Number(withdrawal.c_amount),
-				description: additional_data_arr.concept,
-				date: format_unix_timestamp(Number(withdrawal.c_unix_created), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
-				currency: withdrawal.c_currency,
-				address_to_send: withdrawal.c_address_to_send,
-				id: withdrawal.c_payoutid,
-				processedAt: Number(withdrawal.c_unix_processed) > 0 ? format_unix_timestamp(Number(withdrawal.c_unix_processed), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}") : "",
-				rejectionReason: withdrawal.c_adminnote,
-
-				accountId: additional_data_arr.accountId, 
-				countryCode: additional_data_arr.countryCode, 
-				extraLabel: additional_data_arr.extraLabel, 
-				extraValue: additional_data_arr.extraValue,
-				beneficiaryName: additional_data_arr.beneficiaryName, 
-				idLabel: additional_data_arr.idLabel, 
-				beneficiaryId: additional_data_arr.beneficiaryId,
-			};
-			for (let key in tr) {
-				try {
-					tr[key] = tr[key].replace(/&amp;/g, '&');
-				}
-				catch(e){
-					console.error(e);
-				}
-			};
-			ME.user.withdrawals.push(tr);
-		});
-
-		const wds = ME.user.withdrawals || [];
-		document.getElementById('wdList').innerHTML = wds.length
-			? ('<div class="section-label">Solicitudes de retiro</div>' + wds.slice(0,10).map(renderWdCard).join(''))
-			: '';
-		for (const w of wds) {
-			knownWd[w.id] = w.status;
-		}
-		*/
+		
 		const user_transactions = await API.post('api/get_sorted_table', { 
 			for_userid: get_cookie("user_id"),
 			table_name: 'transactions',
