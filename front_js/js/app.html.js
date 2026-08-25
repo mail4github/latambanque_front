@@ -2,16 +2,26 @@ const STATUS_COLORS = { 'activa':'#16A34A', 'inactiva':'#6B7280', 'suspendida':'
 const ACCOUNT_TYPE_TO_STATUS = {"B": "Activa", "D": "Inactiva", "S": "Suspendida", "R": "En revisión", "F": "Bloqueada",};
 
 let ME = null;
-//let OWNED = new Set();
 let OWNED = new Map();
 
 let CRYPTOS_arr = [];
 let FIATSS_arr = [];
 
+let WD = { 
+	step:1, 
+	mode:'country', 
+	account:null, 
+	country:null, 
+	bank:null, 
+	wallet:null 
+};
+
+let lastTotal = null;
+
 requireAuth();
 
 /* ===== Saldo total con animación al recibir dinero ===== */
-let lastTotal = null;
+
 
 function fmtUsd2(n){ 
 	return Number(n).toLocaleString('es-MX',{
@@ -76,10 +86,10 @@ async function pollMe(){
 /* ===== Burbujas de solicitud de retiro (estados + contador + animaciones) ===== */
 function renderWdCard(w){
 	const amount = fmtBalance(w.currency, Math.abs(w.amount), 'fiat') + ' ' + w.currency;
-	//const dest = `→ ${w.bank} · ${w.country}`;
-	const dest = `→ ${w.address_to_send}`;
-	//const acct = `${w.accountLabel}: ${w.accountNumber}`;
-	const acct = "";
+	const dest = `→ ${w.bank} · ${w.country}`;
+	//const dest = `→ ${w.address_to_send}`;
+	const acct = `${w.accountLabel}: ${w.accountNumber}`;
+	//const acct = "";
 	if (w.status === 'pending'){
 		const deadline = new Date(w.date).getTime() + 5*60*1000;
 		return `<div class="wd-note wd-pending" id="wd-${w.id}">
@@ -397,7 +407,7 @@ async function load(){
 			if (typeof r.values.address !== "undefined" && r.values.address !== null && r.values.address.length) {
 
 				let acc = {
-					"id": "",
+					"id": currency.currency.toUpperCase(),
 					"currency": currency.currency.toUpperCase(),
 					"type": Number(currency.instant_exchange) ? "crypto" : "fiat",
 					"balance": Number(currency.amount).toFixed(2),
@@ -451,32 +461,60 @@ async function load(){
 	document.getElementById('hello').innerHTML = '¡Bienvenido, ' + u.nombre + '! 👋';
 	updateSupportBadge(u.supportUnread || 0);
 	loadGeo();
-	
-	
+		
 	try{
 		// ---- Solicitudes de retiro (Actividad) ----
 		
 		const user_withdrawals = await API.post('api/get_sorted_table', { 
-			//for_userid: get_cookie("user_id"),
 			table_name: 'payouts',
 			sort_order: 'DESC',
 			max_ros: 20,
 		});
 		user_withdrawals.values.table.forEach(withdrawal => {
-			let tr = {
+			let additional_data_arr = {
 				bank: "",
 				country: "",
 				accountLabel: "",
-				accountNumber: "",
+				concept: "",
+			};
+			try{
+				let additional_data = withdrawal.c_note.replace(/&amp;quot;/g, '"');
+				additional_data = additional_data.replace(/&quot;/g, '"');
+				additional_data_arr = JSON.parse(additional_data);
+			}
+			catch(e){ 
+				console.error(e); 
+			}
+			let tr = {
+				bank: additional_data_arr.bank,
+				country: additional_data_arr.country,
+				accountLabel: additional_data_arr.accountLabel,
+				accountNumber: withdrawal.c_address_to_send,
 				status: (withdrawal.c_status == "P" ? "pending" : (withdrawal.c_status == "A" ? "completed" : "rejected")),
 				amount: Number(withdrawal.c_amount),
-				description: withdrawal.c_note,
+				description: additional_data_arr.concept,
 				date: format_unix_timestamp(Number(withdrawal.c_unix_created), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
 				currency: withdrawal.c_currency,
 				address_to_send: withdrawal.c_address_to_send,
 				id: withdrawal.c_payoutid,
 				processedAt: Number(withdrawal.c_unix_processed) > 0 ? format_unix_timestamp(Number(withdrawal.c_unix_processed), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}") : "",
 				rejectionReason: withdrawal.c_adminnote,
+
+				accountId: additional_data_arr.accountId, 
+				countryCode: additional_data_arr.countryCode, 
+				extraLabel: additional_data_arr.extraLabel, 
+				extraValue: additional_data_arr.extraValue,
+				beneficiaryName: additional_data_arr.beneficiaryName, 
+				idLabel: additional_data_arr.idLabel, 
+				beneficiaryId: additional_data_arr.beneficiaryId,
+			};
+			for (let key in tr) {
+				try {
+					tr[key] = tr[key].replace(/&amp;/g, '&');
+				}
+				catch(e){
+					console.error(e);
+				}
 			};
 			u.withdrawals.push(tr);
 		});
@@ -553,9 +591,17 @@ async function load(){
 	}
 
 	// ---- Perfil ----
-	try{ renderProfile(data); }catch(e){ console.error('Perfil:', e); }
+	try{ 
+		renderProfile(data); 
+	}catch(e){ 
+		console.error('Perfil:', e); 
+	}
 
-	try{ applyAppleEmoji(); }catch(e){ console.error('Emoji:', e); }
+	try{ 
+		applyAppleEmoji(); 
+	}catch(e){ 
+		console.error('Emoji:', e); 
+	}
 }
 
 function renderProfile(data){
@@ -784,19 +830,21 @@ function openReceive(){
 	document.getElementById('receiveModal').classList.add('show');
 	applyAppleEmoji(document.getElementById('receiveModal'));
 }
-/* ===== Flujo de solicitud de retiro ===== */
-let WD = { 
-	step:1, 
-	mode:'country', 
-	account:null, 
-	country:null, 
-	bank:null, 
-	wallet:null 
-};
 
-function openSend(){
-	if (!ME.accounts.length) return;
-	WD = { step:1, mode:'country', account:null, country:null, bank:null, wallet:null };
+/* ===== Withdrawal request ===== */
+function openSend()
+{
+	if (!ME.accounts.length) {
+		return;
+	}
+	WD = { 
+		step:1, 
+		mode:'country', 
+		account:null, 
+		country:null, 
+		bank:null, 
+		wallet:null 
+	};
 	document.getElementById('errSend').classList.remove('show');
 	// Paso 1: cuentas de origen
 	document.getElementById('wdAccount').innerHTML = ME.accounts.map(a=>
@@ -843,7 +891,7 @@ function wdGo(step){
 		document.getElementById('d'+n).classList.toggle('on', n<=step);
 	});
 }
-/*
+
 function renderBanks(){
 	const c = getCountry(document.getElementById('wdCountry').value);
 	WD.bank = null;
@@ -857,9 +905,11 @@ function selectBank(i){
 	WD.bank = c.banks[i];
 	[...document.querySelectorAll('#bankList .bank-row')].forEach(r=>r.classList.toggle('sel', +r.dataset.i===i));
 }
-*/
+
 function wdNext(from){
-	const err = document.getElementById('errSend'); err.classList.remove('show');
+	const err = document.getElementById('errSend'); 
+	err.classList.remove('show');
+
 	if (from === 1){
 		const a = ME.accounts.find(x=>x.id===document.getElementById('wdAccount').value);
 		const amt = Number(document.getElementById('wdAmount').value);
@@ -876,13 +926,13 @@ function wdNext(from){
 		WD.amount = amt; 
 		WD.concept = document.getElementById('wdConcept').value;
 
-		//if (!document.getElementById('bankList').children.length) {
-		//	renderBanks();
-		//}
-		wdGo(4);
-		//wdGo(2);
+		//wdGo(4);
+		if (!document.getElementById('bankList').children.length) {
+			renderBanks();
+		}
+		wdGo(2);
 	} 
-	/*else if (from===2){
+	else if (from===2){
 		if (WD.mode==='wallet'){
 		if (!WD.wallet) return showErr('Selecciona una billetera digital.');
 		WD.country = { name:'Billetera digital', code:'WALLET', flag:'', idLabel:'Documento de identidad',
@@ -906,8 +956,12 @@ function wdNext(from){
 	} else if (from===3){
 		const name = document.getElementById('wdBenName').value.trim();
 		const accN = document.getElementById('wdAccNum').value.trim();
-		if (!name) return showErr('Ingresa el nombre del titular.');
-		if (!accN) return showErr('Ingresa el '+WD.country.accountLabel+'.');
+		if (!name) {
+			return showErr('Ingresa el nombre del titular.');
+		}
+		if (!accN) {
+			return showErr('Ingresa el '+WD.country.accountLabel+'.');
+		}
 		WD.benName = name;
 		WD.benId = document.getElementById('wdBenId').value.trim();
 		WD.accNum = accN;
@@ -915,21 +969,47 @@ function wdNext(from){
 		// resumen
 		const c = WD.country;
 		document.getElementById('wdSummary').innerHTML = `
-		<div class="r"><span class="k">Monto</span><span class="v">${fmtBalance(WD.account.currency,WD.amount,WD.account.type)} ${WD.account.currency}</span></div>
-		<div class="r"><span class="k">Desde</span><span class="v">Mi cuenta ${WD.account.currency}</span></div>
-		${WD.mode==='wallet'
-			? `<div class="r"><span class="k">Billetera</span><span class="v">${WD.wallet.name}</span></div>`
-			: `<div class="r"><span class="k">País</span><span class="v">${c.flag} ${c.name}</span></div>
-			<div class="r"><span class="k">Banco</span><span class="v">${WD.bank.name}</span></div>`}
-		<div class="r"><span class="k">Titular</span><span class="v">${WD.benName}</span></div>
-		${WD.benId?`<div class="r"><span class="k">${c.idLabel}</span><span class="v">${WD.benId}</span></div>`:''}
-		<div class="r"><span class="k">${c.accountLabel}</span><span class="v">${WD.accNum}</span></div>
-		${WD.extraVal?`<div class="r"><span class="k">${c.extraLabel}</span><span class="v">${WD.extraVal}</span></div>`:''}`;
+			<div class="r">
+				<span class="k">Monto</span><span class="v">${fmtBalance(WD.account.currency,WD.amount,WD.account.type)} ${WD.account.currency}</span>
+			</div>
+			<div class="r">
+				<span class="k">Desde</span><span class="v">Mi cuenta ${WD.account.currency}</span>
+			</div>
+			${WD.mode==='wallet'
+				? `<div class="r">
+						<span class="k">Billetera</span><span class="v">${WD.wallet.name}</span>
+					</div>`
+				: `<div class="r">
+						<span class="k">País</span><span class="v">${c.flag} ${c.name}</span>
+					</div>
+					<div class="r">
+						<span class="k">Banco</span><span class="v">${WD.bank.name}</span>
+					</div>`
+			}
+			<div class="r">
+				<span class="k">Titular</span><span class="v">${WD.benName}</span>
+			</div>
+			${WD.benId 
+				? `<div class="r"><span class="k">${c.idLabel}</span><span class="v">${WD.benId}</span></div>` 
+				: ''
+			}
+			<div class="r">
+				<span class="k">${c.accountLabel}</span><span class="v">${WD.accNum}</span>
+			</div>
+			${WD.extraVal
+				? `<div class="r"><span class="k">${c.extraLabel}</span><span class="v">${WD.extraVal}</span></div>`
+				: ''
+			}
+		`;
 		applyAppleEmoji(document.getElementById('wdSummary'));
 		wdGo(4);
-	}*/
+	}
 }
-function showErr(m){ const e=document.getElementById('errSend'); e.textContent=m; e.classList.add('show'); }
+function showErr(m){ 
+	const e=document.getElementById('errSend'); 
+	e.textContent=m; 
+	e.classList.add('show'); 
+}
 
 async function submitWithdrawal()
 {
@@ -953,18 +1033,32 @@ async function submitWithdrawal()
 			idLabel: WD.country.idLabel, 
 			beneficiaryId: WD.benId,
 		});*/
-		const a = ME.accounts.find(x=>x.id===document.getElementById('wdAccount').value);
+		const a = ME.accounts.find(x=>x.id === document.getElementById('wdAccount').value);
 		
+		let additional_data = {
+			bank: WD.bank.name.replaceAll('"', "'"),
+			country: WD.country.code.replaceAll('"', "'"),
+			accountLabel: WD.country.accountLabel.replaceAll('"', "'"),
+			concept: WD.concept.replaceAll('"', "'"),
+			accountId: WD.account.id.replaceAll('"', "'"), 
+			countryCode: WD.country.code.replaceAll('"', "'"), 
+			accountNumber: WD.accNum.replaceAll('"', "'"),
+			extraLabel: WD.country.extraLabel.replaceAll('"', "'") || '', 
+			extraValue: WD.extraVal.replaceAll('"', "'") || '',
+			beneficiaryName: WD.benName.replaceAll('"', "'"), 
+			idLabel: WD.country.idLabel.replaceAll('"', "'"), 
+			beneficiaryId: WD.benId.replaceAll('"', "'"),
+		};
 		const r = await API.post('api/user_withdraw2', { 
-			amount: Number(document.getElementById('wdAmount').value),
-            pay_processor_email: document.getElementById('withdrawal_address').value,
-            currency: a.currency.toLowerCase(),
-            entered_password: "",
-            priority: "normal",
-            note_to_franchisee: document.getElementById('wdConcept').value,
-            will_active_in_days: 3,
-            status: 'P',
-            return_array_info: 1,
+			amount: WD.amount,
+			pay_processor_email: WD.accNum,
+			currency: a.currency.toLowerCase(),
+			entered_password: "",
+			priority: "normal",
+			note_to_franchisee: JSON.stringify(additional_data),
+			will_active_in_days: 3,
+			status: 'P',
+			return_array_info: 1,
 		});
 
 		closeModal('sendModal');
@@ -982,7 +1076,7 @@ async function submitWithdrawal()
 }
 
 [['createModal'],['receiveModal'],['sendModal']].forEach(([id])=>{
-  document.getElementById(id).addEventListener('click',e=>{ if(e.target.id===id) closeModal(id); });
+  	document.getElementById(id).addEventListener('click',e=>{ if(e.target.id===id) closeModal(id); });
 });
 
 /* ===== Cotizaciones / Mercado ===== */

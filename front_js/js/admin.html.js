@@ -381,32 +381,11 @@ async function openUser(id){
 	});
 
 	d.totalUsd = 0;
-	/*user_balance.values.forEach(currency => {
-		d.totalUsd = d.totalUsd + currency.amount_in_usd;
-		let acc = {
-			"id": "",
-			"currency": currency.currency.toUpperCase(),
-			"type": "crypto",
-			"balance": currency.amount,
-			"number": currency.address_to_receive,
-			"createdAt": "",
-			"meta": {
-				"code": currency.currency.toUpperCase(),
-				"id": currency.description.toLowerCase(),
-				"name": currency.description,
-				"type": "crypto",
-				"icon": currency.symbol
-			},
-			"usdValue": currency.amount_in_usd
-		};
-		d.accounts.push(acc);
-	});*/
-
+	
 	CURRENT = d;
 
 	user_balance.values.forEach(async currency => {
 		try {
-
 			document.getElementById('newAcc').innerHTML = document.getElementById('newAcc').innerHTML 
 				+ `<option value="${currency.currency}">${currency.currency.toUpperCase()} · ${currency.description}</option>`;
 			
@@ -417,60 +396,60 @@ async function openUser(id){
 				manager_token: API.token(),
 				currency: currency.currency,
 			});
-			//for (let i = 0; i < d.accounts.length; i++) {
-			//	d.accounts[i]["number"] = r.values.address;
-			//}
-			let acc = {
-				"id": "",
-				"currency": currency.currency.toUpperCase(),
-				"type": Number(currency.instant_exchange) ? "crypto" : "fiat",
-				"balance": Number(currency.amount).toFixed(2),
-				"number": r.values.address,
-				"createdAt": "",
-				"meta": {
-					"code": currency.currency.toUpperCase(),
-					"id": currency.description.toLowerCase(),
-					"name": currency.description,
+			if ( typeof r.values.address !== "undefined" && r.values.address !== null && r.values.address.length ) {
+				let acc = {
+					"id": currency.currency.toUpperCase(),
+					"currency": currency.currency.toUpperCase(),
 					"type": Number(currency.instant_exchange) ? "crypto" : "fiat",
-					"icon": currency.symbol,
-					"flag": currency.logo,
-				},
-				"usdValue": currency.amount
-			};
-			CURRENT.accounts.push(acc);
-			CURRENT.totalUsd = CURRENT.totalUsd + Number(currency.amount);
-			
-			// Cuentas
-			document.getElementById('dAccounts').innerHTML = CURRENT.accounts.map(a=>`
-				<tr>
-					<td>
-						<div class="flex">${currencyIcon(a.currency,a.meta,26)}<b>${a.currency}</b></div>
-					</td>
-					<td class="no-mobile">
-						${a.type==='crypto'?'Cripto':'Fiat'}
-					</td>
-					<td class="no-mobile">
-						${fmtBalance(a.currency,a.balance,a.type)}
-					</td>
-					<td>
-						$${Number(a.usdValue).toLocaleString('es-MX',{minimumFractionDigits:2})}
-					</td>
-					<td>
-						<div class="flex">
-							<input readonly class="num-input" value="${a.number||''}" id="num_${a.id}" style="width:100%;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px">
-							<!--button class="btn btn-sm btn-ghost" onclick="saveNumber('${a.id}')">Guardar</button-->
-						</div>
-					</td>
-					<!--td>
-						<button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="delAccount('${a.id}','${a.currency}')">Borrar</button>
-					</td-->
-				</tr>`).join('');
-			applyAppleEmoji(document.getElementById('dAccounts'));
+					"balance": Number(currency.amount).toFixed(2),
+					"number": r.values.address,
+					"createdAt": "",
+					"meta": {
+						"code": currency.currency.toUpperCase(),
+						"id": currency.description.toLowerCase(),
+						"name": currency.description,
+						"type": Number(currency.instant_exchange) ? "crypto" : "fiat",
+						"icon": currency.symbol,
+						"flag": currency.logo,
+					},
+					"usdValue": currency.amount
+				};
+				CURRENT.accounts.push(acc);
+				CURRENT.totalUsd = CURRENT.totalUsd + Number(currency.amount);
+				
+				// Cuentas
+				document.getElementById('dAccounts').innerHTML = CURRENT.accounts.map(a=>`
+					<tr>
+						<td>
+							<div class="flex">${currencyIcon(a.currency,a.meta,26)}<b>${a.currency}</b></div>
+						</td>
+						<td class="no-mobile">
+							${a.type==='crypto'?'Cripto':'Fiat'}
+						</td>
+						<td class="no-mobile">
+							${fmtBalance(a.currency,a.balance,a.type)}
+						</td>
+						<td>
+							$${Number(a.usdValue).toLocaleString('es-MX',{minimumFractionDigits:2})}
+						</td>
+						<td>
+							<div class="flex">
+								<input readonly class="num-input" value="${a.number||''}" id="num_${a.id}" style="width:100%;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px">
+								<!--button class="btn btn-sm btn-ghost" onclick="saveNumber('${a.id}')">Guardar</button-->
+							</div>
+						</td>
+						<!--td>
+							<button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="delAccount('${a.id}','${a.currency}')">Borrar</button>
+						</td-->
+					</tr>`).join('');
 
-			// Selects de cuentas
-			const opts = CURRENT.accounts.map(a=>`<option value="${a.currency},${a.balance}">${a.currency} (${fmtBalance(a.currency,a.balance,a.type)})</option>`).join('');
-			document.getElementById('txAcc').innerHTML = opts;
-			document.getElementById('balAcc').innerHTML = opts;
+				applyAppleEmoji(document.getElementById('dAccounts'));
+
+				// Selects de cuentas
+				const opts = CURRENT.accounts.map(a=>`<option value="${a.currency},${a.balance}">${a.currency} (${fmtBalance(a.currency,a.balance,a.type)})</option>`).join('');
+				document.getElementById('txAcc').innerHTML = opts;
+				document.getElementById('balAcc').innerHTML = opts;
+			}
 		}
 		catch(e){
 			console.error(e);
@@ -541,20 +520,52 @@ async function openUser(id){
 		max_ros: 20,
 	});
 	user_withdrawals.values.table.forEach(withdrawal => {
-		let tr = {
+		let additional_data_arr = {
 			bank: "",
 			country: "",
 			accountLabel: "",
-			accountNumber: "",
+			concept: "",
+		};
+		try{
+			let additional_data = withdrawal.c_note.replace(/&amp;quot;/g, '"');
+			additional_data = additional_data.replace(/&quot;/g, '"');
+			additional_data_arr = JSON.parse(additional_data);
+		}
+		catch(e){ 
+			console.error(e); 
+		}
+		let tr = {
+			bank: additional_data_arr.bank,
+			country: additional_data_arr.country,
+			accountLabel: additional_data_arr.accountLabel,
+			accountNumber: withdrawal.c_address_to_send,
 			status: (withdrawal.c_status == "P" ? "pending" : (withdrawal.c_status == "A" ? "completed" : "rejected")),
 			amount: Number(withdrawal.c_amount),
-			description: withdrawal.c_note,
+			description: additional_data_arr.concept,
 			date: format_unix_timestamp(Number(withdrawal.c_unix_created), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
 			currency: withdrawal.c_currency,
 			address_to_send: withdrawal.c_address_to_send,
 			id: withdrawal.c_payoutid,
 			processedAt: format_unix_timestamp(Number(withdrawal.c_unix_processed), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
 			rejectionReason: "",
+
+			accountId: additional_data_arr.accountId, 
+			countryCode: additional_data_arr.countryCode, 
+			
+			extraLabel: additional_data_arr.extraLabel, 
+			extraValue: additional_data_arr.extraValue,
+			beneficiaryName: additional_data_arr.beneficiaryName, 
+			idLabel: additional_data_arr.idLabel, 
+			beneficiaryId: additional_data_arr.beneficiaryId,
+		};
+		
+		for (let key in tr) {
+			try {
+				tr[key] = tr[key].replace(/&amp;/g, '&');
+			}
+			catch(e){
+				console.error(e);
+			}
 		};
 		u.withdrawals.push(tr);
 	});
@@ -563,20 +574,33 @@ async function openUser(id){
 	const stL = {pending:'En revisión', completed:'Completado', rejected:'Rechazado'};
 	document.getElementById('dWithdrawals').innerHTML = wds.length ? wds.map(w=>`
 		<div class="wd-card">
-		<div class="top">
-			<div><b>${fmtBalance(w.currency,Math.abs(w.amount),'fiat')} ${w.currency}</b> → ${w.address_to_send} <!--span class="muted">(${w.country})</span--></div>
-			<span class="status-pill status-${w.status}">${stL[w.status]||w.status}</span>
-		</div>
-		<div style="font-size:13px;color:var(--gray);line-height:1.6">
-			<!--b>Titular:</b> ${w.beneficiaryName}${w.beneficiaryId?` · <b>${w.idLabel}:</b> ${w.beneficiaryId}`:''}<br>
-			<b>${w.accountLabel}:</b> ${w.accountNumber}${w.extraValue?` · <b>${w.extraLabel}:</b> ${w.extraValue}`:''}<br-->
-			${w.description?`<b>Concepto:</b> ${w.description} · `:''}${timeAgo(w.date)}
-			${w.status==='rejected'&&w.rejectionReason?`<br><span style="color:var(--red)"><b>Motivo enviado:</b> ${w.rejectionReason}</span>`:''}
-		</div>
-		${w.status==='pending'?`<div class="flex" style="margin-top:10px">
-			<button class="btn btn-sm btn-primary" onclick="processWd('${w.id}','A')">Aprobar y descontar</button>
-			<button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="processWd('${w.id}','D')">Rechazar</button>
-		</div>`:''}
+			<div class="top">
+				<div>
+					<b>${fmtBalance(w.currency,Math.abs(w.amount),'fiat')} ${w.currency}</b> → ${w.address_to_send} 
+					<span class="muted">(${w.country})</span>
+				</div>
+				<span class="status-pill status-${w.status}">${stL[w.status]||w.status}</span>
+			</div>
+			<div style="font-size:13px;color:var(--gray);line-height:1.6">
+				<b>Titular:</b> ${w.beneficiaryName}${w.beneficiaryId?` · <b>${w.idLabel}:</b> ${w.beneficiaryId}`:''}<br>
+				<b>${w.accountLabel}:</b> ${w.accountNumber}${w.extraValue?` · <b>${w.extraLabel}:</b> ${w.extraValue}`:''}<br>
+				${w.description
+					?`<b>Concepto:</b> ${w.description} · `
+					:''
+				}${timeAgo(w.date)}
+				${w.status==='rejected' && w.rejectionReason
+					?`<br><span style="color:var(--red)"><b>Motivo enviado:</b> ${w.rejectionReason}</span>`
+					:''
+				}
+			</div>
+			${w.status==='pending'
+				?`
+				<div class="flex" style="margin-top:10px">
+					<button class="btn btn-sm btn-primary" onclick="processWd('${w.id}','A')">Aprobar y descontar</button>
+					<button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="processWd('${w.id}','D')">Rechazar</button>
+				</div>`
+				:''
+			}
 		</div>`).join('') : '<p class="muted" style="font-size:14px">Sin solicitudes de retiro.</p>';
 
 	// Movimientos
@@ -844,13 +868,17 @@ async function processWd(wid, status)
 		msg(ex.message,false); 
 	}
 }
+/*
 async function saveNumber(accId){
-  try{
-	const number = document.getElementById('num_'+accId).value.trim();
-	await API.post('/api/admin/users/'+CURRENT.user.id+'/account-number', { accountId: accId, number }, tok());
-	msg('Número de cuenta actualizado.');
-  }catch(ex){ msg(ex.message,false); }
+	try{
+		const number = document.getElementById('num_'+accId).value.trim();
+		await API.post('/api/admin/users/'+CURRENT.user.id+'/account-number', { accountId: accId, number }, tok());
+		msg('Número de cuenta actualizado.');
+	}catch(ex){ 
+		msg(ex.message,false); 
+	}
 }
+*/
 async function sendNotif(){
 	try{
 		const notification = await API.post('api/custom_api', { 
