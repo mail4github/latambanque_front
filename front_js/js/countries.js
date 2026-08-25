@@ -234,6 +234,7 @@ const WALLETS = [
 	{ name:'Payoneer',     domain:'payoneer.com',    accountLabel:'Correo de Payoneer' },
 	{ name:'Skrill',       domain:'skrill.com',      accountLabel:'Correo de Skrill' },
 	{ name:'AstroPay',     domain:'astropay.com',    accountLabel:'Correo o usuario' },
+	{ name:'USDT Solana',  domain:'tether.to',       accountLabel:'Dirección criptográfica' },
 ];
 
 // Logo del banco: DuckDuckGo (directo) con respaldo a favicon de Google y, por último, inicial.

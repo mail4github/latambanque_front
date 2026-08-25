@@ -645,24 +645,34 @@ function zoomImg(el){
   const w = window.open('', '_blank');
   if (w) w.document.write('<title>Documento</title><body style="margin:0;background:#111;display:grid;place-items:center;min-height:100vh"><img src="'+el.src+'" style="max-width:100%;max-height:100vh"></body>');
 }
-// Redimensiona la imagen en el navegador antes de subir (más liviano)
+
+// Resize the image in your browser before uploading (it will make the file size smaller).
 function fileToResizedDataUrl(file, maxDim=1400, quality=0.82){
-  return new Promise((resolve,reject)=>{
-	const fr=new FileReader();
-	fr.onload=()=>{
-	  const img=new Image();
-	  img.onload=()=>{
-		let w=img.width, h=img.height;
-		if (Math.max(w,h)>maxDim){ const s=maxDim/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s); }
-		const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
-		cv.getContext('2d').drawImage(img,0,0,w,h);
-		resolve(cv.toDataURL('image/jpeg', quality));
-	  };
-	  img.onerror=reject; img.src=fr.result;
-	};
-	fr.onerror=reject; fr.readAsDataURL(file);
-  });
+	return new Promise((resolve,reject)=>{
+		const fr = new FileReader();
+		fr.onload=()=>{
+			const img = new Image();
+			img.onload=()=>{
+				let w = img.width, h = img.height;
+				if (Math.max(w,h) > maxDim){ 
+					const s = maxDim/Math.max(w,h); 
+					w=Math.round(w*s); 
+					h=Math.round(h*s); 
+				}
+				const cv=document.createElement('canvas'); 
+				cv.width=w; 
+				cv.height=h;
+				cv.getContext('2d').drawImage(img, 0, 0, w, h);
+				resolve(cv.toDataURL('image/jpeg', quality));
+			};
+			img.onerror = reject; 
+			img.src = fr.result;
+		};
+		fr.onerror = reject; 
+		fr.readAsDataURL(file);
+	});
 }
+
 async function uploadDoc(type, input){
 	const f = input.files[0]; if (!f) return;
 	const st = document.getElementById('status-'+type);
@@ -834,7 +844,7 @@ function renderWallets(){
 	WD.wallet = null;
 	document.getElementById('walletList').innerHTML = WALLETS.map((w,i)=>`
 		<div class="bank-row" data-i="${i}" onclick="selectWallet(${i})">
-		${bankLogoHtml(w,34)}<span class="nm">${w.name}</span><span class="chk">✓</span>
+			${bankLogoHtml(w,34)}<span class="nm">${w.name}</span><span class="chk">✓</span>
 		</div>`).join('');
 }
 function selectWallet(i){
@@ -861,6 +871,7 @@ function renderBanks(){
 		${bankLogoHtml(b,34)}<span class="nm">${b.name}</span><span class="chk">✓</span>
 		</div>`).join('');
 }
+
 function selectBank(i){
 	const c = getCountry(document.getElementById('wdCountry').value);
 	WD.bank = c.banks[i];
