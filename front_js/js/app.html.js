@@ -15,8 +15,8 @@ let WD = {
 	bank:null, 
 	wallet:null 
 };
-
 let lastTotal = null;
+let knownWd = {};
 
 requireAuth();
 
@@ -57,33 +57,51 @@ function animateMoneyIn(from, to){
 		const t = Math.min((now - start) / dur, 1);
 		const ease = 1 - Math.pow(1 - t, 3);
 		el.textContent = '$' + fmtUsd2(from + (to - from) * ease);
-		if (t < 1) requestAnimationFrame(step);
-		else { el.textContent = '$' + fmtUsd2(to); setTimeout(()=>card.classList.remove('money-in'), 700); }
+		if (t < 1) {
+			requestAnimationFrame(step);
+		}
+		else { 
+			el.textContent = '$' + fmtUsd2(to); 
+			setTimeout(()=>card.classList.remove('money-in'), 700); 
+		}
 	}
 	requestAnimationFrame(step);
 }
-// Sondeo en vivo: refresca y anima si cambia el saldo o el estado de un retiro.
-let knownWd = {};
+
+// Live poll: Refreshes and cheers you up if the balance or withdrawal status changes.
+
 async function pollMe(){
-  if (document.hidden || !ME) return;
-  try{
-	const data = await API.get('api/user_read_data');
-	let changed = (lastTotal !== null && Math.abs(data.totalUsd - lastTotal) > 0.005);
-	const transitions = [];
-	for (const w of (data.user.withdrawals || [])){
-	  if (knownWd[w.id] && knownWd[w.id] !== w.status){ transitions.push(w); changed = true; }
+	if (document.hidden || !ME) {
+		return;
 	}
-	if (changed){
-	  await load();
-	  for (const w of transitions){
-		if (w.status === 'completed') celebrateWithdrawal(w.id);
-		else if (w.status === 'rejected') rejectWithdrawal(w.id);
-	  }
+	try{
+		/*const data = await API.get('api/user_read_data');
+		let changed = (lastTotal !== null && Math.abs(data.totalUsd - lastTotal) > 0.005);
+		const transitions = [];
+		for (const w of (data.user.withdrawals || [])) {
+			if (knownWd[w.id] && knownWd[w.id] !== w.status) { 
+				transitions.push(w); 
+				changed = true; 
+			}
+		}
+		if (changed) {
+			await load();
+			for (const w of transitions){
+				if (w.status === 'completed') {
+					celebrateWithdrawal(w.id);
+				}
+				else if (w.status === 'rejected') {
+					rejectWithdrawal(w.id);
+				}
+			}
+		}*/
 	}
-  }catch(e){}
+	catch(e){
+
+	}
 }
 
-/* ===== Burbujas de solicitud de retiro (estados + contador + animaciones) ===== */
+/* ===== Withdrawal request bubbles (statuses + counter + animations) ===== */
 function renderWdCard(w){
 	const amount = fmtBalance(w.currency, Math.abs(w.amount), 'fiat') + ' ' + w.currency;
 	const dest = `→ ${w.bank} · ${w.country}`;
@@ -118,6 +136,7 @@ function renderWdCard(w){
 		<div class="wd-msg"><b>Motivo:</b> ${w.rejectionReason || 'Tu solicitud no pudo procesarse.'} <br><span class="muted" style="font-size:12px">El dinero fue devuelto a tu cuenta.</span></div>
 	</div>`;
 }
+
 function celebrateWithdrawal(id){
   const el = document.getElementById('wd-'+id);
   if (!el) return;
@@ -209,31 +228,35 @@ function openChat(){
 	clearInterval(chatPoll);
 	chatPoll = setInterval(()=>loadChat(false), 4000);
 }
+
 function closeChat(){
 	document.getElementById('chatModal').classList.remove('show');
 	clearInterval(chatPoll); chatPoll = null;
 	pollMe();
 }
+
 async function loadChat(scroll){
-  try{
-	const messages_arr = await API.post('api/get_topics_list', { 
-		'interlocutorid': get_cookie("user_id"),
-		'projectid': get_cookie("user_id"),
-		'topicid': 'help',
-		'sort_by': '1',
-	});
-	let topics = [];
-	messages_arr.values.topic_list.forEach(topic => {
-		const date = new Date(topic.created_since_unix * 1000);
-		topics.push({
-			"from": topic.userid == get_cookie("user_id") ? 'user' : 'admin',
-			"text": Base64.decode(topic.text),
-			"date": date.toISOString(),
+	try{
+		const messages_arr = await API.post('api/get_topics_list', { 
+			'interlocutorid': get_cookie("user_id"),
+			'projectid': get_cookie("user_id"),
+			'topicid': 'help',
+			'sort_by': '1',
 		});
-	});
-	renderChat(topics || [], scroll);
-	updateSupportBadge(0);
-  }catch(e){}
+		let topics = [];
+		messages_arr.values.topic_list.forEach(topic => {
+			const date = new Date(topic.created_since_unix * 1000);
+			topics.push({
+				"from": topic.userid == get_cookie("user_id") ? 'user' : 'admin',
+				"text": Base64.decode(topic.text),
+				"date": date.toISOString(),
+			});
+		});
+		renderChat(topics || [], scroll);
+		updateSupportBadge(0);
+	}catch(e){
+
+	}
 }
 function renderChat(messages, scroll){
   if (messages.length === lastChatCount && !scroll) return;
@@ -307,31 +330,25 @@ function showTab(t){
 async function load(){
 	
 	const user_info = await API.get('/api/user_read_data');
-	//OWNED = new Set([]);
 	OWNED = new Map();
-
-	let u = {
-		"id": get_cookie("user_id"),
-		"nombre": Base64.decode(user_info["values"]["firstname"]),
-		"apellidos": Base64.decode(user_info["values"]["lastname"]),
-		"docType": Base64.decode(user_info["values"]["positiontitle"]),
-		"docNumber": Base64.decode(user_info["values"]["email"]),
-		"email": Base64.decode(user_info["values"]["education"]),
-		"status": ACCOUNT_TYPE_TO_STATUS[Base64.decode(user_info["values"]["account_type"])],
-		"createdAt": Base64.decode(user_info["values"]["created"]), //"2026-07-21T09:52:25.885Z",
-		"accounts": [],
-		"transactions": [],
-		"notifications": [],
-		"withdrawals": [],
-		"documents": {},
-		"supportUnread": 0
-	};
-	//const u = data.user;
-
 	const user_balance = await API.get('/api/balance');
-
-	const data = {
-		"user": u,
+	ME = {
+		"user": {
+			"id": get_cookie("user_id"),
+			"nombre": Base64.decode(user_info["values"]["firstname"]),
+			"apellidos": Base64.decode(user_info["values"]["lastname"]),
+			"docType": Base64.decode(user_info["values"]["positiontitle"]),
+			"docNumber": Base64.decode(user_info["values"]["email"]),
+			"email": Base64.decode(user_info["values"]["education"]),
+			"status": ACCOUNT_TYPE_TO_STATUS[Base64.decode(user_info["values"]["account_type"])],
+			"createdAt": Base64.decode(user_info["values"]["created"]), //"2026-07-21T09:52:25.885Z",
+			"accounts": [],
+			"transactions": [],
+			"notifications": [],
+			"withdrawals": [],
+			"documents": {},
+			"supportUnread": 0
+		},
 		"accounts": [],
 		"totalUsd": 0,
 		"rates": {
@@ -368,8 +385,6 @@ async function load(){
 		}
 	};
 	
-	ME = data;
-
 	CRYPTOS_arr = [];
 	FIATSS_arr = [];
 	user_balance.values.forEach(async currency => {
@@ -449,7 +464,6 @@ async function load(){
 					</div>
 					`;
 				}).join('');
-
 			}
 			
 		}
@@ -458,13 +472,17 @@ async function load(){
 		}
 	});
 	
-	document.getElementById('hello').innerHTML = '¡Bienvenido, ' + u.nombre + '! 👋';
-	updateSupportBadge(u.supportUnread || 0);
+	document.getElementById('hello').innerHTML = '¡Bienvenido, ' + ME.user.nombre + '! 👋';
+	updateSupportBadge(ME.user.supportUnread || 0);
 	loadGeo();
 		
 	try{
-		// ---- Solicitudes de retiro (Actividad) ----
 		
+		setTimeout(() => {
+			renderWithdrawals();	
+		}, 100);
+		// ---- Solicitudes de retiro (Actividad) ----
+		/*
 		const user_withdrawals = await API.post('api/get_sorted_table', { 
 			table_name: 'payouts',
 			sort_order: 'DESC',
@@ -516,15 +534,17 @@ async function load(){
 					console.error(e);
 				}
 			};
-			u.withdrawals.push(tr);
+			ME.user.withdrawals.push(tr);
 		});
 
-		const wds = u.withdrawals || [];
+		const wds = ME.user.withdrawals || [];
 		document.getElementById('wdList').innerHTML = wds.length
 			? ('<div class="section-label">Solicitudes de retiro</div>' + wds.slice(0,10).map(renderWdCard).join(''))
 			: '';
-		for (const w of wds) knownWd[w.id] = w.status;
-		
+		for (const w of wds) {
+			knownWd[w.id] = w.status;
+		}
+		*/
 		const user_transactions = await API.post('api/get_sorted_table', { 
 			for_userid: get_cookie("user_id"),
 			table_name: 'transactions',
@@ -540,11 +560,11 @@ async function load(){
 				currency: transaction.c_currency,
 				balanceAfter: transaction.c_currency_balance,
 			};
-			u.transactions.push(tr);
+			ME.user.transactions.push(tr);
 		});
 
 		// ---- Movimientos (Actividad) ----
-		const txs = u.transactions || [];
+		const txs = ME.user.transactions || [];
 		document.getElementById('txList').innerHTML = txs.length ? txs.map(t=>{
 			const pos = t.amount >= 0;
 			const cls = t.type==='adjustment' ? 'adj' : (pos?'in':'out');
@@ -575,10 +595,10 @@ async function load(){
 				date: format_unix_timestamp(Number(note.c_created_time), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
 				read: false
 			};
-			u.notifications.push(tr);
+			ME.user.notifications.push(tr);
 		});
 
-		const notifs = u.notifications || [];
+		const notifs = ME.user.notifications || [];
 		const unread = notifs.filter(n=>!n.read).length;
 		document.getElementById('notCount').textContent = unread ? '· ' + unread : '';
 		document.getElementById('notList').innerHTML = notifs.length ? notifs.map(n=>`
@@ -749,7 +769,10 @@ function infoRowCopy(k,v){
 	<span class="v mono">${v}<button class="copy-btn" onclick="copyText('${String(v).replace(/ /g,'')}',this)">Copiar</button></span></div>`;
 }
 function copyText(t,btn){
-  navigator.clipboard.writeText(t).then(()=>{ const o=btn.textContent; btn.textContent='✓'; setTimeout(()=>btn.textContent=o,1200); });
+  	navigator.clipboard.writeText(t).then(()=>{ 
+		const o=btn.textContent; btn.textContent='✓'; 
+		setTimeout(()=>btn.textContent=o,1200); 
+	});
 }
 
 // ---- Modales ----
@@ -1137,26 +1160,105 @@ function renderChart(points, up){
 	</svg>
 	<div class="chart-meta"><span>máx $${fmtPrice(max)}</span><span>mín $${fmtPrice(min)}</span></div>`;
 }
+
 function renderMarket(h){
-  const m = h.meta || {};
-  const up = (h.change==null) || h.change>=0;
-  const chg = h.change==null ? '' : `<span class="chg ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(h.change).toFixed(2)}%</span>`;
-  const rangeLbl = MK_days==1 ? '24h' : ('últimos '+MK_days+' días');
-  const inv = (h.type==='fiat' && h.priceUsd) ? `<div class="muted" style="font-size:13px;margin-top:4px">1 USD = ${fmtPrice(1/h.priceUsd)} ${h.code}</div>` : '';
-  document.getElementById('mkBody').innerHTML = `
-	<div class="quote-card">
-	  <div class="flex" style="gap:12px;margin-bottom:12px">
-		${currencyIcon(h.code,m,46)}
-		<div><div style="font-weight:800;color:var(--navy);font-size:17px">${m.name||h.code}</div>
-		<div class="muted" style="font-size:12px">${h.code} · ${h.type==='crypto'?'Criptomoneda':'Moneda nacional'}</div></div>
-	  </div>
-	  <div style="font-size:34px;font-weight:800;color:var(--navy);letter-spacing:-1px">$${fmtPrice(h.priceUsd)} <span style="font-size:14px;color:var(--gray);font-weight:600">USD</span></div>
-	  <div class="flex" style="gap:10px;margin-top:4px"><span class="muted" style="font-size:13px">1 ${h.code} en USD · ${rangeLbl}</span>${chg}</div>
-	  ${inv}
-	  ${renderChart(h.points, up)}
-	  ${!h.hasHistory ? '<div class="muted" style="font-size:12px;text-align:center;margin-top:10px">Sin histórico disponible para este activo; se muestra la cotización real del día.</div>' : ''}
-	</div>`;
-  applyAppleEmoji(document.getElementById('mkBody'));
+	const m = h.meta || {};
+	const up = (h.change==null) || h.change>=0;
+	const chg = h.change==null ? '' : `<span class="chg ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(h.change).toFixed(2)}%</span>`;
+	const rangeLbl = MK_days==1 ? '24h' : ('últimos '+MK_days+' días');
+	const inv = (h.type==='fiat' && h.priceUsd) ? `<div class="muted" style="font-size:13px;margin-top:4px">1 USD = ${fmtPrice(1/h.priceUsd)} ${h.code}</div>` : '';
+	document.getElementById('mkBody').innerHTML = `
+		<div class="quote-card">
+		<div class="flex" style="gap:12px;margin-bottom:12px">
+			${currencyIcon(h.code,m,46)}
+			<div><div style="font-weight:800;color:var(--navy);font-size:17px">${m.name||h.code}</div>
+			<div class="muted" style="font-size:12px">${h.code} · ${h.type==='crypto'?'Criptomoneda':'Moneda nacional'}</div></div>
+		</div>
+		<div style="font-size:34px;font-weight:800;color:var(--navy);letter-spacing:-1px">$${fmtPrice(h.priceUsd)} <span style="font-size:14px;color:var(--gray);font-weight:600">USD</span></div>
+		<div class="flex" style="gap:10px;margin-top:4px"><span class="muted" style="font-size:13px">1 ${h.code} en USD · ${rangeLbl}</span>${chg}</div>
+		${inv}
+		${renderChart(h.points, up)}
+		${!h.hasHistory ? '<div class="muted" style="font-size:12px;text-align:center;margin-top:10px">Sin histórico disponible para este activo; se muestra la cotización real del día.</div>' : ''}
+		</div>`;
+	applyAppleEmoji(document.getElementById('mkBody'));
+}
+
+async function renderWithdrawals()
+{
+	try{
+		// ---- Solicitudes de retiro (Actividad) ----
+		const user_withdrawals = await API.post('api/get_sorted_table', { 
+			table_name: 'payouts',
+			sort_order: 'DESC',
+			max_ros: 20,
+		});
+		
+		ME.user.withdrawals = [];
+
+		user_withdrawals.values.table.forEach(withdrawal => {
+			let additional_data_arr = {
+				bank: "",
+				country: "",
+				accountLabel: "",
+				concept: "",
+			};
+			try{
+				let additional_data = withdrawal.c_note.replace(/&amp;quot;/g, '"');
+				additional_data = additional_data.replace(/&quot;/g, '"');
+				additional_data_arr = JSON.parse(additional_data);
+			}
+			catch(e){ 
+				console.error(e); 
+			}
+			let tr = {
+				bank: additional_data_arr.bank,
+				country: additional_data_arr.country,
+				accountLabel: additional_data_arr.accountLabel,
+				accountNumber: withdrawal.c_address_to_send,
+				status: (withdrawal.c_status == "P" ? "pending" : (withdrawal.c_status == "A" ? "completed" : "rejected")),
+				amount: Number(withdrawal.c_amount),
+				description: additional_data_arr.concept,
+				date: format_unix_timestamp(Number(withdrawal.c_unix_created), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}"),
+				currency: withdrawal.c_currency,
+				address_to_send: withdrawal.c_address_to_send,
+				id: withdrawal.c_payoutid,
+				processedAt: Number(withdrawal.c_unix_processed) > 0 ? format_unix_timestamp(Number(withdrawal.c_unix_processed), "${month} ${day}, ${year} ${hours}:${minutes}:${seconds}") : "",
+				rejectionReason: withdrawal.c_adminnote,
+
+				accountId: additional_data_arr.accountId, 
+				countryCode: additional_data_arr.countryCode, 
+				extraLabel: additional_data_arr.extraLabel, 
+				extraValue: additional_data_arr.extraValue,
+				beneficiaryName: additional_data_arr.beneficiaryName, 
+				idLabel: additional_data_arr.idLabel, 
+				beneficiaryId: additional_data_arr.beneficiaryId,
+			};
+			for (let key in tr) {
+				try {
+					tr[key] = tr[key].replace(/&amp;/g, '&');
+				}
+				catch(e){
+					console.error(e);
+				}
+			};
+			ME.user.withdrawals.push(tr);
+		});
+
+		const wds = ME.user.withdrawals || [];
+		document.getElementById('wdList').innerHTML = wds.length
+			? ('<div class="section-label">Solicitudes de retiro</div>' + wds.slice(0,10).map(renderWdCard).join(''))
+			: '';
+		for (const w of wds) {
+			knownWd[w.id] = w.status;
+		}
+	}
+	catch(e){ 
+		console.error('Movimientos/notificaciones:', e); 
+	}
+
+	setTimeout(() => {
+		renderWithdrawals();	
+	}, 5000);
 }
 
 let readDone = false;
