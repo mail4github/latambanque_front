@@ -313,7 +313,7 @@ async function loadUsers(){
 		<td><b>${u.c_firstname} ${u.c_lastname}</b><br><span class="muted" style="font-size:12px">${u.c_user_email||''}</span></td>
 		<td class="hide-sm"><span class="pill">${u.c_docType}</span> ${u.c_email}</td>
 		<td class="hide-sm">3</td>
-		<td><b>$${Number(u.totalUsd).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}</b></td>
+		<td><b>$${Number(u.totalUsd).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2})}</b></td>
 		<td>›</td></tr>`).join('');
 	}
 	catch(ex) {
@@ -436,7 +436,7 @@ async function openUser(id){
 							${fmtBalance(a.currency,a.balance,a.type)}
 						</td>
 						<td>
-							$${Number(a.usdValue).toLocaleString('es-MX',{minimumFractionDigits:2})}
+							$${Number(a.usdValue).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2})}
 						</td>
 						<td>
 							<div class="flex">
@@ -467,7 +467,8 @@ async function openUser(id){
 	document.getElementById('detailCard').style.display='block';
 	document.getElementById('dName').innerHTML = u.nombre+' '+u.apellidos;
 	document.getElementById('dMeta').innerHTML =
-		`<span class="pill">${u.docType}</span> ${u.docNumber} · ${u.email||'sin correo'} · registrado ${timeAgo(u.createdAt)} · <b>Total: $${Number(d.totalUsd).toLocaleString('es-MX',{minimumFractionDigits:2})}</b>`;
+		`<span class="pill">${u.docType}</span> 
+		${u.docNumber} · ${u.email||'sin correo'} · registrado ${timeAgo(u.createdAt)} · <b>Total: $${Number(d.totalUsd).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2})}</b>`;
 	document.getElementById('msg').innerHTML='';
 	document.getElementById('statusSel').value = u.status || 'active';
 	
