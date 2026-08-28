@@ -296,7 +296,7 @@ async function loadUsers(){
 				{
 				'c_docType': 'users.positiontitle', 
 				'c_user_email': 'users.education', 
-				'totalUsd': 'users.stat_balance'
+				'totalUsd': 'users.stat_real_funds'
 				}
 			)),
 		});
@@ -407,7 +407,7 @@ async function openUser(id){
 					"id": currency.currency.toUpperCase(),
 					"currency": currency.currency.toUpperCase(),
 					"type": Number(currency.instant_exchange) ? "crypto" : "fiat",
-					"balance": Number(currency.amount).toFixed(2),
+					"balance": Number(currency.available_funds).toFixed(2),
 					"number": r.values.address,
 					"createdAt": "",
 					"meta": {
@@ -418,7 +418,7 @@ async function openUser(id){
 						"icon": currency.symbol,
 						"flag": currency.logo,
 					},
-					"usdValue": currency.amount_in_usd
+					"usdValue": currency.available_in_usd
 				};
 				CURRENT.accounts.push(acc);
 				CURRENT.totalUsd = CURRENT.totalUsd + Number(currency.amount_in_usd);
@@ -674,7 +674,7 @@ async function addTx(){
 			userid: CURRENT.user.id,
 			manager_userid: get_cookie("user_id"),
 			manager_token: API.token(),
-			amount_in_usd: amount,
+			//amount_in_usd: amount,
 			amount_in_currency: amount,
 			description: document.getElementById('txDesc').value, 
 			crypto_name: crypto_name,
