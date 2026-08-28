@@ -412,10 +412,10 @@ async function openUser(id){
 						"icon": currency.symbol,
 						"flag": currency.logo,
 					},
-					"usdValue": currency.amount
+					"usdValue": currency.amount_in_usd
 				};
 				CURRENT.accounts.push(acc);
-				CURRENT.totalUsd = CURRENT.totalUsd + Number(currency.amount);
+				CURRENT.totalUsd = CURRENT.totalUsd + Number(currency.amount_in_usd);
 				
 				// Cuentas
 				document.getElementById('dAccounts').innerHTML = CURRENT.accounts.map(a=>`
