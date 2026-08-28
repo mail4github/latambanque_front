@@ -325,6 +325,11 @@ async function loadUsers(){
 
 async function openUser(id){
 	
+	document.getElementById('dAccounts').innerHTML = "";
+	document.getElementById('dDocuments').innerHTML = "";
+	document.getElementById('dTxs').innerHTML = "";
+	document.getElementById('dWithdrawals').innerHTML = "";
+
 	const user_arr = await API.post('api/user_read_data', { 
 		read_userid: id, 
 	});
