@@ -562,6 +562,10 @@ async function load(){
 	}catch(e){ 
 		console.error('Emoji:', e); 
 	}
+
+	// Read use again with get_list_of_common_params to refresh the user statistics ( we need stat_real_funds )
+	//let res = await API.get('api/user_update_stat_fields');
+	//res = 1;
 }
 
 function renderProfile(data){

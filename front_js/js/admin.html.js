@@ -292,7 +292,13 @@ async function loadUsers(){
 			'sort_column': 3,
 			'max_ros': 25,
 			'sort_order': 'DESC',
-			'additional_columns': Base64.encode(JSON.stringify({'c_docType': 'users.positiontitle', 'c_user_email': 'users.education', 'totalUsd': 'users.stat_balance'})),
+			'additional_columns': Base64.encode(JSON.stringify(
+				{
+				'c_docType': 'users.positiontitle', 
+				'c_user_email': 'users.education', 
+				'totalUsd': 'users.stat_balance'
+				}
+			)),
 		});
 
 		USERS = d.values.table
