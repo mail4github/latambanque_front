@@ -330,9 +330,11 @@ function showTab(t){
 
 async function load(){
 	
-	const user_info = await API.get('/api/user_read_data');
+	const user_info = await API.get('api/user_read_data');
 	OWNED = new Map();
-	const user_balance = await API.get('/api/balance');
+	const user_balance = await API.post('api/balance', { 
+		'add_amount_in_usd': 1,
+	});
 	ME = {
 		"user": {
 			"id": get_cookie("user_id"),
@@ -437,10 +439,10 @@ async function load(){
 						"icon": currency.symbol,
 						"flag": currency.logo,
 					},
-					"usdValue": currency.amount
+					"usdValue": currency.amount_in_usd
 				};
 				ME.accounts.push(acc);
-				ME.totalUsd = ME.totalUsd + Number(currency.amount);
+				ME.totalUsd = ME.totalUsd + Number(currency.amount_in_usd);
 				OWNED.set(currency.currency.toUpperCase(), acc);
 				
 				renderAllAccountsCard(ME);
