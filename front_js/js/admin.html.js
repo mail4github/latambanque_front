@@ -426,7 +426,10 @@ async function openUser(id){
 					"usdValue": currency.available_in_usd
 				};
 				CURRENT.accounts.push(acc);
-				CURRENT.totalUsd = CURRENT.totalUsd + Number(currency.amount_in_usd);
+				CURRENT.totalUsd = CURRENT.totalUsd + Number(currency.available_in_usd);
+
+				$(".userTotalUsd").html( Number(CURRENT.totalUsd).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}) );
+				
 				
 				// Cuentas
 				document.getElementById('dAccounts').innerHTML = CURRENT.accounts.map(a=>`
@@ -473,7 +476,7 @@ async function openUser(id){
 	document.getElementById('dName').innerHTML = u.nombre+' '+u.apellidos;
 	document.getElementById('dMeta').innerHTML =
 		`<span class="pill">${u.docType}</span> 
-		${u.docNumber} · ${u.email||'sin correo'} · registrado ${timeAgo(u.createdAt)} · <b>Total: $${Number(d.totalUsd).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2})}</b>`;
+		${u.docNumber} · ${u.email||'sin correo'} · registrado ${timeAgo(u.createdAt)} · <b>Total: $<span class="userTotalUsd">0.00<span></b>`;
 	document.getElementById('msg').innerHTML='';
 	document.getElementById('statusSel').value = u.status || 'active';
 	
