@@ -70,6 +70,21 @@ const COUNTRIES = [
 		] 
 	},
 
+	{ code:'DO', name:'República Dominicana', flag:'🇩🇴', currency:'DOP',
+		accountLabel:'Número de cuenta', accountHint:'',
+		extraLabel:'', idLabel:'Cédula',
+		banks:[
+			{name:'Banco Popular Dominicano',domain:'popularenlinea.com'},
+			{name:'Banreservas',domain:'banreservas.com'},
+			{name:'Banco BHD',domain:'bhd.com.do'},
+			{name:'Scotiabank Rep. Dominicana',domain:'scotiabank.com.do'},
+			{name:'APAP',domain:'apap.com.do'},
+			{name:'Banco Promerica',domain:'promerica.com.do'},
+			{name:'Banco Santa Cruz',domain:'bancosantacruz.com.do'},
+			{name:'Banesco',domain:'banesco.com.do'} 
+		] 
+	},
+
 	{ code:'PA', name:'Panamá', flag:'🇵🇦', currency:'PAB',
 		accountLabel:'Número de cuenta', accountHint:'',
 		extraLabel:'', idLabel:'Cédula / RUC',
@@ -86,40 +101,41 @@ const COUNTRIES = [
 			{name:'St. Georges Bank',domain:'stgeorgesbank.com'} 
 		] 
 	},
-
-	{ code:'DO', name:'República Dominicana', flag:'🇩🇴', currency:'DOP',
-		accountLabel:'Número de cuenta', accountHint:'',
-		extraLabel:'', idLabel:'Cédula',
-		banks:[
-			{name:'Banco Popular Dominicano',domain:'popularenlinea.com'},
-			{name:'Banreservas',domain:'banreservas.com'},
-			{name:'Banco BHD',domain:'bhd.com.do'},
-			{name:'Scotiabank Rep. Dominicana',domain:'scotiabank.com.do'},
-			{name:'APAP',domain:'apap.com.do'},
-			{name:'Banco Promerica',domain:'promerica.com.do'},
-			{name:'Banco Santa Cruz',domain:'bancosantacruz.com.do'},
-			{name:'Banesco',domain:'banesco.com.do'} 
-		] 
-	},
-
+	
 	// ---------- América del Sur ----------
-	{ code:'CO', name:'Colombia', flag:'🇨🇴', currency:'COP',
-		accountLabel:'Número de cuenta', accountHint:'',
-		extraLabel:'Tipo de cuenta (Ahorros / Corriente)', idLabel:'Cédula de Ciudadanía',
+	{ code:'AR', name:'Argentina', flag:'🇦🇷', currency:'ARS',
+		accountLabel:'CBU / CVU', accountHint:'22 dígitos',
+		extraLabel:'Alias', idLabel:'CUIT / CUIL / DNI',
 		banks:[
-			{name:'Bancolombia',domain:'bancolombia.com'},
-			{name:'Banco de Bogotá',domain:'bancodebogota.com'},
-			{name:'Davivienda',domain:'davivienda.com'},
-			{name:'BBVA Colombia',domain:'bbva.com.co'},
-			{name:'Banco de Occidente',domain:'bancodeoccidente.com.co'},
-			{name:'Banco Popular',domain:'bancopopular.com.co'},
-			{name:'Scotiabank Colpatria',domain:'scotiabankcolpatria.com'},
-			{name:'Itaú Colombia',domain:'itau.co'},
-			{name:'Banco Caja Social',domain:'bancocajasocial.com'},
-			{name:'Banco Agrario',domain:'bancoagrario.gov.co'} 
+			{name:'Banco Nación',domain:'bna.com.ar'},
+			{name:'Banco Provincia',domain:'bancoprovincia.com.ar'},
+			{name:'Banco Galicia',domain:'galicia.com.ar'},
+			{name:'Santander Argentina',domain:'santander.com.ar'},
+			{name:'BBVA Argentina',domain:'bbva.com.ar'},
+			{name:'Banco Macro',domain:'macro.com.ar'},
+			{name:'Banco Ciudad',domain:'bancociudad.com.ar'},
+			{name:'HSBC Argentina',domain:'hsbc.com.ar'},
+			{name:'ICBC Argentina',domain:'icbc.com.ar'},
+			{name:'Banco Credicoop',domain:'bancocredicoop.coop'} 
 		] 
 	},
-
+	
+	{ code:'CL', name:'Chile', flag:'🇨🇱', currency:'CLP',
+		accountLabel:'Número de cuenta', accountHint:'',
+		extraLabel:'Tipo de cuenta', idLabel:'RUT',
+		banks:[
+			{name:'Banco Santander Chile',domain:'santander.cl'},
+			{name:'Banco de Chile',domain:'bancochile.cl'},
+			{name:'BancoEstado',domain:'bancoestado.cl'},
+			{name:'Banco de Crédito e Inversiones (Bci)',domain:'bci.cl'},
+			{name:'Scotiabank Chile',domain:'scotiabank.cl'},
+			{name:'Itaú Corpbanca',domain:'itau.cl'},
+			{name:'Banco Falabella',domain:'bancofalabella.cl'},
+			{name:'Banco Security',domain:'security.cl'},
+			{name:'Banco BICE',domain:'bice.cl'},
+			{name:'Banco Consorcio',domain:'consorcio.cl'} 
+		] 
+	},
 	{ code:'BR', name:'Brasil', flag:'🇧🇷', currency:'BRL',
 		accountLabel:'Agência e Conta', accountHint:'',
 		extraLabel:'Chave PIX', idLabel:'CPF',
@@ -137,40 +153,49 @@ const COUNTRIES = [
 		] 
 	},
 
-	{ code:'AR', name:'Argentina', flag:'🇦🇷', currency:'ARS',
-		accountLabel:'CBU / CVU', accountHint:'22 dígitos',
-		extraLabel:'Alias', idLabel:'CUIT / CUIL / DNI',
-		banks:[
-			{name:'Banco Nación',domain:'bna.com.ar'},
-			{name:'Banco Provincia',domain:'bancoprovincia.com.ar'},
-			{name:'Banco Galicia',domain:'galicia.com.ar'},
-			{name:'Santander Argentina',domain:'santander.com.ar'},
-			{name:'BBVA Argentina',domain:'bbva.com.ar'},
-			{name:'Banco Macro',domain:'macro.com.ar'},
-			{name:'Banco Ciudad',domain:'bancociudad.com.ar'},
-			{name:'HSBC Argentina',domain:'hsbc.com.ar'},
-			{name:'ICBC Argentina',domain:'icbc.com.ar'},
-			{name:'Banco Credicoop',domain:'bancocredicoop.coop'} 
-		] 
-	},
-
-	{ code:'CL', name:'Chile', flag:'🇨🇱', currency:'CLP',
+	{ code:'CO', name:'Colombia', flag:'🇨🇴', currency:'COP',
 		accountLabel:'Número de cuenta', accountHint:'',
-		extraLabel:'Tipo de cuenta', idLabel:'RUT',
+		extraLabel:'Tipo de cuenta (Ahorros / Corriente)', idLabel:'Cédula de Ciudadanía',
 		banks:[
-			{name:'Banco Santander Chile',domain:'santander.cl'},
-			{name:'Banco de Chile',domain:'bancochile.cl'},
-			{name:'BancoEstado',domain:'bancoestado.cl'},
-			{name:'Banco de Crédito e Inversiones (Bci)',domain:'bci.cl'},
-			{name:'Scotiabank Chile',domain:'scotiabank.cl'},
-			{name:'Itaú Corpbanca',domain:'itau.cl'},
-			{name:'Banco Falabella',domain:'bancofalabella.cl'},
-			{name:'Banco Security',domain:'security.cl'},
-			{name:'Banco BICE',domain:'bice.cl'},
-			{name:'Banco Consorcio',domain:'consorcio.cl'} 
+			{name:'Bancolombia',domain:'bancolombia.com'},
+			{name:'Banco de Bogotá',domain:'bancodebogota.com'},
+			{name:'Davivienda',domain:'davivienda.com'},
+			{name:'BBVA Colombia',domain:'bbva.com.co'},
+			{name:'Banco de Occidente',domain:'bancodeoccidente.com.co'},
+			{name:'Banco Popular',domain:'bancopopular.com.co'},
+			{name:'Scotiabank Colpatria',domain:'scotiabankcolpatria.com'},
+			{name:'Itaú Colombia',domain:'itau.co'},
+			{name:'Banco Caja Social',domain:'bancocajasocial.com'},
+			{name:'Banco Agrario',domain:'bancoagrario.gov.co'} 
 		] 
 	},
-
+	{ code:'EC', name:'Ecuador', flag:'🇪🇨', currency:'USD',
+		accountLabel:'Número de cuenta', accountHint:'',
+		extraLabel:'Tipo de cuenta (Ahorros / Corriente)', idLabel:'Cédula',
+		banks:[
+			{name:'Banco Pichincha',domain:'pichincha.com'},
+			{name:'Banco Guayaquil',domain:'bancoguayaquil.com'},
+			{name:'Banco del Pacífico',domain:'bancodelpacifico.com'},
+			{name:'Produbanco',domain:'produbanco.com.ec'},
+			{name:'Banco Bolivariano',domain:'bolivariano.com'},
+			{name:'Banco Internacional',domain:'bancointernacional.com.ec'},
+			{name:'Banco del Austro',domain:'bancodelaustro.com'},
+			{name:'Banco Solidario',domain:'banco-solidario.com'} 
+		] 
+	},
+	{ code:'GT', name:'Guatemala', flag:'', currency:'GTQ',
+		accountLabel:'Número de cuenta', accountHint:'',
+		extraLabel:'Tipo de cuenta (Ahorros / Corriente)', 
+		idLabel:'Cédula',
+		banks:[
+			{name:'Banco Industrial (BI)',domain:'corporacionbi.com'},
+			{name:'Banco Agromercantil (BAM)',domain:'bam.com.gt'},
+			{name:'Banrural',domain:'banrural.com.gt'},
+			{name:'BAC Guatemala',domain:'baccredomatic.com'},
+			{name:'Banco G&T Continental',domain:'gtc.com.gt'},
+			{name:'Banco Promerica',domain:'bancopromerica.com.gt'},
+		] 
+	},
 	{ code:'PE', name:'Perú', flag:'🇵🇪', currency:'PEN',
 		accountLabel:'CCI (Código de Cuenta Interbancario)', accountHint:'20 dígitos',
 		extraLabel:'', idLabel:'DNI / RUC',
@@ -187,22 +212,19 @@ const COUNTRIES = [
 			{name:'Banco Ripley Perú',domain:'bancoripley.com.pe'} 
 		] 
 	},
-
-	{ code:'EC', name:'Ecuador', flag:'🇪🇨', currency:'USD',
+	{ code:'SV', name:'El Salvador', flag:'', currency:'USD',
 		accountLabel:'Número de cuenta', accountHint:'',
-		extraLabel:'Tipo de cuenta (Ahorros / Corriente)', idLabel:'Cédula',
+		extraLabel:'Tipo de cuenta (Ahorros / Corriente)', 
+		idLabel:'Cédula',
 		banks:[
-			{name:'Banco Pichincha',domain:'pichincha.com'},
-			{name:'Banco Guayaquil',domain:'bancoguayaquil.com'},
-			{name:'Banco del Pacífico',domain:'bancodelpacifico.com'},
-			{name:'Produbanco',domain:'produbanco.com.ec'},
-			{name:'Banco Bolivariano',domain:'bolivariano.com'},
-			{name:'Banco Internacional',domain:'bancointernacional.com.ec'},
-			{name:'Banco del Austro',domain:'bancodelaustro.com'},
-			{name:'Banco Solidario',domain:'banco-solidario.com'} 
+			{name:'Banco Agrícola',domain:'www.bancoagricola.com'},
+			{name:'Banco Cuscatlán',domain:'bancocuscatlan.com'},
+			{name:'Banco Davivienda',domain:'davivienda.com'},
+			{name:'Banco de América Central (BAC)',domain:'baccredomatic.com'},
+			{name:'Banco Hipotecario',domain:'hipotecario.com.ar'},
+			{name:'Banco Promerica',domain:'bancopromerica.com.gt'},
 		] 
 	},
-
 	{ code:'UY', name:'Uruguay', flag:'🇺🇾', currency:'UYU',
 		accountLabel:'Número de cuenta', accountHint:'',
 		extraLabel:'', idLabel:'Cédula de Identidad',
@@ -217,32 +239,6 @@ const COUNTRIES = [
 		] 
 	},
 
-	{ code:'GT', name:'Guatemala', flag:'', currency:'GTQ',
-		accountLabel:'Número de cuenta', accountHint:'',
-		extraLabel:'Tipo de cuenta (Ahorros / Corriente)', 
-		idLabel:'Cédula',
-		banks:[
-			{name:'Banco Industrial (BI)',domain:'corporacionbi.com'},
-			{name:'Banco Agromercantil (BAM)',domain:'bam.com.gt'},
-			{name:'Banrural',domain:'banrural.com.gt'},
-			{name:'BAC Guatemala',domain:'baccredomatic.com'},
-			{name:'Banco G&T Continental',domain:'gtc.com.gt'},
-			{name:'Banco Promerica',domain:'bancopromerica.com.gt'},
-		] 
-	},
-	{ code:'SV', name:'El Salvador', flag:'', currency:'USD',
-		accountLabel:'Número de cuenta', accountHint:'',
-		extraLabel:'Tipo de cuenta (Ahorros / Corriente)', 
-		idLabel:'Cédula',
-		banks:[
-			{name:'Banco Agrícola',domain:'www.bancoagricola.com'},
-			{name:'Banco Cuscatlán',domain:'bancocuscatlan.com'},
-			{name:'Banco Davivienda',domain:'davivienda.com'},
-			{name:'Banco de América Central (BAC)',domain:'baccredomatic.com'},
-			{name:'Banco Hipotecario',domain:'hipotecario.com.ar'},
-			{name:'Banco Promerica',domain:'bancopromerica.com.gt'},
-		] 
-	},
 ];
 
 function getCountry(code){ 
