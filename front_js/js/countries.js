@@ -216,6 +216,33 @@ const COUNTRIES = [
 			{name:'Banco Hipotecario (BHU)',domain:'bhu.com.uy'} 
 		] 
 	},
+
+	{ code:'GT', name:'Guatemala', flag:'', currency:'GTQ',
+		accountLabel:'Número de cuenta', accountHint:'',
+		extraLabel:'Tipo de cuenta (Ahorros / Corriente)', 
+		idLabel:'Cédula',
+		banks:[
+			{name:'Banco Industrial (BI)',domain:'corporacionbi.com'},
+			{name:'Banco Agromercantil (BAM)',domain:'bam.com.gt'},
+			{name:'Banrural',domain:'banrural.com.gt'},
+			{name:'BAC Guatemala',domain:'baccredomatic.com'},
+			{name:'Banco G&T Continental',domain:'gtc.com.gt'},
+			{name:'Banco Promerica',domain:'bancopromerica.com.gt'},
+		] 
+	},
+	{ code:'SV', name:'El Salvador', flag:'', currency:'USD',
+		accountLabel:'Número de cuenta', accountHint:'',
+		extraLabel:'Tipo de cuenta (Ahorros / Corriente)', 
+		idLabel:'Cédula',
+		banks:[
+			{name:'Banco Agrícola',domain:'www.bancoagricola.com'},
+			{name:'Banco Cuscatlán',domain:'bancocuscatlan.com'},
+			{name:'Banco Davivienda',domain:'davivienda.com'},
+			{name:'Banco de América Central (BAC)',domain:'baccredomatic.com'},
+			{name:'Banco Hipotecario',domain:'hipotecario.com.ar'},
+			{name:'Banco Promerica',domain:'bancopromerica.com.gt'},
+		] 
+	},
 ];
 
 function getCountry(code){ 
