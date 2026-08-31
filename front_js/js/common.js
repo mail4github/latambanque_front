@@ -1,3 +1,6 @@
+var CRYPTOS_arr = [];
+var FIATSS_arr = [];
+
 // Utilidades compartidas del frontend
 const API = {
 	token(){ 
@@ -164,7 +167,11 @@ function applyAppleEmoji(root){
 
 /* ===== Iconos de monedas ===== */
 const CRYPTO_CODES = new Set(['BTC','ETH','USDT','BNB']);
-function isCrypto(code, meta){ return (meta && meta.type==='crypto') || CRYPTO_CODES.has(code); }
+
+function isCrypto(code, meta) { 
+	let has_it = CRYPTOS_arr.map(m=>`${m.code === code ?'1':''}`).join('');
+	return (meta && meta.type === 'crypto') || CRYPTO_CODES.has(code) || has_it; 
+}
 function cryptoIconUrl(code){
   return 'https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/' + code.toLowerCase() + '.svg';
 }

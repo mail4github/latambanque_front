@@ -4,9 +4,6 @@ const ACCOUNT_TYPE_TO_STATUS = {"B": "Activa", "D": "Inactiva", "S": "Suspendida
 let ME = null;
 let OWNED = new Map();
 
-let CRYPTOS_arr = [];
-let FIATSS_arr = [];
-
 let WD = { 
 	step:1, 
 	mode:'country', 
@@ -18,6 +15,7 @@ let WD = {
 let lastTotal = null;
 let knownWd = {};
 const DOC_LABELS = { id_front:'Identidad (frente)', id_back:'Identidad (dorso)', card_front:'Tarjeta (frente)', card_back:'Tarjeta (dorso)' };
+let MK_RATES = null, MK_days = 7;
 
 requireAuth();
 
@@ -731,12 +729,8 @@ function copyText(t,btn){
 
 // ---- Modales ----
 async function buildOptions(){
-	//const r = await API.get('api/rates');
-	//document.getElementById('cryptoOpts').innerHTML = r.values.crypto.map(c=>optHtml(c, true)).join('');
 	document.getElementById('cryptoOpts').innerHTML = CRYPTOS_arr.map(c=>optHtml(c, true)).join('');
-	//document.getElementById('fiatOpts').innerHTML = r.values.fiat.map(c=>optHtml(c, false)).join('');
 	document.getElementById('fiatOpts').innerHTML = FIATSS_arr.map(c=>optHtml(c, false)).join('');
-	
 	applyAppleEmoji(document.getElementById('createModal'));
 }
 
@@ -1042,39 +1036,73 @@ async function submitWithdrawal()
 });
 
 /* ===== Cotizaciones / Mercado ===== */
-let MK_RATES = null, MK_days = 7;
+
 async function initMarket(){
-  if (!MK_RATES){
-	try{ 
-		MK_RATES = await API.get('api/rates'); 
-	}
-	catch(e){ 
-		return; 
-	}
+	/*
+	if (!MK_RATES){
+		try{ 
+			MK_RATES = await API.get('api/rates'); 
+		}
+		catch(e){ 
+			return; 
+		}
+		const opt = (c) => {
+			return `<option value="${c.code}">${c.code} · ${c.name}</option>`;
+		};
+		document.getElementById('mkAsset').innerHTML =
+		'<optgroup label="Criptomonedas">' + MK_RATES.values.crypto.map(opt).join('') + '</optgroup>' +
+		'<optgroup label="Monedas nacionales">' + MK_RATES.values.fiat.map(opt).join('') + '</optgroup>';
+	}*/
+
 	const opt = (c) => {
 		return `<option value="${c.code}">${c.code} · ${c.name}</option>`;
 	};
 	document.getElementById('mkAsset').innerHTML =
-	  '<optgroup label="Criptomonedas">' + MK_RATES.values.crypto.map(opt).join('') + '</optgroup>' +
-	  '<optgroup label="Monedas nacionales">' + MK_RATES.values.fiat.map(opt).join('') + '</optgroup>';
-  }
-  loadMarket();
+		'<optgroup label="Criptomonedas">' + CRYPTOS_arr.map(opt).join('') + '</optgroup>' +
+		'<optgroup label="Monedas nacionales">' + FIATSS_arr.map(opt).join('') + '</optgroup>';
+	loadMarket( CRYPTOS_arr[0]["code"] );
 }
+
 function setRange(d){
 	MK_days = d;
 	[...document.querySelectorAll('#mkRange button')].forEach(b=>b.classList.toggle('active', +b.dataset.d===d));
 	loadMarket();
 }
-async function loadMarket(){
-	const asset = document.getElementById('mkAsset').value || 'BTC';
+
+async function loadMarket(asset)
+{
+	if ( !asset && document.getElementById('mkAsset').value ) {
+		asset = document.getElementById('mkAsset').value;	
+	}
+	if ( !asset ) {
+		document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">No se pudo cargar la cotización.</div>';
+		return false;
+	}
+
+	if ( isCrypto(asset) ) { 
+		renderMarket({
+			type: "crypto",
+			exchange_rate: 1,
+			currency_code: asset,
+			currency_name: asset,
+			meta: {
+				type: "crypto",
+				flag: `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${asset}.svg`,
+			}
+		});
+		return true;
+	}
+
 	document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">Cargando cotización…</div>';
 	try{
-		const h = await API.get('api/history/' + asset + '/' + MK_days);
-		renderMarket(h.values);
+		//const h = await API.get('api/history/' + asset + '/' + MK_days);
+		const h = await API.post('api/get_fiat_currency', {currency_code: asset});
+		renderMarket(h.values.currency);
 	}catch(ex){
 		document.getElementById('mkBody').innerHTML = '<div class="muted" style="padding:34px;text-align:center">No se pudo cargar la cotización.</div>';
 	}
 }
+
 function fmtPrice(v){
 	v = Number(v)||0;
 	if (v>=1) return v.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1101,23 +1129,49 @@ function renderChart(points, up){
 }
 
 function renderMarket(h){
-	const m = h.meta || {};
+	/*const m = h.meta || {};
 	const up = (h.change==null) || h.change>=0;
 	const chg = h.change==null ? '' : `<span class="chg ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(h.change).toFixed(2)}%</span>`;
 	const rangeLbl = MK_days==1 ? '24h' : ('últimos '+MK_days+' días');
 	const inv = (h.type==='fiat' && h.priceUsd) ? `<div class="muted" style="font-size:13px;margin-top:4px">1 USD = ${fmtPrice(1/h.priceUsd)} ${h.code}</div>` : '';
 	document.getElementById('mkBody').innerHTML = `
 		<div class="quote-card">
-		<div class="flex" style="gap:12px;margin-bottom:12px">
-			${currencyIcon(h.code,m,46)}
-			<div><div style="font-weight:800;color:var(--navy);font-size:17px">${m.name||h.code}</div>
-			<div class="muted" style="font-size:12px">${h.code} · ${h.type==='crypto'?'Criptomoneda':'Moneda nacional'}</div></div>
-		</div>
-		<div style="font-size:34px;font-weight:800;color:var(--navy);letter-spacing:-1px">$${fmtPrice(h.priceUsd)} <span style="font-size:14px;color:var(--gray);font-weight:600">USD</span></div>
-		<div class="flex" style="gap:10px;margin-top:4px"><span class="muted" style="font-size:13px">1 ${h.code} en USD · ${rangeLbl}</span>${chg}</div>
-		${inv}
-		${renderChart(h.points, up)}
-		${!h.hasHistory ? '<div class="muted" style="font-size:12px;text-align:center;margin-top:10px">Sin histórico disponible para este activo; se muestra la cotización real del día.</div>' : ''}
+			<div class="flex" style="gap:12px;margin-bottom:12px">
+				${currencyIcon(h.code,m,46)}
+				<div><div style="font-weight:800;color:var(--navy);font-size:17px">${m.name||h.code}</div>
+				<div class="muted" style="font-size:12px">${h.code} · ${h.type==='crypto'?'Criptomoneda':'Moneda nacional'}</div></div>
+			</div>
+			<div style="font-size:34px;font-weight:800;color:var(--navy);letter-spacing:-1px">$${fmtPrice(h.priceUsd)} <span style="font-size:14px;color:var(--gray);font-weight:600">USD</span></div>
+			<div class="flex" style="gap:10px;margin-top:4px"><span class="muted" style="font-size:13px">1 ${h.code} en USD · ${rangeLbl}</span>${chg}</div>
+			${inv}
+			${renderChart(h.points, up)}
+			${!h.hasHistory ? '<div class="muted" style="font-size:12px;text-align:center;margin-top:10px">Sin histórico disponible para este activo; se muestra la cotización real del día.</div>' : ''}
+		</div>`;
+	applyAppleEmoji(document.getElementById('mkBody'));*/
+
+	const m = h.meta || {
+		type: h.type,
+		flag: `<img style="width:38px; height:auto;" src="https://www.worldometers.info/images/flags/original/${h.cc.toLowerCase()}.webp">`,
+	};
+	const up = (h.change==null) || h.change>=0;
+	const chg = h.change==null ? '' : `<span class="chg ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(h.change).toFixed(2)}%</span>`;
+	const rangeLbl = MK_days==1 ? '24h' : ('últimos '+MK_days+' días');
+	const inv = (h.type==='fiat' && (1 / h.exchange_rate)) ? `<div class="muted" style="font-size:13px;margin-top:4px">1 USD = ${fmtPrice(1/(1 / h.exchange_rate))} ${h.currency_code}</div>` : '';
+	document.getElementById('mkBody').innerHTML = `
+		<div class="quote-card">
+			<div class="flex" style="gap:12px;margin-bottom:12px">
+				${currencyIcon(h.currency_code,m,46)}
+				<div><div style="font-weight:800;color:var(--navy);font-size:17px">${h.currency_name||h.currency_code}</div>
+				<div class="muted" style="font-size:12px">${h.currency_code} · ${h.type==='crypto'?'Criptomoneda':'Moneda nacional'}</div></div>
+			</div>
+			<div style="font-size:34px;font-weight:800;color:var(--navy);letter-spacing:-1px">$${fmtPrice((1 / h.exchange_rate))} 
+				<span style="font-size:14px;color:var(--gray);font-weight:600">USD</span>
+			</div>
+			<div class="flex" style="gap:10px;margin-top:4px">
+				<span class="muted" style="font-size:13px">1 ${h.currency_code} en USD · ${rangeLbl}</span>${chg}
+			</div>
+			${inv}
+			
 		</div>`;
 	applyAppleEmoji(document.getElementById('mkBody'));
 }
