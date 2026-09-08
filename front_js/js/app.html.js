@@ -1263,9 +1263,10 @@ async function markRead(){
 }
 
 load().catch(ex=>{ 
-	if(String(ex.message).includes('autoriz')){ 
+	if ( String(ex.message).includes('login') ) { 
 		localStorage.removeItem('cb_token'); 
 		location.href='login.html'; 
 	}
 });
+
 setInterval(pollMe, 15000);

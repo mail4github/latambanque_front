@@ -56,6 +56,9 @@ const API = {
 				if ( ! data.success ) {
 					res_ok = false;
 					error_message = data.message;
+					if (Number(data.error_code) == 2) {
+						do_login();
+					}
 				}
 			} 
 			catch(e){
