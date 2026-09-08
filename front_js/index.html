@@ -31,9 +31,9 @@
 			<div class="stat"><b>$12B</b><span>En custodia</span></div>
 			<div class="stat"><b>+34 años</b><span>Desde 1990</span></div>
 		</div>
-		<button class="btn btn-primary" onclick="location.href='register.html'">Crear cuenta gratis</button>
+		<button class="btn btn-primary" onclick="location.href='/registration'">Crear cuenta gratis</button>
 		<div style="height:10px"></div>
-		<button class="btn btn-outline" onclick="location.href='login.html'">Ya tengo cuenta · Iniciar sesión</button>
+		<button class="btn btn-outline" onclick="location.href='/login'">Ya tengo cuenta · Iniciar sesión</button>
 	</div>
 
 	<div class="pad">
@@ -80,7 +80,7 @@
 <script src="js/common.js"></script>
 <script> 
 if (API.token()) {
-	location.href = '/'; 
+	location.href = redirect_on_login;
 }
 </script>
 </body>

@@ -4,6 +4,7 @@ let pwShown = false;
 let CACHE_RATES = null;
 const errL = document.getElementById('errL');
 let ADMIN_CONVO = null;
+login_page = "/admin";
 
 document.getElementById('aLogin').addEventListener('click', async ()=>{
 	errL.classList.remove('show');

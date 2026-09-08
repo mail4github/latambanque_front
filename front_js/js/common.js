@@ -260,7 +260,7 @@ function fmtDate(iso){
 function requireAuth()
 { 
 	if(!API.token()){
-		location.href='login.html'; 
+		location.href='/login';
 	}
 }
 

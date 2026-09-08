@@ -13,6 +13,7 @@ var cache_arr = [];
 var account_verified = false;
 var number_of_fail_logins = 0;
 var is_loggedin = 0;
+var login_page = "/login";
 
 function user_is_loggedin()
 {
@@ -591,9 +592,7 @@ function do_login()
 {
 	userid = "";
 	password_session = "";
-
 	set_cookie("user_id", "");
-	//set_cookie("password_session", "");
 	localStorage.removeItem('cb_token'); 
 	set_cookie("acc_nickname", "");
 	set_cookie("rank", "");
@@ -605,7 +604,7 @@ function do_login()
 	set_cookie("acc_phone", "");
 	set_cookie("crypto_currencies", "");
 	set_cookie("total_in_usd", "");
-	location.href = '/login.html';
+	location.href = login_page;
 }
 
 function load_javascript_code(url)

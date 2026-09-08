@@ -1,3 +1,4 @@
+const redirect_on_login = "/app.html";
 const STATUS_COLORS = { 'activa':'#16A34A', 'inactiva':'#6B7280', 'suspendida':'#DC2626', 'en revisión':'#B45309', 'bloqueada':'#DC2626' };
 const ACCOUNT_TYPE_TO_STATUS = {"B": "Activa", "D": "Inactiva", "S": "Suspendida", "R": "En revisión", "F": "Bloqueada",};
 
@@ -1265,7 +1266,7 @@ async function markRead(){
 load().catch(ex=>{ 
 	if ( String(ex.message).includes('login') ) { 
 		localStorage.removeItem('cb_token'); 
-		location.href='login.html'; 
+		location.href='/login';
 	}
 });
 

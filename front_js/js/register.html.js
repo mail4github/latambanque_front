@@ -55,7 +55,7 @@ document.getElementById('form').addEventListener('submit', async (e)=>{
 				location.href = redirect_on_login;
 			}
 			else {			
-				location.href = 'login.html';
+				location.href = '/login';
 			}
 		}
 		else {
