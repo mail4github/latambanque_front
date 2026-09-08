@@ -1,5 +1,7 @@
+var redirect_on_login = "/app.html";
+
 if (API.token()) {
-	location.href = 'app.html';
+	location.href = redirect_on_login;
 }
 const err = document.getElementById('err');
 function validPw(pw){ 
@@ -50,7 +52,7 @@ document.getElementById('form').addEventListener('submit', async (e)=>{
 			if ( typeof res_arr.hash !== "undefined" && res_arr.hash.length) {
 				localStorage.setItem('cb_token', res_arr.hash);
 				set_cookie("user_id", res_arr.userid);
-				location.href = 'app.html';
+				location.href = redirect_on_login;
 			}
 			else {			
 				location.href = 'login.html';
