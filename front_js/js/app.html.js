@@ -607,13 +607,23 @@ function renderAllAccountsCard(data)
 		<div class="info-row">
 			<div class="flex">${currencyIcon(a.currency,a.meta,30)}
 				<div class="v" style="text-align:left">${a.currency}</div>
-				<div class="k mono" style="font-size:11px; word-break:break-all;">${fmtAccountNumber(a.number)}</div>
+				<!--div class="k mono" style="font-size:11px; word-break:break-all;">${fmtAccountNumber(a.number)}</div-->
+				<button class="copy-btn" style="display:flex; align-items:center;" onclick="$('.receive_acc_number').hide(); $(this).closest('.info-row').next().show();">
+					N.º de cuenta
+					<svg style="width:16px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+						<polyline style="fill: none; stroke: rgb(154, 122, 30); stroke-miterlimit: 6.4; stroke-width: 50px; stroke-linecap: round; stroke-linejoin: round;" points="100 141.537 300 341.537 500 141.537"></polyline>
+					</svg>
+				</button>
 			</div>
 			<div class="v">
 				${fmtBalance(a.currency,a.balance,a.type)} 
 				<span class="no-mobile">${a.currency}</span>
 			</div>
-		</div>`).join('');
+		</div>
+		<div class="info-row receive_acc_number" style="display:none;">
+			<span class="k">N.º de cuenta</span><span class="v mono">${fmtAccountNumber(a.number)}</span>
+		</div>
+		`).join('');
 }
 
 /* ===== Documentos del cliente ===== */
@@ -792,10 +802,19 @@ function openReceive(){
 	document.getElementById('receiveList').innerHTML = ME.accounts.map(a=>`
 		<div class="info-card" style="margin:0 0 10px">
 			<div class="info-row">
-				<div class="flex">${currencyIcon(a.currency,a.meta,30)}<span class="v">${a.currency}</span></div>
+				<div class="flex">
+					${currencyIcon(a.currency,a.meta,30)}
+					<span class="v">${a.currency}</span>
+				</div>
+				<button class="copy-btn" style="display:flex; align-items:center;" onclick="$('.receive_acc_number').hide(); $(this).closest('.info-row').next().show();">
+					N.º de cuenta
+					<svg style="width:16px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+						<polyline style="fill: none; stroke: rgb(154, 122, 30); stroke-miterlimit: 6.4; stroke-width: 50px; stroke-linecap: round; stroke-linejoin: round;" points="100 141.537 300 341.537 500 141.537"></polyline>
+					</svg>
+				</button>
 				<button class="copy-btn" onclick="copyText('${a.number}',this)">Copiar</button>
 			</div>
-			<div class="info-row">
+			<div class="info-row receive_acc_number" style="display:none;">
 				<span class="k">N.º de cuenta</span><span class="v mono">${fmtAccountNumber(a.number)}</span>
 			</div>
 		</div>`).join('');

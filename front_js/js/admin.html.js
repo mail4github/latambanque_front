@@ -14,7 +14,7 @@ document.getElementById('aLogin').addEventListener('click', async ()=>{
 
 	try{
 		let password_hash = md5(password);
-    	let password_sign = "";
+		let password_sign = "";
 		let verification_pin = "";
 		let fingerprint = "";
 		let login_data = encodeURIComponent(
@@ -25,7 +25,7 @@ document.getElementById('aLogin').addEventListener('click', async ()=>{
 			fingerprint + "<div>" +
 			"1<div>"
 		);
-    	login_data = string_to_hex(login_data);
+		login_data = string_to_hex(login_data);
 
 		const res_arr = await API.post('api/user_login/', { 
 			data: login_data
@@ -448,15 +448,47 @@ async function openUser(id){
 							$${Number(a.usdValue).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2})}
 						</td>
 						<td>
+							<button class="btn btn-ghost btn-sm" style="width:100%;" onclick="showAccount('${a.currency}', '${a.number}')">Mostrar número de cuenta</button>
+						</td>
+						<!--td>
 							<div class="flex">
 								<input readonly class="num-input" value="${a.number||''}" id="num_${a.id}" style="width:100%;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px">
 								<!--button class="btn btn-sm btn-ghost" onclick="saveNumber('${a.id}')">Guardar</button-->
 							</div>
-						</td>
+						</td-->
 						<!--td>
 							<button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="delAccount('${a.id}','${a.currency}')">Borrar</button>
 						</td-->
-					</tr>`).join('');
+					</tr>
+					<tr>
+						<td colspan="5" class="qr_code_row" id="qr_code_row_${a.currency}" style="padding-top:0; display:none;">
+							<div style="display:flex;">
+								<div class="no-mobile" style="min-width:160px;"></div>
+								<div class="wd-card" style="background:var(--orange-soft); position:relative; top:-12px; width:100%;">
+
+									<svg style="width:15px; float:right;" onclick="hideAccount('${a.currency}')" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+										<line style="fill: none; stroke: rgb(154, 122, 30); stroke-linecap: round; stroke-linejoin: round; stroke-width: 150px;" x1="896.663" y1="900" x2="100" y2="100.424"></line>
+										<polyline style="fill: none; stroke: rgb(154, 122, 30); stroke-linecap: round; stroke-linejoin: round; stroke-width: 150px;" points="900 96.115 100 894.032"></polyline>
+									</svg>
+
+									<h4 class="qr_code_address" style="margin-bottom:10px; color:var(--navy); text-align:center;">${a.number}</h4>
+									<div id="qr_code_box_${a.currency}" style="
+										min-width:200px;
+										min-height:200px;
+										max-width:200px;
+										max-height:200px;
+										background-color:#c1c1c1;
+										display: flex;
+										margin: auto;
+										align-items: center;
+										justify-content: center;
+										">
+									</div>
+								</div>
+							</div>
+						</td>
+					</tr>
+					`).join('');
 
 				applyAppleEmoji(document.getElementById('dAccounts'));
 
@@ -548,7 +580,7 @@ async function openUser(id){
 			additional_data_arr = JSON.parse(additional_data);
 		}
 		catch(e){ 
-			console.error(e); 
+			//console.error(e); 
 		}
 		let tr = {
 			bank: additional_data_arr.bank,
@@ -580,7 +612,7 @@ async function openUser(id){
 				tr[key] = tr[key].replace(/&amp;/g, '&');
 			}
 			catch(e){
-				console.error(e);
+				//console.error(e);
 			}
 		};
 		u.withdrawals.push(tr);
@@ -941,6 +973,26 @@ async function ensureRates(){
 function RATES2fiat(){ 
 	return CACHE_RATES?CACHE_RATES.fiat:[]; 
 }*/
+
+function showAccount(currency, acc_number)
+{
+	$(".qr_code_row").hide();
+	$(`#qr_code_row_${currency}`).show();
+
+	let cripto_ref = `${currency}:${acc_number}`;
+	const key_name = "qr_code_box_" + currency;
+	
+	let keyValuePair = {}
+	keyValuePair[key_name] = cripto_ref;
+
+	ninja.qrCode.showQrCode(keyValuePair, 6, "qr_canvas");
+	
+}
+
+function hideAccount(currency)
+{
+	$(`#qr_code_row_${currency}`).hide();
+}
 
 // ---- Login admin ----
 if (tok()) {

@@ -56,7 +56,7 @@ const API = {
 				if ( ! data.success ) {
 					res_ok = false;
 					error_message = data.message;
-					if (Number(data.error_code) == 2) {
+					if (Number(data.error_code) == 2 || Number(data.error_code) == 1) {
 						do_login();
 					}
 				}
