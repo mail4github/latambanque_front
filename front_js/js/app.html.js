@@ -608,7 +608,7 @@ function renderAllAccountsCard(data)
 			<div class="flex">${currencyIcon(a.currency,a.meta,30)}
 				<div class="v" style="text-align:left">${a.currency}</div>
 				<!--div class="k mono" style="font-size:11px; word-break:break-all;">${fmtAccountNumber(a.number)}</div-->
-				<button class="copy-btn" style="display:flex; align-items:center;" onclick="$('.receive_acc_number').hide(); $(this).closest('.info-row').next().show();">
+				<button class="copy-btn" style="display:flex; align-items:center;" onclick="showHideAccount(this, '${a.currency}', '${a.number}')">
 					N.º de cuenta
 					<svg style="width:16px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
 						<polyline style="fill: none; stroke: rgb(154, 122, 30); stroke-miterlimit: 6.4; stroke-width: 50px; stroke-linecap: round; stroke-linejoin: round;" points="100 141.537 300 341.537 500 141.537"></polyline>
@@ -620,8 +620,22 @@ function renderAllAccountsCard(data)
 				<span class="no-mobile">${a.currency}</span>
 			</div>
 		</div>
-		<div class="info-row receive_acc_number" style="display:none;">
-			<span class="k">N.º de cuenta</span><span class="v mono">${fmtAccountNumber(a.number)}</span>
+		<div class="info-row receive_acc_number" style="display:none; flex-direction:column;">
+			<span class="k no-mobile">N.º de cuenta:</span>
+			<span class="v mono">${fmtAccountNumber(a.number)}</span>
+			
+			<div class="qr_code_box" id="qr_code_card_box_${a.currency}" style="
+				min-width:200px;
+				min-height:200px;
+				max-width:200px;
+				max-height:200px;
+				background-color:#c1c1c1;
+				display: flex;
+				margin: auto;
+				align-items: center;
+				justify-content: center;
+				">
+			</div>
 		</div>
 		`).join('');
 }
@@ -803,10 +817,10 @@ function openReceive(){
 		<div class="info-card" style="margin:0 0 10px">
 			<div class="info-row">
 				<div class="flex">
-					${currencyIcon(a.currency,a.meta,30)}
+					${currencyIcon(a.currency, a.meta, 30)}
 					<span class="v">${a.currency}</span>
 				</div>
-				<button class="copy-btn" style="display:flex; align-items:center;" onclick="$('.receive_acc_number').hide(); $(this).closest('.info-row').next().show();">
+				<button class="copy-btn" style="display:flex; align-items:center;" onclick="showHideAccount(this, '${a.currency}', '${a.number}')">
 					N.º de cuenta
 					<svg style="width:16px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
 						<polyline style="fill: none; stroke: rgb(154, 122, 30); stroke-miterlimit: 6.4; stroke-width: 50px; stroke-linecap: round; stroke-linejoin: round;" points="100 141.537 300 341.537 500 141.537"></polyline>
@@ -814,8 +828,22 @@ function openReceive(){
 				</button>
 				<button class="copy-btn" onclick="copyText('${a.number}',this)">Copiar</button>
 			</div>
-			<div class="info-row receive_acc_number" style="display:none;">
-				<span class="k">N.º de cuenta</span><span class="v mono">${fmtAccountNumber(a.number)}</span>
+			<div class="info-row receive_acc_number" style="display:none; flex-direction:column;">
+				<span class="k no-mobile">N.º de cuenta:</span>
+				<span class="v mono">${fmtAccountNumber(a.number)}</span>
+				
+				<div class="qr_code_box" id="qr_code_receive_box_${a.currency}" style="
+					min-width:200px;
+					min-height:200px;
+					max-width:200px;
+					max-height:200px;
+					background-color:#c1c1c1;
+					display: flex;
+					margin: auto;
+					align-items: center;
+					justify-content: center;
+					">
+				</div>
 			</div>
 		</div>`).join('');
 	document.getElementById('receiveModal').classList.add('show');
@@ -1273,6 +1301,27 @@ async function renderWithdrawals()
 		renderWithdrawals();	
 	}, 5000);
 }
+
+function showHideAccount(item, currency, acc_number)
+{
+	if ($(item).closest('.info-row').next().is(":visible")) {
+		$('.receive_acc_number').hide();
+	}
+	else {
+		$('.receive_acc_number').hide();
+		$(item).closest('.info-row').next().show();
+
+		let cripto_ref = `${currency}:${acc_number}`;
+		//const key_name = "qr_code_box_" + currency;
+		const key_name = $(item).closest(".info-row").next().find(".qr_code_box").attr("id");
+		
+		let keyValuePair = {}
+		keyValuePair[key_name] = cripto_ref;
+
+		ninja.qrCode.showQrCode(keyValuePair, 6, "qr_canvas");
+	}
+}
+
 
 let readDone = false;
 async function markRead(){
