@@ -622,13 +622,13 @@ function renderAllAccountsCard(data)
 		</div>
 		<div class="info-row receive_acc_number" style="display:none; flex-direction:column;">
 			<span class="k no-mobile">N.º de cuenta:</span>
-			<span class="v mono">${fmtAccountNumber(a.number)}</span>
+			<span class="v mono fs-12px">${fmtAccountNumber(a.number)}</span>
 			
 			<div class="qr_code_box" id="qr_code_card_box_${a.currency}" style="
-				min-width:200px;
-				min-height:200px;
-				max-width:200px;
-				max-height:200px;
+				min-width:300px;
+				min-height:300px;
+				max-width:300px;
+				max-height:300px;
 				background-color:#c1c1c1;
 				display: flex;
 				margin: auto;
@@ -830,13 +830,13 @@ function openReceive(){
 			</div>
 			<div class="info-row receive_acc_number" style="display:none; flex-direction:column;">
 				<span class="k no-mobile">N.º de cuenta:</span>
-				<span class="v mono">${fmtAccountNumber(a.number)}</span>
+				<span class="v mono fs-12px">${fmtAccountNumber(a.number)}</span>
 				
 				<div class="qr_code_box" id="qr_code_receive_box_${a.currency}" style="
-					min-width:200px;
-					min-height:200px;
-					max-width:200px;
-					max-height:200px;
+					min-width:300px;
+					min-height:300px;
+					max-width:300px;
+					max-height:300px;
 					background-color:#c1c1c1;
 					display: flex;
 					margin: auto;

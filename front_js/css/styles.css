@@ -429,6 +429,40 @@ img.ae{height:1em;width:1em;vertical-align:-0.15em;object-fit:contain;margin:0 .
 	display: none !important;
 }
 
+.fs-32px {
+    font-size: 32px !important;
+}
+.fs-28px {
+    font-size: 28px !important;
+}
+.fs-20px {
+    font-size: 20px !important;
+}
+.fs-18px {
+    font-size: 18px !important;
+}
+.fs-16px {
+    font-size: 16px !important;
+}
+.fs-14px {
+    font-size: 14px !important;
+}
+.fs-13px {
+    font-size: 13px !important;
+}
+.fs-12px {
+    font-size: 12px !important;
+}
+.fs-11px {
+    font-size: 11px !important;
+}
+.fs-10px {
+    font-size: 10px !important;
+}
+.fs-9px {
+    font-size: 9px !important;
+}
+
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 @media screen and (max-width: 1780px) {
 	
