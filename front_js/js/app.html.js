@@ -629,7 +629,7 @@ function renderAllAccountsCard(data)
 				min-height:300px;
 				max-width:300px;
 				max-height:300px;
-				background-color:#c1c1c1;
+				background-color:transparent;
 				display: flex;
 				margin: auto;
 				align-items: center;
@@ -837,7 +837,7 @@ function openReceive(){
 					min-height:300px;
 					max-width:300px;
 					max-height:300px;
-					background-color:#c1c1c1;
+					background-color:transparent;
 					display: flex;
 					margin: auto;
 					align-items: center;
