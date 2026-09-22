@@ -341,8 +341,10 @@ async function openUser(id){
 	d.user.nombre = Base64.decode(user_arr.values.firstname);
 	d.user.apellidos = Base64.decode(user_arr.values.lastname);
 	d.user.docType = Base64.decode(user_arr.values.positiontitle);
-	d.user.docNumber = Base64.decode(user_arr.values.email);
-	d.user.email = Base64.decode(user_arr.values.education);
+	//d.user.docNumber = Base64.decode(user_arr.values.email);
+	//d.user.email = Base64.decode(user_arr.values.education);
+	d.user.docNumber = "";
+	d.user.email = Base64.decode(user_arr.values.email);
 	d.user.status = Base64.decode(user_arr.values.account_type);
 	d.user.createdAt = Base64.decode(user_arr.values.created);
 	d.user.accounts = [];
@@ -473,11 +475,11 @@ async function openUser(id){
 
 									<h4 class="qr_code_address" style="margin-bottom:10px; color:var(--navy); text-align:center;">${a.number}</h4>
 									<div id="qr_code_box_${a.currency}" style="
-										min-width:200px;
-										min-height:200px;
-										max-width:200px;
-										max-height:200px;
-										background-color:#c1c1c1;
+										min-width:300px;
+										min-height:300px;
+										max-width:300px;
+										max-height:300px;
+										background-color: transparent;
 										display: flex;
 										margin: auto;
 										align-items: center;
@@ -508,8 +510,7 @@ async function openUser(id){
 	document.getElementById('detailCard').style.display='block';
 	document.getElementById('dName').innerHTML = u.nombre+' '+u.apellidos;
 	document.getElementById('dMeta').innerHTML =
-		`<span class="pill">${u.docType}</span> 
-		${u.docNumber} · ${u.email||'sin correo'} · registrado ${timeAgo(u.createdAt)} · <b>Total: $<span class="userTotalUsd">0.00<span></b>`;
+		`<span class="pill">${u.docType}</span>  ${u.email} · registrado ${timeAgo(u.createdAt)} · <b>Total: $<span class="userTotalUsd">0.00<span></b>`;
 	document.getElementById('msg').innerHTML='';
 	document.getElementById('statusSel').value = u.status || 'active';
 	
