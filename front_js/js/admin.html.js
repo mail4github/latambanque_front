@@ -310,12 +310,26 @@ async function loadUsers(){
 			body.innerHTML='<tr><td colspan="5" class="muted">Aún no hay usuarios registrados.</td></tr>'; 
 			return; 
 		}
-		body.innerHTML = USERS.map(u=>`<tr onclick="openUser('${u.c_userid}')">
-		<td><b>${u.c_firstname} ${u.c_lastname}</b><br><span class="muted" style="font-size:12px">${u.c_user_email||''}</span></td>
-		<td class="hide-sm"><span class="pill">${u.c_docType}</span> ${u.c_email}</td>
-		<td class="hide-sm">3</td>
-		<td><b>$${Number(u.totalUsd).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2})}</b></td>
-		<td>›</td></tr>`).join('');
+		body.innerHTML = USERS.map(u=>`
+		<tr onclick="openUser('${u.c_userid}')">
+			<td>
+				<b>${u.c_firstname} ${u.c_lastname}</b><br>
+				<!--span class="muted" style="font-size:12px">${u.c_user_email||''}</span-->
+			</td>
+			<td class="hide-sm">
+				<span class="pill">${u.c_docType}</span> 
+				${u.c_email}
+			</td>
+			<!--td class="hide-sm">
+				3
+			</td-->
+			<td>
+				<b>$${Number(u.totalUsd).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2})}</b>
+			</td>
+			<td>
+				›
+			</td>
+		</tr>`).join('');
 	}
 	catch(ex) {
 		if( String(ex.message).includes('autoriz')) { 
