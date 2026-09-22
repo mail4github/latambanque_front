@@ -16,11 +16,16 @@ document.getElementById('form').addEventListener('submit', async (e)=>{
 		err.textContent = 'La contraseña debe tener mínimo 6 caracteres e incluir letras y números.';
 		err.classList.add('show'); return;
 	}
+	if (pw !== document.getElementById('password2').value) {
+		err.textContent = 'Las dos contraseñas que ha introducido no son iguales.';
+		err.classList.add('show'); return;
+	}
 	const btn = document.getElementById('submit');
 	btn.disabled = true; btn.textContent = 'Creando…';
 	try{
 		const data = await API.post('/api/user_signup', {
-			email: document.getElementById('docNumber').value.trim(), 
+			//email: document.getElementById('docNumber').value.trim(),
+			email: document.getElementById('email').value.trim(),
 			hashed_password: md5(pw), 
 			firstname: Base64.encode(document.getElementById('nombre').value.trim()), 
 			lastname: Base64.encode(document.getElementById('apellidos').value.trim()), 
@@ -29,6 +34,7 @@ document.getElementById('form').addEventListener('submit', async (e)=>{
 			user_domain: get_domain_name(SITE_DOMAIN),
 			send_email: "0",
 			do_login: "yes",
+			/*
 			additional_params: Base64.encode(JSON.stringify({
 				email: document.getElementById('email').value.trim(),
 				doc_type: document.getElementById('docType').value,
@@ -36,8 +42,7 @@ document.getElementById('form').addEventListener('submit', async (e)=>{
 			key_value_array: Base64.encode(JSON.stringify({
 				education: document.getElementById('email').value.trim(),
 				positiontitle: document.getElementById('docType').value,
-			}))
-			
+			}))*/
 		});
 		if (data.values.length == 0) {
 

@@ -340,8 +340,10 @@ async function load(){
 			"nombre": Base64.decode(user_info["values"]["firstname"]),
 			"apellidos": Base64.decode(user_info["values"]["lastname"]),
 			"docType": Base64.decode(user_info["values"]["positiontitle"]),
-			"docNumber": Base64.decode(user_info["values"]["email"]),
-			"email": Base64.decode(user_info["values"]["education"]),
+			//"docNumber": Base64.decode(user_info["values"]["email"]),
+			//"email": Base64.decode(user_info["values"]["education"]),
+			"docNumber": "",
+			"email": Base64.decode(user_info["values"]["email"]),
 			"status": ACCOUNT_TYPE_TO_STATUS[Base64.decode(user_info["values"]["account_type"])],
 			"createdAt": Base64.decode(user_info["values"]["created"]), //"2026-07-21T09:52:25.885Z",
 			"accounts": [],
@@ -582,7 +584,7 @@ function renderProfile(data){
 	const docLabels = {CURP:'CURP',INE:'INE',DNI:'DNI',CEDULA:'Cédula'};
 	document.getElementById('personalCard').innerHTML = `
 		${infoRow('Nombre completo', u.nombre + ' ' + u.apellidos)}
-		${infoRow('Documento', '<span class="pill">'+ (docLabels[u.docType]||u.docType) +'</span> ' + u.docNumber)}
+		${/*infoRow('Documento', '<span class="pill">'+ (docLabels[u.docType]||u.docType) +'</span> ' + u.docNumber)*/""}
 		${infoRow('Correo electrónico', u.email || 'No registrado')}
 		${infoRowCopy('ID de cliente', u.id)}
 		${infoRow('Estado de la cuenta', statusBadge(u.status))}

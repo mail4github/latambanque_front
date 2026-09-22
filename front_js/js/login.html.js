@@ -8,7 +8,7 @@ document.getElementById('form').addEventListener('submit', async (e)=>{
     e.preventDefault();
     $("#text_entering").show();
     $("#text_login").hide();
-    login(document.getElementById('docNumber').value.trim(), document.getElementById('password').value);
+    login(document.getElementById('email').value.trim(), document.getElementById('password').value);
 });
 
 // ¿Olvidaste tu contraseña?
@@ -20,7 +20,7 @@ document.getElementById('resetBtn').addEventListener('click', async ()=>{
     const doc = document.getElementById('resetDoc').value.trim();
     const m = document.getElementById('resetMsg');
     if (!doc){ 
-        m.innerHTML = '<div class="error show">Ingresa tu número de documento.</div>'; 
+        m.innerHTML = '<div class="error show">Introduce tu dirección de correo electrónico.</div>'; 
         return; 
     }
     try{
