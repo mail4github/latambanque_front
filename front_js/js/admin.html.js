@@ -311,7 +311,7 @@ async function loadUsers(){
 			return; 
 		}
 		body.innerHTML = USERS.map(u=>`
-		<tr onclick="openUser('${u.c_userid}')">
+		<tr class="cursor-pointer" onclick="openUser('${u.c_userid}')">
 			<td>
 				<b>${u.c_firstname} ${u.c_lastname}</b><br>
 				<!--span class="muted" style="font-size:12px">${u.c_user_email||''}</span-->
@@ -480,14 +480,16 @@ async function openUser(id){
 						<td colspan="5" class="qr_code_row" id="qr_code_row_${a.currency}" style="padding-top:0; display:none;">
 							<div style="display:flex;">
 								<div class="no-mobile" style="min-width:160px;"></div>
-								<div class="wd-card" style="background:var(--orange-soft); position:relative; top:-12px; width:100%;">
+								<div class="wd-card" style="background:var(--orange-light); position:relative; top:-12px; width:100%;">
 
-									<svg style="width:15px; float:right;" onclick="hideAccount('${a.currency}')" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+									<svg class="cursor-pointer" style="width:15px; float:right;" onclick="hideAccount('${a.currency}')" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
 										<line style="fill: none; stroke: rgb(154, 122, 30); stroke-linecap: round; stroke-linejoin: round; stroke-width: 150px;" x1="896.663" y1="900" x2="100" y2="100.424"></line>
 										<polyline style="fill: none; stroke: rgb(154, 122, 30); stroke-linecap: round; stroke-linejoin: round; stroke-width: 150px;" points="900 96.115 100 894.032"></polyline>
 									</svg>
-
-									<h4 class="qr_code_address" style="margin-bottom:10px; color:var(--navy); text-align:center;">${a.number}</h4>
+									<div style="display:flex; align-items:center; justify-content:center;">
+										<h4 class="qr_code_address" style="color:var(--navy); text-align:center;">${a.number}</h4>
+										<button class="copy-btn" onclick="copyText('${a.number}',this)">Copiar</button>
+									</div>
 									<div id="qr_code_box_${a.currency}" style="
 										min-width:300px;
 										min-height:300px;

@@ -15,7 +15,7 @@
 	</div>
 
 	<div class="pad">
-		<h1 class="h1 serif">Hola de nuevo</h1>
+		<h1 class="h1 serif">Inicia sesión en la cuenta bancaria</h1>
 		<p class="muted" style="margin:8px 0 22px">Ingresa para ver tu saldo y operar.</p>
 
 		<div id="login_email_wrong" class="error">Dirección de correo electrónico incorrecta</div>
@@ -45,9 +45,11 @@
 		<!-- Restablecer contraseña -->
 		<div id="resetBox" style="display:none;margin-top:8px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:16px">
 			<h4 style="color:var(--navy);margin-bottom:6px">Recuperar acceso</h4>
-			<p class="muted" style="font-size:13px;margin-bottom:12px">Ingresa tu documento. Enviaremos una solicitud al equipo del banco para restablecer tu contraseña.</p>
+			<p class="muted" style="font-size:13px;margin-bottom:12px">Ingrese su dirección de correo electrónico. Se enviará una solicitud al equipo del banco para restablecer su contraseña.</p>
 			<div id="resetMsg"></div>
-			<div class="field"><input id="resetDoc" placeholder="Número de documento"></div>
+			<div class="field">
+				<input id="resetDoc" placeholder="Correo electrónico">
+			</div>
 			<button class="btn btn-primary btn-sm" style="width:100%" id="resetBtn">Enviar solicitud</button>
 		</div>
 

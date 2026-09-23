@@ -24,8 +24,8 @@ document.getElementById('resetBtn').addEventListener('click', async ()=>{
         return; 
     }
     try{
-        await API.post('/api/password-reset', { 
-            docNumber: doc 
+        await API.post('/api/user_send_email_with_verification_pin', { 
+            entered_email: doc 
         });
         m.innerHTML = '<div class="ok">Solicitud enviada. El equipo del banco restablecerá tu contraseña y te notificará. Gracias.</div>';
         document.getElementById('resetDoc').value = '';

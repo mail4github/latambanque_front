@@ -733,8 +733,6 @@ async function uploadDoc(type, input){
 	input.value = '';
 }
 
-
-
 function statusBadge(status){
 	const s = (status || 'activa').toLowerCase();
 	const c = STATUS_COLORS[s] || '#6B7280';
@@ -746,12 +744,6 @@ function infoRow(k,v){ return `<div class="info-row"><span class="k">${k}</span>
 function infoRowCopy(k,v){
   return `<div class="info-row"><span class="k">${k}</span>
 	<span class="v mono">${v}<button class="copy-btn" onclick="copyText('${String(v).replace(/ /g,'')}',this)">Copiar</button></span></div>`;
-}
-function copyText(t,btn){
-  	navigator.clipboard.writeText(t).then(()=>{ 
-		const o=btn.textContent; btn.textContent='✓'; 
-		setTimeout(()=>btn.textContent=o,1200); 
-	});
 }
 
 // ---- Modales ----

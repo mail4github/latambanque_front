@@ -18,6 +18,7 @@
   --radius:22px;
   --shadow:0 12px 40px rgba(20,20,43,.10);
   --shadow-sm:0 4px 16px rgba(20,20,43,.06);
+  --orange-light:#fffcf3;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -258,12 +259,26 @@ img.ae{height:1em;width:1em;vertical-align:-0.15em;object-fit:contain;margin:0 .
 .table{width:100%;border-collapse:collapse;font-size:14px}
 .table th,.table td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--line)}
 .table th{font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:.4px}
-.table tr{cursor:pointer}
-.table tr:hover td{background:#fafbff}
+/*.table tr{cursor:pointer}*/
+.table tr:hover td{
+  background:#fafbff
+}
 .pill{font-size:11px;padding:3px 9px;border-radius:999px;background:var(--orange-soft);color:var(--orange-d);font-weight:700}
 .flex{display:flex;gap:10px;align-items:center}
-.wrap-flex{display:flex;gap:10px;flex-wrap:wrap}
-@media(max-width:760px){.admin-wrap{padding:14px}.hide-sm{display:none}}
+.wrap-flex{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap
+}
+
+@media(max-width:760px){
+  .admin-wrap{
+    padding:14px
+  }
+  .hide-sm{
+    display:none
+  }
+}
 
 /* Vistas (Inicio / Actividad / Perfil) */
 .view{display:none}
@@ -461,6 +476,10 @@ img.ae{height:1em;width:1em;vertical-align:-0.15em;object-fit:contain;margin:0 .
 }
 .fs-9px {
     font-size: 9px !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
 }
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/

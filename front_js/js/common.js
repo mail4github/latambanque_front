@@ -59,6 +59,9 @@ const API = {
 					if (Number(data.error_code) == 2 || Number(data.error_code) == 1) {
 						do_login();
 					}
+					if (data.error_code == "WRONG_USER" || data.error_code == "1") {
+                		error_message = "Incorrect email address.";
+            		}
 				}
 			} 
 			catch(e){
@@ -262,6 +265,13 @@ function requireAuth()
 	if(!API.token()){
 		location.href='/login';
 	}
+}
+
+function copyText(t,btn){
+  	navigator.clipboard.writeText(t).then(()=>{ 
+		const o=btn.textContent; btn.textContent='✓'; 
+		setTimeout(()=>btn.textContent=o,1200); 
+	});
 }
 
 // Aplica emojis Apple e íconos de línea automáticamente al cargar cada página
