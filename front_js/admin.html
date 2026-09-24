@@ -73,6 +73,15 @@
 				</tbody>
 			</table>
 		</div>
+		<div class="flex" style="justify-content:right; margin-top: 10px;">
+			<h4 class="no-mobile">Buscar un usuario por correo electrónico:</h3>
+			<div class="chat-input" style="padding:0; background:none; border:none;">
+				<input id="search_user_by_email" placeholder="dirección de correo electrónico del usuario">
+				<button class="btn btn-sm btn-ghost" onclick="search_user_by_email()">🔎︎ Buscar</button>
+			</div>
+		</div>
+		<div id="user_not_found" class="error mt-1 text-center" style="display:none;">No se encontró ningún usuario con esa dirección de correo electrónico.</div>
+		<div id="found_many_users" class="error mt-1 text-center" style="display:none;">Hay muchos usuarios con ese tipo de texto en el correo electrónico.</div>
 	</div>
 
 	<!-- Solicitudes de restablecimiento de contraseña -->

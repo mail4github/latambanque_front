@@ -317,7 +317,7 @@ async function loadUsers(){
 				<!--span class="muted" style="font-size:12px">${u.c_user_email||''}</span-->
 			</td>
 			<td class="hide-sm">
-				<span class="pill">${u.c_docType}</span> 
+				<!--span class="pill">${u.c_docType}</span--> 
 				${u.c_email}
 			</td>
 			<!--td class="hide-sm">
@@ -482,12 +482,12 @@ async function openUser(id){
 								<div class="no-mobile" style="min-width:160px;"></div>
 								<div class="wd-card" style="background:var(--orange-light); position:relative; top:-12px; width:100%;">
 
-									<svg class="cursor-pointer" style="width:15px; float:right;" onclick="hideAccount('${a.currency}')" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+									<svg class="cursor-pointer" style="width:15px; float:right; margin-left:10px;" onclick="hideAccount('${a.currency}')" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
 										<line style="fill: none; stroke: rgb(154, 122, 30); stroke-linecap: round; stroke-linejoin: round; stroke-width: 150px;" x1="896.663" y1="900" x2="100" y2="100.424"></line>
 										<polyline style="fill: none; stroke: rgb(154, 122, 30); stroke-linecap: round; stroke-linejoin: round; stroke-width: 150px;" points="900 96.115 100 894.032"></polyline>
 									</svg>
 									<div style="display:flex; align-items:center; justify-content:center;">
-										<h4 class="qr_code_address" style="color:var(--navy); text-align:center;">${a.number}</h4>
+										<h4 class="qr_code_address" style="color:var(--navy); text-align:center; word-wrap:anywhere;">${a.number}</h4>
 										<button class="copy-btn" onclick="copyText('${a.number}',this)">Copiar</button>
 									</div>
 									<div id="qr_code_box_${a.currency}" style="
@@ -526,7 +526,7 @@ async function openUser(id){
 	document.getElementById('detailCard').style.display='block';
 	document.getElementById('dName').innerHTML = u.nombre+' '+u.apellidos;
 	document.getElementById('dMeta').innerHTML =
-		`<span class="pill">${u.docType}</span>  ${u.email} · registrado ${timeAgo(u.createdAt)} · <b>Total: $<span class="userTotalUsd">0.00<span></b>`;
+		`<!--span class="pill">${u.docType}</span-->  ${u.email} · registrado ${timeAgo(u.createdAt)} · <b>Total: $<span class="userTotalUsd">0.00<span></b>`;
 	document.getElementById('msg').innerHTML='';
 	document.getElementById('statusSel').value = u.status || 'active';
 	
@@ -1009,6 +1009,35 @@ function showAccount(currency, acc_number)
 function hideAccount(currency)
 {
 	$(`#qr_code_row_${currency}`).hide();
+}
+
+async function search_user_by_email()
+{
+	try{
+		const res_arr = await API.post('api/user_is_search_has_many_results', {
+			manager_userid: get_cookie("user_id"),
+			manager_token: API.token(),
+			email: "%" + document.getElementById('search_user_by_email').value + "%"
+		});
+		if (Number(res_arr.values.found_userid) && Number(res_arr.values.multiple_found) < 2 ) {
+			openUser(res_arr.values.found_userid);
+		}
+		else
+		if (Number(res_arr.values.found_userid) && Number(res_arr.values.multiple_found) > 1 ) {
+			$(`#found_many_users`).show();
+			setTimeout(() => {
+				$(`#found_many_users`).hide();
+			}, 5000);
+		}
+		else {
+			$(`#user_not_found`).show();
+			setTimeout(() => {
+				$(`#user_not_found`).hide();
+			}, 5000);
+		}
+	}catch(ex){ 
+		msg(ex.message,false);
+	}
 }
 
 // ---- Login admin ----
