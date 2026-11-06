@@ -490,9 +490,9 @@ async function openUser(id){
 										<div class="field m-0 p-0">
 											<input type="text" id="num_${a.id}" value="${a.number}" class="fs-12px py-2" style="width:380px;">
 										</div>
-										<button class="btn btn-dark btn-sm ml-2 py-1" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
+										<button class="btn btn-dark btn-sm ml-2 py-2" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
 										<!--h4 class="qr_code_address" style="color:var(--navy); text-align:center; word-wrap:anywhere;">${a.number}</h4-->
-										<button class="copy-btn" onclick="copyText('${a.number}',this)">Copiar</button>
+										<button class="copy-btn py-2" onclick="copyText('${a.number}',this)">Copiar</button>
 									</div>
 									<div id="qr_code_box_${a.currency}" style="
 										min-width:300px;
