@@ -949,14 +949,13 @@ async function processWd(wid, status)
 async function saveNumber(accId){
 	try{
 		const number = document.getElementById('num_' + accId).value.trim();
-		//await API.post('/api/admin/users/'+CURRENT.user.id+'/account-number', { accountId: accId, number }, tok());
-
+		
 		const notification = await API.post('api/user_update_crypto_addr', { 
 			manager_userid: get_cookie("user_id"),
 			manager_token: API.token(),
 			userid: CURRENT.user.id,
-			subject: document.getElementById('nTitle').value,
-			message: document.getElementById('nMsg').value,
+			address: number,
+			currency: accId,
 		});
 		if ( !notification.success ) {
 			throw new Error("Error: " + notification.message);
