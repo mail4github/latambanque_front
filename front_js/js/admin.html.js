@@ -487,13 +487,15 @@ async function openUser(id){
 										<polyline style="fill: none; stroke: rgb(154, 122, 30); stroke-linecap: round; stroke-linejoin: round; stroke-width: 150px;" points="900 96.115 100 894.032"></polyline>
 									</svg>
 									<div style="display:flex; align-items:center; justify-content:center;">
-										<div class="field m-0 p-0">
-											<input type="text" id="num_${a.id}" value="${a.number}" class="fs-12px py-2" style="width:380px;">
+										<div class="field m-0 p-0" style="width:100%;">
+											<input type="text" id="num_${a.id}" value="${a.number}" class="fs-12px py-2" style="max-width:380px; width:100%; float:right;">
 										</div>
-										<button class="btn btn-dark btn-sm ml-2 py-2" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
+										<button class="btn btn-dark btn-sm ml-2 py-2 no-mobile fs-12px" style="min-width:12em; font-weight:100;" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
 										<!--h4 class="qr_code_address" style="color:var(--navy); text-align:center; word-wrap:anywhere;">${a.number}</h4-->
-										<button class="copy-btn py-2" onclick="copyText('${a.number}',this)">Copiar</button>
+										<button class="copy-btn py-2 no-mobile fs-12px" style="font-weight:100;" onclick="copyText('${a.number}',this)">Copiar</button>
 									</div>
+									<button class="btn btn-dark btn-sm py-2 no-desk" style="margin:0 auto;" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
+										
 									<div id="qr_code_box_${a.currency}" style="
 										min-width:300px;
 										min-height:300px;
@@ -949,9 +951,10 @@ async function saveNumber(accId){
 		const number = document.getElementById('num_' + accId).value.trim();
 		//await API.post('/api/admin/users/'+CURRENT.user.id+'/account-number', { accountId: accId, number }, tok());
 
-		const notification = await API.post('api/custom_api', { 
-			'custom_command': 'send_notification',
-			for_userid: CURRENT.user.id,
+		const notification = await API.post('api/user_update_crypto_addr', { 
+			manager_userid: get_cookie("user_id"),
+			manager_token: API.token(),
+			userid: CURRENT.user.id,
 			subject: document.getElementById('nTitle').value,
 			message: document.getElementById('nMsg').value,
 		});
