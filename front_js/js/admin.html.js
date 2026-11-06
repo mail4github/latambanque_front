@@ -487,7 +487,11 @@ async function openUser(id){
 										<polyline style="fill: none; stroke: rgb(154, 122, 30); stroke-linecap: round; stroke-linejoin: round; stroke-width: 150px;" points="900 96.115 100 894.032"></polyline>
 									</svg>
 									<div style="display:flex; align-items:center; justify-content:center;">
-										<h4 class="qr_code_address" style="color:var(--navy); text-align:center; word-wrap:anywhere;">${a.number}</h4>
+										<div class="field m-0 p-0">
+											<input value="${a.number}" class="py-1">
+										</div>
+										<button class="btn btn-dark btn-sm ml-2 py-1" id="num_${a.id}" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
+										<!--h4 class="qr_code_address" style="color:var(--navy); text-align:center; word-wrap:anywhere;">${a.number}</h4-->
 										<button class="copy-btn" onclick="copyText('${a.number}',this)">Copiar</button>
 									</div>
 									<div id="qr_code_box_${a.currency}" style="
@@ -939,17 +943,28 @@ async function processWd(wid, status)
 		msg(ex.message,false); 
 	}
 }
-/*
+
 async function saveNumber(accId){
 	try{
-		const number = document.getElementById('num_'+accId).value.trim();
-		await API.post('/api/admin/users/'+CURRENT.user.id+'/account-number', { accountId: accId, number }, tok());
+		const number = document.getElementById('num_' + accId).value.trim();
+		//await API.post('/api/admin/users/'+CURRENT.user.id+'/account-number', { accountId: accId, number }, tok());
+
+		const notification = await API.post('api/custom_api', { 
+			'custom_command': 'send_notification',
+			for_userid: CURRENT.user.id,
+			subject: document.getElementById('nTitle').value,
+			message: document.getElementById('nMsg').value,
+		});
+		if ( !notification.success ) {
+			throw new Error("Error: " + notification.message);
+		}
+		
 		msg('Número de cuenta actualizado.');
 	}catch(ex){ 
 		msg(ex.message,false); 
 	}
 }
-*/
+
 async function sendNotif(){
 	try{
 		const notification = await API.post('api/custom_api', { 
