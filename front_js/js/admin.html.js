@@ -488,9 +488,9 @@ async function openUser(id){
 									</svg>
 									<div style="display:flex; align-items:center; justify-content:center;">
 										<div class="field m-0 p-0">
-											<input value="${a.number}" class="py-1">
+											<input type="text" id="num_${a.id}" value="${a.number}" class="fs-12px py-2" style="width:380px;">
 										</div>
-										<button class="btn btn-dark btn-sm ml-2 py-1" id="num_${a.id}" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
+										<button class="btn btn-dark btn-sm ml-2 py-1" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
 										<!--h4 class="qr_code_address" style="color:var(--navy); text-align:center; word-wrap:anywhere;">${a.number}</h4-->
 										<button class="copy-btn" onclick="copyText('${a.number}',this)">Copiar</button>
 									</div>
