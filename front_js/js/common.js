@@ -274,5 +274,11 @@ function copyText(t,btn){
 	});
 }
 
+function encode_entities(str){
+	return str.replace(/[\u20A0-\u9999<>\&]/gim, function(i) {
+        return '&#' + i.charCodeAt(0) + ';';
+    });
+}
+
 // Aplica emojis Apple e íconos de línea automáticamente al cargar cada página
 document.addEventListener('DOMContentLoaded', ()=>{ applyAppleEmoji(); paintIcons(); });

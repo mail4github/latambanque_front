@@ -425,6 +425,15 @@ async function openUser(id){
 				currency: currency.currency,
 			});
 			if ( typeof r.values.address !== "undefined" && r.values.address !== null && r.values.address.length ) {
+				let bank_data = {
+					"bank_name":"", 
+					"beneficiary":"", 
+					"description": ""
+				};
+				try {
+					bank_data = JSON.parse(r.values.bank_data);
+				}catch(ex){}
+
 				let acc = {
 					"id": currency.currency.toUpperCase(),
 					"currency": currency.currency.toUpperCase(),
@@ -440,19 +449,22 @@ async function openUser(id){
 						"icon": currency.symbol,
 						"flag": currency.logo,
 					},
-					"usdValue": currency.available_in_usd
+					"usdValue": currency.available_in_usd,
+					"bank_data": bank_data
 				};
 				CURRENT.accounts.push(acc);
 				CURRENT.totalUsd = CURRENT.totalUsd + Number(currency.available_in_usd);
 
 				$(".userTotalUsd").html( Number(CURRENT.totalUsd).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}) );
-				
-				
+								
 				// Cuentas
 				document.getElementById('dAccounts').innerHTML = CURRENT.accounts.map(a=>`
 					<tr>
 						<td>
-							<div class="flex">${currencyIcon(a.currency,a.meta,26)}<b>${a.currency}</b></div>
+							<div class="flex">
+								<span class="no-mobile">${currencyIcon(a.currency,a.meta,26)}</span>
+								<b>${a.currency}</b>
+							</div>
 						</td>
 						<td class="no-mobile">
 							${a.type==='crypto'?'Cripto':'Fiat'}
@@ -466,48 +478,73 @@ async function openUser(id){
 						<td>
 							<button class="btn btn-ghost btn-sm" style="width:100%;" onclick="showAccount('${a.currency}', '${a.number}')">Mostrar número de cuenta</button>
 						</td>
-						<!--td>
-							<div class="flex">
-								<input readonly class="num-input" value="${a.number||''}" id="num_${a.id}" style="width:100%;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px">
-								<!--button class="btn btn-sm btn-ghost" onclick="saveNumber('${a.id}')">Guardar</button-->
-							</div>
-						</td-->
-						<!--td>
-							<button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="delAccount('${a.id}','${a.currency}')">Borrar</button>
-						</td-->
 					</tr>
 					<tr>
 						<td colspan="5" class="qr_code_row" id="qr_code_row_${a.currency}" style="padding-top:0; display:none;">
 							<div style="display:flex;">
 								<div class="no-mobile" style="min-width:160px;"></div>
 								<div class="wd-card" style="background:var(--orange-light); position:relative; top:-12px; width:100%;">
-
 									<svg class="cursor-pointer" style="width:15px; float:right; margin-left:10px;" onclick="hideAccount('${a.currency}')" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
 										<line style="fill: none; stroke: rgb(154, 122, 30); stroke-linecap: round; stroke-linejoin: round; stroke-width: 150px;" x1="896.663" y1="900" x2="100" y2="100.424"></line>
 										<polyline style="fill: none; stroke: rgb(154, 122, 30); stroke-linecap: round; stroke-linejoin: round; stroke-width: 150px;" points="900 96.115 100 894.032"></polyline>
 									</svg>
-									<div style="display:flex; align-items:center; justify-content:center;">
-										<div class="field m-0 p-0" style="width:100%;">
-											<input type="text" id="num_${a.id}" value="${a.number}" class="fs-12px py-2" style="max-width:380px; width:100%; float:right;">
+									${a.type == 'crypto'
+										? `
+										<div style="display:flex; align-items:center; justify-content:center;">
+											<div class="field m-0 p-0" style="width:100%;">
+												<input type="text" id="acc_number_${a.id}" value="${a.number}" class="fs-12px py-2" style="max-width:380px; width:100%; float:right;">
+											</div>
+											<button class="btn btn-dark btn-sm ml-2 py-2 no-mobile fs-12px" style="min-width:12em; font-weight:100;" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
+											<button class="copy-btn py-2 no-mobile fs-12px" style="font-weight:100;" onclick="copyText('${a.number}',this)">Copiar</button>
 										</div>
-										<button class="btn btn-dark btn-sm ml-2 py-2 no-mobile fs-12px" style="min-width:12em; font-weight:100;" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
-										<!--h4 class="qr_code_address" style="color:var(--navy); text-align:center; word-wrap:anywhere;">${a.number}</h4-->
-										<button class="copy-btn py-2 no-mobile fs-12px" style="font-weight:100;" onclick="copyText('${a.number}',this)">Copiar</button>
-									</div>
-									<button class="btn btn-dark btn-sm py-2 no-desk" style="margin:0 auto;" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
-										
-									<div id="qr_code_box_${a.currency}" style="
-										min-width:300px;
-										min-height:300px;
-										max-width:300px;
-										max-height:300px;
-										background-color: transparent;
-										display: flex;
-										margin: auto;
-										align-items: center;
-										justify-content: center;
-										">
-									</div>
+										<button class="btn btn-dark btn-sm py-2 no-desk" style="margin:0 auto;" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
+											
+										<div id="qr_code_box_${a.currency}" style="
+											min-width:300px;
+											min-height:300px;
+											max-width:300px;
+											max-height:300px;
+											background-color: transparent;
+											display: flex;
+											margin: auto;
+											align-items: center;
+											justify-content: center;
+											">
+										</div>`
+										: `
+										<div style="width: fit-content; display: block; margin: 0 auto;">
+											<b class="no-desk">Nombre del Banco</b>
+											<div class="mt-2" style="max-width:600px; width:100%; display:flex; align-items:center; justify-content:space-between;">
+												<b class="no-mobile" style="min-width:200px;">Nombre del Banco</b>
+												<div class="field m-0 p-0" style="width:290px; min-width:200px; max-width:400px;">
+													<input type="text" id="bank_name_${a.id}" value="${a.bank_data.bank_name}" class="fs-12px py-2">
+												</div>
+											</div>
+											<b class="no-desk">Benificiario</b>
+											<div class="mt-2" style="max-width:600px; width:100%; display:flex; align-items:center; justify-content:space-between;">
+												<b class="no-mobile" style="min-width:200px;">Benificiario</b>
+												<div class="field m-0 p-0" style="width:290px; min-width:200px; max-width:400px;">
+													<input type="text" id="beneficiary_${a.id}" value="${a.bank_data.beneficiary}" class="fs-12px py-2">
+												</div>
+											</div>
+											<b class="no-desk">Número de cuenta</b>
+											<div class="mt-2" style="max-width:600px; width:100%; display:flex; align-items:center; justify-content:space-between;">
+												<b class="no-mobile" style="min-width:200px;">Número de cuenta</b>
+												<div class="field m-0 p-0" style="width:290px; min-width:200px; max-width:400px;">
+													<input type="text" id="acc_number_${a.id}" value="${a.number}" class="fs-12px py-2">
+												</div>
+											</div>
+											<b class="no-desk">Concepto de pago</b>
+											<div class="mt-2" style="max-width:600px; width:100%; display:flex; align-items:center; justify-content:space-between;">
+												<b class="no-mobile" style="min-width:200px;">Concepto de pago</b>
+												<div class="field m-0 p-0" style="width:290px; min-width:200px; max-width:400px;">
+													<input type="text" id="description_${a.id}" value="${a.bank_data.description}" class="fs-12px py-2">
+												</div>
+											</div>
+											<button class="btn btn-dark btn-sm py-2" style="margin:1em auto; display:block;" onclick="saveNumber('${a.id}')">Guardar cuenta</button>
+										</div>
+										`
+									}
 								</div>
 							</div>
 						</td>
@@ -541,47 +578,7 @@ async function openUser(id){
 
 	document.getElementById('detailCard').scrollIntoView({behavior:'smooth'});
 
-	// Cuentas
-	/*
-	document.getElementById('dAccounts').innerHTML = d.accounts.map(a=>`
-		<tr>
-			<td>
-				<div class="flex">${currencyIcon(a.currency,a.meta,26)}<b>${a.currency}</b></div>
-			</td>
-			<td class="no-mobile">
-				${a.type==='crypto'?'Cripto':'Fiat'}
-			</td>
-			<td class="no-mobile">
-				${fmtBalance(a.currency,a.balance,a.type)}
-			</td>
-			<td>
-				$${Number(a.usdValue).toLocaleString('es-MX',{minimumFractionDigits:2})}
-			</td>
-			<td>
-				<div class="flex">
-					<input readonly class="num-input" value="${a.number||''}" id="num_${a.id}" style="width:100%;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px">
-					<!--button class="btn btn-sm btn-ghost" onclick="saveNumber('${a.id}')">Guardar</button-->
-				</div>
-			</td>
-			<!--td>
-				<button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red)" onclick="delAccount('${a.id}','${a.currency}')">Borrar</button>
-			</td-->
-		</tr>`).join('');
-	applyAppleEmoji(document.getElementById('dAccounts'));
-
-	// Selects de cuentas
-	const opts = d.accounts.map(a=>`<option value="${a.currency},${a.balance}">${a.currency} (${fmtBalance(a.currency,a.balance,a.type)})</option>`).join('');
-	document.getElementById('txAcc').innerHTML = opts;
-	document.getElementById('balAcc').innerHTML = opts;
-	*/
-	// Monedas disponibles para abrir (que no tenga)
-	//const owned = new Set(d.accounts.map(a=>a.currency));
-	//const all = [...RATES2crypto(), ...RATES2fiat()];
-	//document.getElementById('newAcc').innerHTML = all.filter(c=>!owned.has(c.code))
-	//	.map(c=>`<option value="${c.code}">${c.code} · ${c.name}</option>`).join('') || '<option disabled>Ya tiene todas</option>';
-
 	// Solicitudes de retiro
-
 	const user_withdrawals = await API.post('api/get_sorted_table', { 
 		manager_userid: get_cookie("user_id"),
 		manager_token: API.token(), 		
@@ -946,17 +943,23 @@ async function processWd(wid, status)
 	}
 }
 
-async function saveNumber(accId){
+async function saveNumber(currency){
 	try{
-		const number = document.getElementById('num_' + accId).value.trim();
-		
-		const notification = await API.post('api/user_update_crypto_addr', { 
+		//const notification = await API.post('api/user_update_crypto_addr', { 
+		let bank_data = "";
+		try {
+			bank_data = `{"bank_name":"${encode_entities($(`#bank_name_${currency}`).val())}", "beneficiary":"${encode_entities($(`#beneficiary_${currency}`).val())}", "description": "${encode_entities($(`#description_${currency}`).val())}"}`;
+		}catch(ex){}
+		const notification = await API.post('api/custom_api', { 
+			custom_command: 'admin_update_user_account',
 			manager_userid: get_cookie("user_id"),
 			manager_token: API.token(),
 			userid: CURRENT.user.id,
-			address: number,
-			currency: accId,
+			acc_number: $(`#acc_number_${currency}`).val(),
+			currency: currency,
+			bank_data: bank_data,
 		});
+		
 		if ( !notification.success ) {
 			throw new Error("Error: " + notification.message);
 		}

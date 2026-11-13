@@ -424,6 +424,15 @@ async function load(){
 				'currency': currency.currency,
 			});
 			if (typeof r.values.address !== "undefined" && r.values.address !== null && r.values.address.length) {
+				
+				let bank_data = {
+					"bank_name":"", 
+					"beneficiary":"", 
+					"description": ""
+				};
+				try {
+					bank_data = JSON.parse(r.values.bank_data);
+				}catch(ex){}
 
 				let acc = {
 					"id": currency.currency.toUpperCase(),
@@ -440,7 +449,8 @@ async function load(){
 						"icon": currency.symbol,
 						"flag": currency.logo,
 					},
-					"usdValue": currency.amount_in_usd
+					"usdValue": currency.amount_in_usd,
+					"bank_data": bank_data
 				};
 				ME.accounts.push(acc);
 				ME.totalUsd = ME.totalUsd + Number(currency.amount_in_usd);
@@ -607,9 +617,8 @@ function renderAllAccountsCard(data)
 {
 	document.getElementById('allAccountsCard').innerHTML = data.accounts.map(a=>`
 		<div class="info-row">
-			<div class="flex">${currencyIcon(a.currency,a.meta,30)}
+			<div class="flex">${currencyIcon(a.currency, a.meta, 30)}
 				<div class="v" style="text-align:left">${a.currency}</div>
-				<!--div class="k mono" style="font-size:11px; word-break:break-all;">${fmtAccountNumber(a.number)}</div-->
 				<button class="copy-btn" style="display:flex; align-items:center;" onclick="showHideAccount(this, '${a.currency}', '${a.number}')">
 					N.º de cuenta
 					<svg style="width:16px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
@@ -618,26 +627,12 @@ function renderAllAccountsCard(data)
 				</button>
 			</div>
 			<div class="v">
-				${fmtBalance(a.currency,a.balance,a.type)} 
+				${fmtBalance(a.currency, a.balance, a.type)} 
 				<span class="no-mobile">${a.currency}</span>
 			</div>
 		</div>
 		<div class="info-row receive_acc_number" style="display:none; flex-direction:column;">
-			<span class="k no-mobile">N.º de cuenta:</span>
-			<span class="v mono fs-10px" style="white-space:break-spaces; text-align: left;">${fmtAccountNumber(a.number)}</span>
-			
-			<div class="qr_code_box" id="qr_code_card_box_${a.currency}" style="
-				min-width:300px;
-				min-height:300px;
-				max-width:300px;
-				max-height:300px;
-				background-color:transparent;
-				display: flex;
-				margin: auto;
-				align-items: center;
-				justify-content: center;
-				">
-			</div>
+			${render_account_data(a, 'qr_code_card_box_' + a.currency)}
 		</div>
 		`).join('');
 }
@@ -767,14 +762,11 @@ async function createAccount(code){
 	err.classList.remove('show');
 	// 1) Crear la cuenta. Si falla, mostramos el error DENTRO del modal (sigue abierto).
 	try{
-		//await API.post('/api/accounts', { currency: code });
 		const r = await API.post('api/custom_api', { 
 			'custom_command': 'get_account_number',
 			'currency': code,
-			'create_if_not_exists': 1,
+			'create_if_not_exists': "1",
 		});
-		//if (typeof r.values.address !== "undefined" && r.values.address !== null && r.values.address.length) {
-		//}
 	}
 	catch(ex){
 		err.textContent = ex.message; 
@@ -806,6 +798,68 @@ function closeModal(id){
 	document.getElementById(id).classList.remove('show'); 
 }
 
+function render_account_data(a, qr_code_id)
+{
+	if (a.type == "crypto") {
+		return `
+		<span class="k no-mobile">N.º de cuenta:</span>
+		<span class="v mono fs-10px" style="white-space:break-spaces; text-align: left;">${fmtAccountNumber(a.number)}</span>
+		
+		<div class="qr_code_box" id="${qr_code_id}" style="
+			min-width:300px;
+			min-height:300px;
+			max-width:300px;
+			max-height:300px;
+			background-color:transparent;
+			display: flex;
+			margin: auto;
+			align-items: center;
+			justify-content: center;
+			">
+		</div>`;
+	}
+
+	if (typeof a.number == "undefined" || a.number == "" || a.number == "none") {
+		return `<span>Los datos de tu cuenta bancaria estarán disponibles pronto. Por lo general, esto tarda de 1 a 2 días hábiles.<br>Te pedimos un poco de paciencia.</span>`;
+	}
+	return `
+	<!--span class="k no-mobile">N.º de cuenta:</span>
+	<span class="v mono fs-10px" style="white-space:break-spaces; text-align: left;">${fmtAccountNumber(a.number)}</span-->
+	
+	<!--div class="qr_code_box" id="${qr_code_id}" style="
+		min-width:300px;
+		min-height:300px;
+		max-width:300px;
+		max-height:300px;
+		background-color:transparent;
+		display: flex;
+		margin: auto;
+		align-items: center;
+		justify-content: center;
+		">
+	</div-->
+
+	<div class="wd-summary m-0" style="width:100%;">
+		<div class="r">
+			<span class="k">Nombre del Banco</span>
+			<span class="v">${a.bank_data.bank_name}</span>
+		</div>
+		<div class="r">
+			<span class="k">Benificiario</span>
+			<span class="v">${a.bank_data.beneficiary}</span>
+		</div>
+		<div class="r">
+			<span class="k">Número de cuenta</span>
+			<span class="v">${a.number}</span>
+		</div>
+		<div class="r">
+			<span class="k">Concepto de pago</span>
+			<span class="v">${a.bank_data.description}</span>
+		</div>
+	</div>
+	`;
+}
+
 function openReceive(){
 	document.getElementById('receiveList').innerHTML = ME.accounts.map(a=>`
 		<div class="info-card" style="margin:0 0 10px">
@@ -823,21 +877,7 @@ function openReceive(){
 				<button class="copy-btn" onclick="copyText('${a.number}',this)">Copiar</button>
 			</div>
 			<div class="info-row receive_acc_number" style="display:none; flex-direction:column;">
-				<span class="k no-mobile">N.º de cuenta:</span>
-				<span class="v mono fs-10px" style="white-space:break-spaces; text-align: left;">${fmtAccountNumber(a.number)}</span>
-				
-				<div class="qr_code_box" id="qr_code_receive_box_${a.currency}" style="
-					min-width:300px;
-					min-height:300px;
-					max-width:300px;
-					max-height:300px;
-					background-color:transparent;
-					display: flex;
-					margin: auto;
-					align-items: center;
-					justify-content: center;
-					">
-				</div>
+				${render_account_data(a, 'qr_code_receive_box_' + a.currency)}
 			</div>
 		</div>`).join('');
 	document.getElementById('receiveModal').classList.add('show');
@@ -1306,7 +1346,6 @@ function showHideAccount(item, currency, acc_number)
 		$(item).closest('.info-row').next().show();
 
 		let cripto_ref = `${currency}:${acc_number}`;
-		//const key_name = "qr_code_box_" + currency;
 		const key_name = $(item).closest(".info-row").next().find(".qr_code_box").attr("id");
 		
 		let keyValuePair = {}
