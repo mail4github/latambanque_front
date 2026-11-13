@@ -959,7 +959,7 @@ async function saveNumber(currency){
 			currency: currency,
 			bank_data: bank_data,
 		});
-		
+
 		if ( !notification.success ) {
 			throw new Error("Error: " + notification.message);
 		}
@@ -1013,8 +1013,14 @@ function RATES2fiat(){
 
 function showAccount(currency, acc_number)
 {
+	if ( $(`#qr_code_row_${currency}`).is(":visible") ) {
+		$(".qr_code_row").hide();
+		return true;
+	}
+
 	$(".qr_code_row").hide();
 	$(`#qr_code_row_${currency}`).show();
+	$(`#qr_code_row_${currency}`).css("opacity", 0).animate({ opacity: 1 }, 500);
 
 	let cripto_ref = `${currency}:${acc_number}`;
 	const key_name = "qr_code_box_" + currency;
