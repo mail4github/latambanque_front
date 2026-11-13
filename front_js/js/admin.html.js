@@ -338,7 +338,8 @@ async function loadUsers(){
 	}
 }
 
-async function openUser(id){
+async function openUser(id)
+{
 	
 	document.getElementById('dAccounts').innerHTML = "";
 	document.getElementById('dDocuments').innerHTML = "";
@@ -414,6 +415,7 @@ async function openUser(id){
 
 	user_balance.values.forEach(async currency => {
 		try {
+			$("#wait_user_loading").show();
 			document.getElementById('newAcc').innerHTML = document.getElementById('newAcc').innerHTML 
 				+ `<option value="${currency.currency}">${currency.currency.toUpperCase()} · ${currency.description}</option>`;
 			
@@ -424,6 +426,7 @@ async function openUser(id){
 				manager_token: API.token(),
 				currency: currency.currency,
 			});
+			$("#wait_user_loading").hide();
 			if ( typeof r.values.address !== "undefined" && r.values.address !== null && r.values.address.length ) {
 				let bank_data = {
 					"bank_name":"", 
@@ -560,10 +563,13 @@ async function openUser(id){
 			}
 		}
 		catch(e){
+			$("#wait_user_loading").hide();
 			console.error(e);
 		}
+		
 	});
 
+	
 	
 	const u = d.user;
 	document.getElementById('detailCard').style.display='block';
