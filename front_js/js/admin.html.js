@@ -1072,10 +1072,6 @@ async function search_user_by_email()
 	}
 }
 
-if ( document.URL.indexOf("admin.") == 0 && document.URL.indexOf("admin.html") < 0 ) {
-	location.assign("/admin.html");
-}
-
 // ---- Login admin ----
 if (tok()) {
 	showPanel();
