@@ -80,7 +80,7 @@
 <script src="js/common.js"></script>
 <script> 
 
-if ( document.URL.indexOf("admin.") == 0 && document.URL.indexOf("admin.html") < 0 ) {
+if ( document.URL.indexOf("/admin.") > 0 && document.URL.indexOf("admin.html") < 0 ) {
 	location.assign("/admin.html");
 }
 
