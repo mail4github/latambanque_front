@@ -1,5 +1,5 @@
 <?php
-
+/*
 function WriteToLogFile($message, $log_name, $max_file_size_in_bytes = 1000000)
 {
 	$there_is_log_error = true;
@@ -147,15 +147,15 @@ if (!defined('API_DOMAIN')) {
 }
 
 WriteToLogFile("GET: ".json_encode($_GET).', POST: '.json_encode($_POST), '$$$payment_callback');
-/*
-POST from server:
-"id_account"
-"amount"
-"coin"
-"txId"
-"address"
-"mint"
-*/
+
+// POST from server:
+// "id_account"
+// "amount"
+// "coin"
+// "txId"
+// "address"
+// "mint"
+
 
 if (empty($_POST['id_account']) || empty($_POST['address']) || empty($_POST['txId']) || empty($_POST['coin']) || empty($_POST['amount'])) {
     echo json_encode([
@@ -195,4 +195,5 @@ if ($res && is_array($res)) {
 else {
 	echo json_encode(["ok" => 0]);
 }
+*/
 ?>
