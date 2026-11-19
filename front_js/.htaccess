@@ -7,11 +7,11 @@ RewriteRule ^api/([^/]+)/([^/]+)/([^/]+)(\/|$) /php/api_to_backend.php?command=$
 RewriteRule ^api/([^/]+)/([^/]+)(\/|$) /php/api_to_backend.php?command=$1&param1=$2 [L]
 RewriteRule ^api/([^/]+)(\/|$) /php/api_to_backend.php?command=$1 [L]
 
-RewriteRule ^payment_callback/([^/]+)/([^/]+)/([^/]+)/([^/]+)(\/|$) /php/payment_callback?command=$1&param1=$2&param2=$3&param3=$4 [L]
-RewriteRule ^payment_callback/([^/]+)/([^/]+)/([^/]+)(\/|$) /php/payment_callback?command=$1&param1=$2&param2=$3 [L]
-RewriteRule ^payment_callback/([^/]+)/([^/]+)(\/|$) /php/payment_callback?command=$1&param1=$2 [L]
-RewriteRule ^payment_callback/([^/]+)(\/|$) /php/payment_callback?command=$1 [L]
-RewriteRule ^payment_callback(\/|$) /php/payment_callback [L]
+RewriteRule ^payment_callback/([^/]+)/([^/]+)/([^/]+)/([^/]+)(\/|$) /php/payment_callback.php?command=$1&param1=$2&param2=$3&param3=$4 [L]
+RewriteRule ^payment_callback/([^/]+)/([^/]+)/([^/]+)(\/|$) /php/payment_callback.php?command=$1&param1=$2&param2=$3 [L]
+RewriteRule ^payment_callback/([^/]+)/([^/]+)(\/|$) /php/payment_callback.php?command=$1&param1=$2 [L]
+RewriteRule ^payment_callback/([^/]+)(\/|$) /php/payment_callback.php?command=$1 [L]
+RewriteRule ^payment_callback(\/|$) /php/payment_callback.php [L]
 
 RewriteRule ^login/([^/]+)/([^/]+)(\/|$) /login.html?email=$1&verification_pin=$2 [L]
 RewriteRule ^login(\/|$) /login.html [L]
