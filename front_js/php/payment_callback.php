@@ -160,7 +160,7 @@ POST from server:
 if (empty($_POST['id_account']) || empty($_POST['address']) || empty($_POST['txId']) || empty($_POST['coin']) || empty($_POST['amount'])) {
     echo json_encode([
         "ok" => 0, 
-        "error" => 'Empty "id_account" or "amount" or "coin" or "txId" or "address" or "mint"'    
+        "error" => 'Empty id_account or amount or coin or txId or address or mint'    
     ]);
     exit;
 }
